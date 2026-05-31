@@ -48,8 +48,8 @@ export const metadata: Metadata = {
       "Book reliable cars across Nepal. Kathmandu, Pokhara, Chitwan and more.",
   },
   icons: {
-    icon: "/logo/taxi.svg",
-    apple: "/logo/taxi.svg",
+    icon: "/logo/logo.svg",
+    apple: "/logo/logo.svg",
   },
 };
 

@@ -6,7 +6,7 @@ import MobileHero from "./mobileHero";
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full min-h-screen overflow-hidden">
+    <section className="relative w-full min-h-screen overflow-hidden pb-30">
       <div className="absolute inset-0 hidden lg:block">
         <Image
           src="/home/hero2.png"

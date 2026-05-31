@@ -15,8 +15,8 @@ export default function BookingSection() {
   );
 
   return (
-    <div className="relative z-20 -mt-6 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div className="absolute top-200 left-1/2 -translate-x-1/2 -translate-y-1/2  z-20 -mt-6 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-2xl shadow-1xl overflow-hidden">
         <div className="flex border-b border-gray-100">
           {TRIP_TABS.map((tab) => (
             <button

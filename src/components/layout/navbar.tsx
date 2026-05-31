@@ -17,7 +17,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
         <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto">
           <Link href="/" className="shrink-0">
             <Image
-              src="/logo/taxi.svg"
+              src="/logo/logo.svg"
               alt="Popular Rides Logo"
               width={76}
               height={66}

@@ -88,8 +88,8 @@ export default function PassengersPopup({
           </p>
           <p className="text-xs text-gray-500 font-poppins leading-relaxed">
             Children below 11 years may not require a separate fare if seated on
-            a parent or guardian's lap. If a separate seat is required, they
-            should be counted as an adult passenger.
+            a parent or guardian&apos;s lap. If a separate seat is required,
+            they should be counted as an adult passenger.
           </p>
         </div>
 
