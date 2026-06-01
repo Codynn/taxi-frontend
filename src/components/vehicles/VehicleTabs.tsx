@@ -18,8 +18,8 @@ export default function VehicleTabs({
   onChange,
 }: VehicleTabsProps) {
   return (
-    <div className="w-full border-b border-gray-200">
-      <div className="flex items-center justify-center">
+    <div className="w-full border-b border-gray-200 overflow-x-auto scrollbar-none">
+      <div className="flex items-center min-w-max">
         {tabs.map((tab) => {
           const isActive = active === tab.value;
           return (

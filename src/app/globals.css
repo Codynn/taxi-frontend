@@ -2,6 +2,33 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@import "swiper/css";
+@import "swiper/css/pagination";
+
+@import "swiper/css";
+@import "swiper/css/free-mode";
+
+/* src/app/globals.css */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Inactive dot */
+.hero-dots .swiper-pagination-bullet {
+  @apply w-2 h-2 rounded-full bg-gray-300 opacity-100 cursor-pointer transition-all duration-300;
+}
+
+/* Active dot — stretches into a pill */
+.hero-dots .swiper-pagination-bullet-active {
+  @apply w-6 rounded bg-blue-600;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 *,
