@@ -2,12 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ArrowUpDown, ChevronDown } from "lucide-react";
 import {
   TRIP_TYPES,
   DRIVER_TYPES,
   CUSTOM_TRIP_NOTE,
-  DESTINATIONS,
 } from "@/constants/booking.constants";
 import type {
   BookingFormState,
@@ -25,19 +24,17 @@ interface BookingFormProps {
   onChange: (s: BookingFormState) => void;
 }
 
-interface CustomRadioProps<T extends string> {
-  options: { value: T; label: string }[];
-  value: T;
-  onChange: (v: T) => void;
-}
-
 function CustomRadioGroup<T extends string>({
   options,
   value,
   onChange,
-}: CustomRadioProps<T>) {
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-4 flex-wrap">
       {options.map((opt) => {
         const isSelected = value === opt.value;
         return (
@@ -94,7 +91,6 @@ function PortalDropdown({
   minWidth,
 }: PortalDropdownProps) {
   const [pos, setPos] = useState({ top: 0, left: 0, right: 0, width: 0 });
-  // ← KEY FIX: ref on the portal container itself
   const portalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,14 +108,11 @@ function PortalDropdown({
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       const target = e.target as Node;
-      // Close only if click is OUTSIDE both the anchor AND the portal container
       const outsideAnchor =
         anchorRef.current && !anchorRef.current.contains(target);
       const outsidePortal =
         portalRef.current && !portalRef.current.contains(target);
-      if (outsideAnchor && outsidePortal) {
-        onClose();
-      }
+      if (outsideAnchor && outsidePortal) onClose();
     }
     if (open) document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -127,8 +120,18 @@ function PortalDropdown({
 
   if (!open || typeof window === "undefined") return null;
 
-  const style: React.CSSProperties =
-    align === "right"
+  // On mobile, always anchor to left edge with near-full width
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  const style: React.CSSProperties = isMobile
+    ? {
+        position: "absolute",
+        top: pos.top,
+        left: 12,
+        right: 12,
+        zIndex: 9999,
+      }
+    : align === "right"
       ? {
           position: "absolute",
           top: pos.top,
@@ -165,7 +168,6 @@ export default function BookingForm({
   const [dateOpen, setDateOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
 
-  // Each trigger gets its own ref
   const destRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLButtonElement>(null);
   const passRef = useRef<HTMLButtonElement>(null);
@@ -173,27 +175,27 @@ export default function BookingForm({
   const totalPassengers = state.passengers.adults + state.passengers.children;
   const passengerLabel = `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`;
 
-  // if (tripTab === "custom") {
-  //   return (
-  //     <div className="py-6 px-2">
-  //       <p className="text-sm text-gray-500 font-poppins leading-relaxed">
-  //         {CUSTOM_TRIP_NOTE}
-  //       </p>
-  //     </div>
-  //   );
-  // }
+  if (tripTab === "custom") {
+    return (
+      <div className="py-4 px-1">
+        <p className="text-sm text-gray-500 font-poppins leading-relaxed">
+          {CUSTOM_TRIP_NOTE}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="flex flex-col gap-5">
-        {/* Radio row */}
-        <div className="flex flex-wrap items-center gap-y-3">
+      <div className="flex flex-col gap-4">
+        {/* ── Radio row ── */}
+        <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
           <CustomRadioGroup<TripType>
             options={TRIP_TYPES}
             value={state.tripType}
             onChange={(v) => onChange({ ...state, tripType: v })}
           />
-          <div className="w-px h-5 bg-gray-200 mx-5" />
+          <div className="hidden sm:block w-px h-5 bg-gray-200 mx-5" />
           <CustomRadioGroup<DriverType>
             options={DRIVER_TYPES}
             value={state.driverType}
@@ -201,7 +203,114 @@ export default function BookingForm({
           />
         </div>
 
-        <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden">
+        {/* ── Fields ──
+            Mobile:  stacked vertically, each in its own bordered card
+            Desktop: single horizontal bar with dividers
+        ── */}
+
+        {/* MOBILE layout — visible below md */}
+        {/* MOBILE layout — visible below md */}
+        <div className="flex flex-col gap-3 lg:hidden">
+          {/* From / To combined card */}
+          <div
+            ref={destRef}
+            className="border border-gray-200 rounded-2xl overflow-hidden bg-white"
+          >
+            <button
+              onClick={() => setDestOpen(!destOpen)}
+              className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
+            >
+              <p className="text-xs text-gray-400 font-poppins mb-0.5">From</p>
+              <p className="text-sm font-medium text-gray-800 font-poppins">
+                {state.destination.from || "Enter pickup location"}
+              </p>
+            </button>
+
+            {/* Divider with swap icon */}
+            <div className="relative flex items-center px-4">
+              <div className="flex-1 h-px bg-gray-200" />
+              <div className="mx-3 w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
+                <ArrowUpDown size={13} className="text-[#FEA800]" />
+              </div>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            <button
+              onClick={() => setDestOpen(!destOpen)}
+              className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
+            >
+              <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
+              <p className="text-sm font-medium text-gray-800 font-poppins">
+                {state.destination.to || "Enter drop location"}
+              </p>
+            </button>
+          </div>
+
+          {/* Pickup + Return */}
+          <div
+            className={`grid border border-gray-200 rounded-2xl gap-3 grid-cols-2`}
+          >
+            <div className="rounded-2xl bg-white overflow-hidden">
+              <button
+                ref={dateRef}
+                onClick={() => setDateOpen(!dateOpen)}
+                className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+              >
+                <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                  Pickup
+                </p>
+                <p className="text-sm font-medium text-gray-800 font-poppins">
+                  {state.dateRange.pickup || "2083/02/07"}
+                </p>
+              </button>
+            </div>
+
+            <div className="rounded-2xl bg-white overflow-hidden">
+              <button
+                onClick={() => setDateOpen(true)}
+                className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+              >
+                <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                  Return
+                </p>
+                <p className="text-sm font-medium text-gray-800 font-poppins">
+                  {state.dateRange.return || "2083/02/07"}
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {/* Passengers */}
+          <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
+            <button
+              ref={passRef}
+              onClick={() => setPassOpen(!passOpen)}
+              className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left flex items-center justify-between"
+            >
+              <div>
+                <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                  Total Passengers
+                </p>
+                <p className="text-sm font-medium text-gray-800 font-poppins">
+                  {passengerLabel}
+                </p>
+              </div>
+              <ChevronDown
+                size={16}
+                className={`text-gray-400 shrink-0 transition-transform duration-200 ${passOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+          </div>
+
+          {/* Search button — full width on mobile */}
+          <button className="w-full bg-[#FEA800] text-black font-semibold text-sm font-poppins py-4 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm mt-1">
+            Search Ride
+          </button>
+        </div>
+
+        {/* DESKTOP layout — visible from md up */}
+        <div className="hidden lg:flex items-stretch border border-gray-200 rounded-xl overflow-hidden">
+          {/* From → To */}
           <div
             ref={destRef}
             className="flex items-stretch"
@@ -231,8 +340,10 @@ export default function BookingForm({
               </p>
             </button>
           </div>
-          {/* Divider */}
-          <div className="flex items-center text-gray-400">|</div>
+
+          <div className="w-px bg-gray-200 shrink-0" />
+
+          {/* Pickup */}
           <button
             ref={dateRef}
             onClick={() => setDateOpen(!dateOpen)}
@@ -244,9 +355,11 @@ export default function BookingForm({
               {state.dateRange.pickup || "2083/02/07-08:00 AM"}
             </p>
           </button>
-          {/* Return date — only for round trip */}
+
+          {/* Return — round trip only */}
           {state.tripType === "round-trip" && (
             <>
+              <div className="w-px bg-gray-200 shrink-0" />
               <button
                 onClick={() => setDateOpen(true)}
                 className="px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
@@ -259,8 +372,10 @@ export default function BookingForm({
               </button>
             </>
           )}
-          {/* Divider */}
-          <div className="flex items-center text-gray-400">|</div>
+
+          <div className="w-px bg-gray-200 shrink-0" />
+
+          {/* Passengers */}
           <button
             ref={passRef}
             onClick={() => setPassOpen(!passOpen)}
@@ -283,14 +398,14 @@ export default function BookingForm({
         </div>
 
         {/* Search button */}
-        <div className="flex justify-end">
+        <div className="hidden lg:flex justify-end">
           <button className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm">
             Search Ride
           </button>
         </div>
       </div>
 
-      {/* Destination dropdown */}
+      {/* ── Dropdowns (shared for both layouts) ── */}
       <PortalDropdown
         anchorRef={destRef as React.RefObject<HTMLElement>}
         open={destOpen}
@@ -306,7 +421,6 @@ export default function BookingForm({
         />
       </PortalDropdown>
 
-      {/* Date picker dropdown — anchored to the Pickup button */}
       <PortalDropdown
         anchorRef={dateRef as React.RefObject<HTMLElement>}
         open={dateOpen}
@@ -323,7 +437,6 @@ export default function BookingForm({
         />
       </PortalDropdown>
 
-      {/* Passengers dropdown */}
       <PortalDropdown
         anchorRef={passRef as React.RefObject<HTMLElement>}
         open={passOpen}

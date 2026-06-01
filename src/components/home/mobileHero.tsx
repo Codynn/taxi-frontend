@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function MobileHero() {
   return (
-    <div className="relative flex flex-col w-full bg-white lg:hidden">
+    <div className="relative flex flex-col w-full  lg:hidden pb-20">
       <div className="pl-4 pt-8 pb-4">
         <Image
           src="/home/rectangle.svg"

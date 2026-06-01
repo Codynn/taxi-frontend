@@ -35,9 +35,9 @@ export default function HowItWorksSection() {
   const [before, after] = heading.split(highlightedWord);
 
   return (
-    <section className="bg-[#FEA800]/10 pt-50 pb-0">
+    <section className="bg-[#FEA800]/10 lg:pt-50 pt-80 pb-0">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center">
           <h2 className="text-3xl md:text-[48px] font-semibold font-sora text-[#000000] ">
             {before}
             <span className="bg-[#FEA800] px-2 rounded-sm">
