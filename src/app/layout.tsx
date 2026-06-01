@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
-import { Sora, Poppins, Inter, Montserrat } from "next/font/google";
+import {
+  Sora,
+  Poppins,
+  Inter,
+  Montserrat,
+  Luckiest_Guy,
+} from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import Footer from "@/components/shared/Footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -21,6 +28,12 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const luckiestGuy = Luckiest_Guy({
+  variable: "--font-luckiest-guy",
+  subsets: ["latin"],
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -74,9 +87,13 @@ export default function RootLayout({
         poppins.variable,
         montserrat.variable,
         inter.variable,
+        luckiestGuy.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <main className="pb-16 lg:pb-0">{children}</main>
+        <Footer />
+      </body>
     </html>
   );
 }
