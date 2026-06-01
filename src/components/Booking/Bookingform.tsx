@@ -1,20 +1,159 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import {
   TRIP_TYPES,
   DRIVER_TYPES,
   CUSTOM_TRIP_NOTE,
+  DESTINATIONS,
 } from "@/constants/booking.constants";
-import type { BookingFormState, TripTab } from "@/types/booking.types";
-import DestinationPopup from "./Destinationpopup";
+import type {
+  BookingFormState,
+  TripTab,
+  TripType,
+  DriverType,
+} from "@/types/booking.types";
 import DatePickerPopup from "./Datepickerpopup";
 import PassengersPopup from "./Passengerspopup";
+import DestinationPopup from "./Destinationpopup";
 
 interface BookingFormProps {
   tripTab: TripTab;
   state: BookingFormState;
   onChange: (s: BookingFormState) => void;
+}
+
+interface CustomRadioProps<T extends string> {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}
+
+function CustomRadioGroup<T extends string>({
+  options,
+  value,
+  onChange,
+}: CustomRadioProps<T>) {
+  return (
+    <div className="flex items-center gap-5">
+      {options.map((opt) => {
+        const isSelected = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className="flex items-center gap-2 group"
+          >
+            <div
+              className={[
+                "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                isSelected
+                  ? "border-[#FEA800]"
+                  : "border-gray-300 group-hover:border-[#FEA800]/50",
+              ].join(" ")}
+            >
+              {isSelected && (
+                <div className="w-2.5 h-2.5 rounded-full bg-[#FEA800]" />
+              )}
+            </div>
+            <span
+              className={[
+                "text-sm font-medium font-poppins transition-colors",
+                isSelected
+                  ? "text-gray-900"
+                  : "text-gray-500 group-hover:text-gray-700",
+              ].join(" ")}
+            >
+              {opt.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+interface PortalDropdownProps {
+  anchorRef: React.RefObject<HTMLElement>;
+  open: boolean;
+  onClose: () => void;
+  align?: "left" | "right";
+  children: React.ReactNode;
+  minWidth?: number;
+}
+
+function PortalDropdown({
+  anchorRef,
+  open,
+  onClose,
+  align = "left",
+  children,
+  minWidth,
+}: PortalDropdownProps) {
+  const [pos, setPos] = useState({ top: 0, left: 0, right: 0, width: 0 });
+  // ← KEY FIX: ref on the portal container itself
+  const portalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open && anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+        right: window.innerWidth - rect.right - window.scrollX,
+        width: rect.width,
+      });
+    }
+  }, [open, anchorRef]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      const target = e.target as Node;
+      // Close only if click is OUTSIDE both the anchor AND the portal container
+      const outsideAnchor =
+        anchorRef.current && !anchorRef.current.contains(target);
+      const outsidePortal =
+        portalRef.current && !portalRef.current.contains(target);
+      if (outsideAnchor && outsidePortal) {
+        onClose();
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open, onClose, anchorRef]);
+
+  if (!open || typeof window === "undefined") return null;
+
+  const style: React.CSSProperties =
+    align === "right"
+      ? {
+          position: "absolute",
+          top: pos.top,
+          right: pos.right,
+          width: Math.max(pos.width, minWidth ?? 0),
+          zIndex: 9999,
+        }
+      : {
+          position: "absolute",
+          top: pos.top,
+          left: pos.left,
+          minWidth: minWidth ?? 460,
+          zIndex: 9999,
+        };
+
+  return createPortal(
+    <div
+      ref={portalRef}
+      style={style}
+      className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+    >
+      {children}
+    </div>,
+    document.body,
+  );
 }
 
 export default function BookingForm({
@@ -26,180 +165,180 @@ export default function BookingForm({
   const [dateOpen, setDateOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
 
+  // Each trigger gets its own ref
+  const destRef = useRef<HTMLDivElement>(null);
+  const dateRef = useRef<HTMLButtonElement>(null);
+  const passRef = useRef<HTMLButtonElement>(null);
+
   const totalPassengers = state.passengers.adults + state.passengers.children;
   const passengerLabel = `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`;
 
-  if (tripTab === "custom") {
-    return (
-      <div className="py-6 px-4 text-center">
-        <p className="text-sm text-gray-500 font-poppins max-w-md mx-auto">
-          {CUSTOM_TRIP_NOTE}
-        </p>
-      </div>
-    );
-  }
+  // if (tripTab === "custom") {
+  //   return (
+  //     <div className="py-6 px-2">
+  //       <p className="text-sm text-gray-500 font-poppins leading-relaxed">
+  //         {CUSTOM_TRIP_NOTE}
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap gap-x-6 gap-y-3">
-          <div className="flex items-center gap-4">
-            {TRIP_TYPES.map((t) => (
-              <label
-                key={t.value}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="tripType"
-                  checked={state.tripType === t.value}
-                  onChange={() => onChange({ ...state, tripType: t.value })}
-                  className="accent-[#FEA800] w-4 h-4"
-                />
-                <span className="text-sm font-medium font-poppins text-gray-700">
-                  {t.label}
-                </span>
-              </label>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4">
-            {DRIVER_TYPES.map((d) => (
-              <label
-                key={d.value}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  name="driverType"
-                  checked={state.driverType === d.value}
-                  onChange={() => onChange({ ...state, driverType: d.value })}
-                  className="accent-[#FEA800] w-4 h-4"
-                />
-                <span className="text-sm font-medium font-poppins text-gray-700">
-                  {d.label}
-                </span>
-              </label>
-            ))}
-          </div>
+      <div className="flex flex-col gap-5">
+        {/* Radio row */}
+        <div className="flex flex-wrap items-center gap-y-3">
+          <CustomRadioGroup<TripType>
+            options={TRIP_TYPES}
+            value={state.tripType}
+            onChange={(v) => onChange({ ...state, tripType: v })}
+          />
+          <div className="w-px h-5 bg-gray-200 mx-5" />
+          <CustomRadioGroup<DriverType>
+            options={DRIVER_TYPES}
+            value={state.driverType}
+            onChange={(v) => onChange({ ...state, driverType: v })}
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-0 border border-gray-200 rounded-xl overflow-hidden">
-          <button
-            onClick={() => setDestOpen(true)}
-            className="flex items-center gap-3 flex-1 min-w-[140px] px-4 py-3 hover:bg-gray-50 transition-colors border-r border-gray-200"
+        <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden">
+          <div
+            ref={destRef}
+            className="flex items-stretch"
+            style={{ flex: "2 1 0%" }}
           >
-            <div className="text-left">
+            <button
+              onClick={() => setDestOpen(!destOpen)}
+              className="flex-1 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+            >
               <p className="text-xs text-gray-400 font-poppins">From</p>
-              <p className="text-sm font-medium text-gray-800 font-poppins">
+              <p className="text-sm font-medium text-gray-800 font-poppins truncate">
                 {state.destination.from || "Enter pickup location"}
               </p>
+            </button>
+
+            <div className="flex items-center justify-center px-3 bg-white shrink-0">
+              <ArrowRight size={16} className="text-[#FEA800]" />
             </div>
-          </button>
 
-          <div className="px-3 text-[#FEA800]">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path
-                d="M9 3v12M3 9l6-6 6 6M3 9l6 6 6-6"
-                stroke="#FEA800"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-
-          <button
-            onClick={() => setDestOpen(true)}
-            className="flex items-center gap-3 flex-1 min-w-[140px] px-4 py-3 hover:bg-gray-50 transition-colors border-l border-gray-200"
-          >
-            <div className="text-left">
+            <button
+              onClick={() => setDestOpen(!destOpen)}
+              className="flex-1 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+            >
               <p className="text-xs text-gray-400 font-poppins">To</p>
-              <p className="text-sm font-medium text-gray-800 font-poppins">
+              <p className="text-sm font-medium text-gray-800 font-poppins truncate">
                 {state.destination.to || "Enter drop location"}
               </p>
-            </div>
-          </button>
-
-          <div className="w-px h-12 bg-gray-200" />
-
+            </button>
+          </div>
+          {/* Divider */}
+          <div className="flex items-center text-gray-400">|</div>
           <button
-            onClick={() => setDateOpen(true)}
-            className="flex-1 min-w-[130px] px-4 py-3 hover:bg-gray-50 transition-colors border-l border-gray-200 text-left"
+            ref={dateRef}
+            onClick={() => setDateOpen(!dateOpen)}
+            className="px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+            style={{ flex: "1 1 0%" }}
           >
             <p className="text-xs text-gray-400 font-poppins">Pickup</p>
-            <p className="text-sm font-medium text-gray-800 font-poppins">
-              {state.dateRange.pickup || "Select date"}
+            <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+              {state.dateRange.pickup || "2083/02/07-08:00 AM"}
             </p>
           </button>
-
+          {/* Return date — only for round trip */}
           {state.tripType === "round-trip" && (
             <>
-              <div className="w-px h-12 bg-gray-200" />
               <button
                 onClick={() => setDateOpen(true)}
-                className="flex-1 min-w-[130px] px-4 py-3 hover:bg-gray-50 transition-colors border-l border-gray-200 text-left"
+                className="px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+                style={{ flex: "1 1 0%" }}
               >
                 <p className="text-xs text-gray-400 font-poppins">Return</p>
-                <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {state.dateRange.return || "Select date"}
+                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                  {state.dateRange.return || "2083/02/07-08:00 AM"}
                 </p>
               </button>
             </>
           )}
-
-          <div className="w-px h-12 bg-gray-200" />
-
+          {/* Divider */}
+          <div className="flex items-center text-gray-400">|</div>
           <button
-            onClick={() => setPassOpen(true)}
-            className="flex-1 min-w-[130px] px-4 py-3 hover:bg-gray-50 transition-colors border-l border-gray-200 text-left flex items-center justify-between"
+            ref={passRef}
+            onClick={() => setPassOpen(!passOpen)}
+            className="flex items-center justify-between gap-2 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left shrink-0"
+            style={{ minWidth: "160px" }}
           >
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-gray-400 font-poppins">
                 Total Passengers
               </p>
-              <p className="text-sm font-medium text-gray-800 font-poppins">
+              <p className="text-sm font-medium text-gray-800 font-poppins truncate">
                 {passengerLabel}
               </p>
             </div>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M3 5l4 4 4-4"
-                stroke="#9CA3AF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ChevronDown
+              size={16}
+              className={`text-gray-400 shrink-0 transition-transform ${passOpen ? "rotate-180" : ""}`}
+            />
           </button>
         </div>
 
+        {/* Search button */}
         <div className="flex justify-end">
-          <button className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-10 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors">
+          <button className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm">
             Search Ride
           </button>
         </div>
       </div>
 
-      <DestinationPopup
+      {/* Destination dropdown */}
+      <PortalDropdown
+        anchorRef={destRef as React.RefObject<HTMLElement>}
         open={destOpen}
         onClose={() => setDestOpen(false)}
-        onSelect={(dest) => onChange({ ...state, destination: dest })}
-      />
+        align="left"
+        minWidth={460}
+      >
+        <DestinationPopup
+          open={destOpen}
+          onClose={() => setDestOpen(false)}
+          onSelect={(dest) => onChange({ ...state, destination: dest })}
+          inline
+        />
+      </PortalDropdown>
 
-      <DatePickerPopup
+      {/* Date picker dropdown — anchored to the Pickup button */}
+      <PortalDropdown
+        anchorRef={dateRef as React.RefObject<HTMLElement>}
         open={dateOpen}
         onClose={() => setDateOpen(false)}
-        dateRange={state.dateRange}
-        onConfirm={(range) => onChange({ ...state, dateRange: range })}
-      />
+        align="left"
+        minWidth={600}
+      >
+        <DatePickerPopup
+          open={dateOpen}
+          onClose={() => setDateOpen(false)}
+          dateRange={state.dateRange}
+          onConfirm={(range) => onChange({ ...state, dateRange: range })}
+          inline
+        />
+      </PortalDropdown>
 
-      <PassengersPopup
+      {/* Passengers dropdown */}
+      <PortalDropdown
+        anchorRef={passRef as React.RefObject<HTMLElement>}
         open={passOpen}
         onClose={() => setPassOpen(false)}
-        passengers={state.passengers}
-        onConfirm={(p) => onChange({ ...state, passengers: p })}
-      />
+        align="right"
+        minWidth={320}
+      >
+        <PassengersPopup
+          open={passOpen}
+          onClose={() => setPassOpen(false)}
+          passengers={state.passengers}
+          onConfirm={(p) => onChange({ ...state, passengers: p })}
+          inline
+        />
+      </PortalDropdown>
     </>
   );
 }
