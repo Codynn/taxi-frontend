@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Sora, Poppins, Inter } from "next/font/google";
+import { Sora, Poppins, Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,12 @@ const sora = Sora({
 
 const poppins = Poppins({
   variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
 });
@@ -66,7 +72,7 @@ export default function RootLayout({
         "antialiased",
         sora.variable,
         poppins.variable,
-        "font-sans",
+        montserrat.variable,
         inter.variable,
       )}
     >
