@@ -1,14 +1,19 @@
 "use client";
 
 import { NAV_LINKS } from "@/constants/navbar.constants";
+import { useAuthModal } from "@/context/Authmodalcontext";
+import { useAuthStore } from "@/store/useAuthStore";
 import { NavbarProps } from "@/types/navbar.types";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import UserMenu from "../shared/UserMenu";
 
 export default function Navbar({ transparent = false }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { openModal } = useAuthModal();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const pathname = usePathname();
 
   return (
@@ -46,12 +51,16 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             </ul>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/signin"
-                className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-              >
-                Sign In
-              </Link>
+              {isAuthenticated ? (
+                <UserMenu />
+              ) : (
+                <button
+                  onClick={() => openModal("login")}
+                  className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
+                >
+                  Sign In
+                </button>
+              )}
               <Link
                 href="/get-started"
                 className="text-[16px] font-medium bg-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/90 transition-colors font-poppins text-black"
@@ -73,12 +82,16 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           </Link>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/signin"
-              className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-            >
-              Sign In
-            </Link>
+            {isAuthenticated ? (
+              <UserMenu />
+            ) : (
+              <button
+                onClick={() => openModal("login")}
+                className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
+              >
+                Sign In
+              </button>
+            )}
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}

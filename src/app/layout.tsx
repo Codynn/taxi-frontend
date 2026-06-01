@@ -9,6 +9,10 @@ import {
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Footer from "@/components/shared/Footer";
+import Providers from "@/providers/react-query-provider";
+import AuthInitProvider from "@/providers/AuthInitProviders";
+import { AuthModalProvider } from "@/context/Authmodalcontext";
+import AuthModal from "@/components/auth/authModal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -91,8 +95,15 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <main className="pb-16 lg:pb-0">{children}</main>
-        <Footer />
+        <Providers>
+          <AuthInitProvider>
+            <AuthModalProvider>
+              <main className="pb-16 lg:pb-0">{children}</main>
+              <Footer />
+              <AuthModal />
+            </AuthModalProvider>
+          </AuthInitProvider>
+        </Providers>
       </body>
     </html>
   );
