@@ -30,7 +30,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
     <>
       <nav
         className={[
-          "max-w-7xl lg:mx-auto z-99 mt-2 mx-2 px-4 lg:px-8 py-3 fixed top-0 left-0 right-0 transition-all duration-300 rounded-4xl",
+          "max-w-7xl lg:mx-auto z-50 mt-2 mx-2 px-4 lg:px-8 py-3 fixed top-0 left-0 right-0 transition-all duration-300 rounded-4xl",
           scrolled ? "bg-white shadow-md" : "bg-transparent",
         ].join(" ")}
       >
