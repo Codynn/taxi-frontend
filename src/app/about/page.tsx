@@ -1,4 +1,5 @@
 import AboutHeroSection from "@/components/about/AboutHeroSection";
+import OurStory from "@/components/about/ourStory";
 import Navbar from "@/components/layout/navbar";
 
 export default function AboutPage() {
@@ -6,6 +7,7 @@ export default function AboutPage() {
     <main>
       <Navbar />
       <AboutHeroSection />
+      <OurStory />
     </main>
   );
 }
