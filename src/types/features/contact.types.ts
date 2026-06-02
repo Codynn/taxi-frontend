@@ -1,12 +1,13 @@
 export interface ContactInfo {
-  address: string;
   phones: string[];
+  email: string;
+  address: string;
   officeHours: string;
   mapEmbedUrl: string;
 }
 
 export interface SocialLink {
-  platform: "facebook" | "instagram" | "linkedin";
+  platform: "facebook" | "instagram" | "tiktok";
   href: string;
 }
 

@@ -1,218 +1,131 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { User, Mail, Phone, MessageSquare } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { TREK_DESTINATIONS } from "@/constants/features/contact.constants";
+  contactFormSchema,
+  ContactFormValues,
+} from "@/lib/validations/contact.schema";
 
-/* ── Shared underline-only input style ─────────────────────────────────── */
-const inputCls = [
-  "w-full bg-transparent border-0 border-b border-gray-300 rounded-none shadow-none",
-  "py-2 px-0 text-gray-800 placeholder-gray-400 outline-none",
-  "focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-[#22784E]",
-  "transition-colors duration-200 text-sm font-montserrat",
-].join(" ");
+const inputWrapperCls =
+  "relative flex items-center rounded-xl  border-none outline-none bg-[#F5F5F5] px-4 transition-colors duration-200";
+const inputCls =
+  "w-full bg-transparent border-0 shadow-none py-2.5 px-0 pr-8 text-gray-800 placeholder-gray-400 outline-none focus-visible:ring-0 text-[14px] font-poppins";
+const iconCls = "absolute right-0 w-6 h-6 pr-2 text-black pointer-events-none";
+const errorCls = "text-red-500 text-xs mt-1 font-poppins";
+const labelCls = "block text-[16px] text-black font-poppins mb-1";
 
 export default function InquiryForm() {
-  const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    destination: "",
-    travelDate: "",
-    travelers: "",
-    message: "",
+  const [submitted, setSubmitted] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactFormValues>({
+    resolver: zodResolver(contactFormSchema),
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
-  const handleSubmit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log(form);
+  const onSubmit = async (data: ContactFormValues) => {
+    // Replace with your actual API call
+    console.log(data);
+    setSubmitted(true);
+    reset();
+    setTimeout(() => setSubmitted(false), 4000);
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Form heading */}
-      <h3 className="font-sora font-bold text-[#22784E] text-lg sm:text-xl m-0">
-        Send an Inquiry
+    <div className="bg-white rounded-2xl border border-[#808080]/50  p-6 sm:p-8">
+      <h3 className="font-poppins font-bold text-black text-[28px]  mb-6">
+        Send Us a Message
       </h3>
 
-      {/* Full Name */}
-      <div className="flex flex-col gap-1">
-        <Label className="text-gray-700 text-xs font-semibold font-montserrat">
-          Full Name <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          type="text"
-          name="fullName"
-          value={form.fullName}
-          onChange={handleChange}
-          placeholder="Enter your full name"
-          className={inputCls}
-          required
-        />
-      </div>
-
-      {/* Email */}
-      <div className="flex flex-col gap-1">
-        <Label className="text-gray-700 text-xs font-semibold font-montserrat">
-          Email
-        </Label>
-        <Input
-          type="email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="Enter your email"
-          className={inputCls}
-        />
-      </div>
-
-      {/* Phone */}
-      <div className="flex flex-col gap-1">
-        <Label className="text-gray-700 text-xs font-semibold font-montserrat">
-          Phone / WhatsApp <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          type="tel"
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          placeholder="Enter your phone number"
-          className={inputCls}
-          required
-        />
-      </div>
-
-      {/* Destination */}
-      <div className="flex flex-col gap-1">
-        <Label className="text-gray-700 text-xs font-semibold font-montserrat">
-          Interested Trek / Destination <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          onValueChange={(val) =>
-            setForm((prev) => ({ ...prev, destination: val as string }))
-          }
-        >
-          <SelectTrigger
-            className="w-full bg-transparent border-0 border-b border-gray-300 rounded-none
-              shadow-none px-0 py-2 h-auto text-sm font-montserrat text-gray-500
-              focus:ring-0 focus:ring-offset-0 focus:border-[#22784E] transition-colors duration-200"
-          >
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent>
-            {TREK_DESTINATIONS.map((d) => (
-              <SelectItem
-                key={d}
-                value={d}
-                className="font-montserrat text-sm cursor-pointer"
-              >
-                {d}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Travel Date */}
-      <div className="flex flex-col gap-1">
-        <Label className="text-gray-700 text-xs font-semibold font-montserrat">
-          Preferred Travel Date <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          type="date"
-          name="travelDate"
-          value={form.travelDate}
-          onChange={handleChange}
-          className={inputCls}
-          required
-        />
-      </div>
-
-      {/* Travelers */}
-      <div className="flex flex-col gap-1">
-        <Label className="text-gray-700 text-xs font-semibold font-montserrat">
-          Number of Travelers <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          type="number"
-          name="travelers"
-          value={form.travelers}
-          onChange={handleChange}
-          placeholder="Enter number of travelers"
-          min={1}
-          className={inputCls}
-          required
-        />
-      </div>
-
-      {/* Message */}
-      <div className="flex flex-col gap-1">
-        <Label className="text-gray-700 text-xs font-semibold font-montserrat">
-          Message
-        </Label>
-        <Textarea
-          name="message"
-          value={form.message}
-          onChange={handleChange}
-          placeholder="Enter your message"
-          rows={3}
-          className={[inputCls, "resize-none"].join(" ")}
-        />
-      </div>
-
-      {/* Submit Button */}
-      <Button
-        onClick={handleSubmit}
-        className={[
-          "group relative overflow-hidden mt-2 self-start",
-          "inline-flex items-center gap-3",
-          "bg-[#22784E] text-white border-0",
-          "rounded-full pl-5 pr-2 py-2 h-auto",
-          "font-sora font-semibold text-sm tracking-wide",
-          "transition-all duration-300 cursor-pointer shadow-none",
-        ].join(" ")}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-5"
+        noValidate
       >
-        {/* Curved fill on hover */}
-        <span
-          className="absolute inset-0 pointer-events-none"
-          aria-hidden="true"
+        {/* Full Name */}
+        <div>
+          <label className={labelCls}>Full Name</label>
+          <div className={inputWrapperCls}>
+            <input
+              {...register("fullName")}
+              type="text"
+              placeholder="Enter your Email"
+              className={inputCls}
+            />
+            <User className={iconCls} strokeWidth={1.5} />
+          </div>
+          {errors.fullName && (
+            <p className={errorCls}>{errors.fullName.message}</p>
+          )}
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className={labelCls}>Email</label>
+          <div className={inputWrapperCls}>
+            <input
+              {...register("email")}
+              type="email"
+              placeholder="Enter your Email"
+              className={inputCls}
+            />
+            <Mail className={iconCls} strokeWidth={1.5} />
+          </div>
+          {errors.email && <p className={errorCls}>{errors.email.message}</p>}
+        </div>
+
+        {/* Phone */}
+        <div>
+          <label className={labelCls}>Phone Number</label>
+          <div className={inputWrapperCls}>
+            <input
+              {...register("phone")}
+              type="tel"
+              placeholder="Enter your number"
+              className={inputCls}
+            />
+            <Phone className={iconCls} strokeWidth={1.5} />
+          </div>
+          {errors.phone && <p className={errorCls}>{errors.phone.message}</p>}
+        </div>
+
+        {/* Message */}
+        <div>
+          <label className={labelCls}>Message</label>
+          <div className={`${inputWrapperCls} items-start`}>
+            <textarea
+              {...register("message")}
+              placeholder="Enter your message"
+              rows={4}
+              className={`${inputCls} resize-none pr-0`}
+            />
+          </div>
+          {errors.message && (
+            <p className={errorCls}>{errors.message.message}</p>
+          )}
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full mt-2 bg-[#FEA800] hover:bg-[#e09700] text-black font-poppins font-medium text-[16px] py-3.5 rounded-full transition-colors duration-200 disabled:opacity-60 cursor-pointer"
         >
-          <span
-            className={[
-              "absolute left-1/2 top-full -translate-x-1/2",
-              "w-[220%] h-[600%] rounded-[50%] bg-white",
-              "transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-              "group-hover:-translate-y-[20%]",
-            ].join(" ")}
-          />
-        </span>
+          {isSubmitting ? "Sending..." : "Send Message"}
+        </button>
 
-        <span className="relative z-10 transition-colors duration-300 text-white group-hover:text-[#22784E]">
-          Send Message
-        </span>
-
-        <span className="relative z-10 flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 group-hover:bg-[#22784E] transition-colors duration-300 flex-shrink-0">
-          <ArrowRight
-            className="w-4 h-4 text-[#22784E] group-hover:text-white transition-colors duration-300 group-hover:translate-x-0.5"
-            strokeWidth={2.5}
-          />
-        </span>
-      </Button>
+        {submitted && (
+          <p className="text-center text-sm text-green-600 font-poppins">
+            ✓ Message sent successfully! We&apos;ll be in touch soon.
+          </p>
+        )}
+      </form>
     </div>
   );
 }
