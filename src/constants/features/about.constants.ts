@@ -1,4 +1,9 @@
-import { StoryContent, StoryStat } from "@/types/features/about.types";
+import {
+  StoryContent,
+  StoryStat,
+  ValueContent,
+} from "@/types/features/about.types";
+import { WhyChooseUsFeature } from "@/types/features/whyChooseUs.types";
 
 export const OUR_STORY_CONTENT: StoryContent = {
   title: "Our Story",
@@ -24,5 +29,42 @@ export const STORY_STATS: StoryStat[] = [
   {
     value: "24/7",
     label: "Support Availability",
+  },
+];
+
+export const OUR_VALUES_CONTENT: ValueContent = {
+  title: "Our Values",
+  paragraphs:
+    "Built on trust, comfort, reliability, and better travel experiences",
+};
+
+export const OUR_VALUES: WhyChooseUsFeature[] = [
+  {
+    id: "f1",
+    icon: "about/vision.svg",
+    title: "Our Mission",
+    description:
+      "Creating an easy and smooth booking experience for every traveler across Nepal.",
+  },
+  {
+    id: "f2",
+    icon: "about/mission.svg",
+    title: "Our Vision",
+    description:
+      "Connecting people with reliable, safe and comfortable transportation anytime they travel.",
+  },
+  {
+    id: "f3",
+    icon: "about/goal.svg",
+    title: "Our Goal",
+    description:
+      "Improving accessibility, convenience, and confidence through smarter vehicle booking experiences.",
+  },
+  {
+    id: "f4",
+    icon: "about/commitment.svg",
+    title: "Our Commitment",
+    description:
+      "Focusing on trusted service, transparent experiences, and customer satisfaction in every ride.",
   },
 ];

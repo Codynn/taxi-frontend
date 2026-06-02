@@ -57,7 +57,6 @@ export default function WhyChooseUsSection() {
               />
             </div>
 
-            {/* Feature grid — sits on top of the SVG */}
             <div className="flex-1 z-10 grid grid-cols-2 py-6">
               {[topRow, bottomRow].map((row, ri) =>
                 row.map((feature, fi) => {
