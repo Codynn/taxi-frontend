@@ -5,13 +5,13 @@ import Image from "next/image";
 export default function MobileHero() {
   return (
     <div className="relative flex flex-col w-full  lg:hidden pb-20">
-      <div className="pl-4 pt-8 pb-4">
+      <div className="pl-4 pt-25 pb-4">
         <Image
           src="/home/rectangle.svg"
           alt="Hero Car"
           width={120}
           height={80}
-          className="mt-8 absolute -top-1 left-8 z-0"
+          className="mt-8 absolute top-16 left-8 z-0"
         />
 
         <Image
@@ -19,7 +19,7 @@ export default function MobileHero() {
           alt="Hero Car"
           width={120}
           height={80}
-          className="mt-8 absolute top-2 left-3 z-1"
+          className="mt-8 absolute top-40 left-3 z-1"
         />
 
         <Image
@@ -27,7 +27,7 @@ export default function MobileHero() {
           alt="Hero Car"
           width={120}
           height={80}
-          className="mt-8 absolute top-22 left-12 z-0"
+          className="mt-8 absolute top-38.5 left-12 z-0"
         />
 
         <Image
@@ -35,7 +35,7 @@ export default function MobileHero() {
           alt="Hero Car"
           width={120}
           height={80}
-          className="mt-8 absolute top-25 left-3 z-0"
+          className="mt-8 absolute top-20 left-3 z-0"
         />
 
         <h1 className="relative font-sora font-extrabold text-black leading-[1.2] text-[2.2rem] z-10 sm:text-6xl sm:pt-12">

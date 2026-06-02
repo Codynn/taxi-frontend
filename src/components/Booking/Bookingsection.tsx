@@ -15,7 +15,7 @@ export default function BookingSection() {
   );
 
   return (
-    <div className="absolute  z-20 w-full flex justify-center px-4 sm:px-6 lg:px-8 -translate-y-1/2">
+    <div className="absolute  z-10 w-full flex justify-center px-4 sm:px-6 lg:px-8 -translate-y-1/2">
       <div className="w-full max-w-6xl shadow-xl rounded-2xl overflow-visible">
         <div className="flex bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
           {TRIP_TABS.map((tab, i) => {

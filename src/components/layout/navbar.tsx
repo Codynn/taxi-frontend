@@ -7,18 +7,34 @@ import { NavbarProps } from "@/types/navbar.types";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserMenu from "../shared/UserMenu";
 
 export default function Navbar({ transparent = false }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { openModal } = useAuthModal();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const pathname = usePathname();
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroHeight = window.innerHeight;
+      setScrolled(window.scrollY > heroHeight * 0.8);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <>
-      <nav className="w-full z-50 px-6 lg:px-12 py-4 bg-white lg:bg-transparent lg:absolute lg:top-0 lg:left-0 lg:right-0">
+      <nav
+        className={[
+          "max-w-7xl lg:mx-auto z-99 mt-2 mx-2 px-4 lg:px-8 py-3 fixed top-0 left-0 right-0 transition-all duration-300 rounded-4xl",
+          scrolled ? "bg-white shadow-md" : "bg-transparent",
+        ].join(" ")}
+      >
+        {/* Desktop */}
         <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto">
           <Link href="/" className="shrink-0">
             <Image
@@ -40,7 +56,9 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                       className={`text-[16px] font-medium font-poppins transition-colors pb-1 border-b-2 ${
                         isActive
                           ? "text-[#FEA800] border-[#FEA800]"
-                          : "text-gray-800 border-transparent hover:text-[#FEA800] hover:border-[#FEA800]"
+                          : scrolled
+                            ? "text-gray-800 border-transparent hover:text-[#FEA800] hover:border-[#FEA800]"
+                            : "text-gray-800 border-transparent hover:text-[#FEA800] hover:border-[#FEA800]"
                       }`}
                     >
                       {link.label}
@@ -71,7 +89,8 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           </div>
         </div>
 
-        <div className="flex lg:hidden items-center justify-between">
+        {/* Mobile */}
+        <div className="flex lg:hidden items-center justify-between px-2">
           <Link href="/" className="shrink-0">
             <Image
               src="/logo/logo.svg"
@@ -85,12 +104,15 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             {isAuthenticated ? (
               <UserMenu />
             ) : (
-              <button
-                onClick={() => openModal("login")}
-                className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-              >
-                Sign In
-              </button>
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#FEA800] shrink-0">
+                <Image
+                  src="/logo/logo.svg"
+                  alt="User Avatar"
+                  width={40}
+                  height={40}
+                  className="object-cover"
+                />
+              </div>
             )}
 
             <button
@@ -106,7 +128,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
         </div>
       </nav>
 
-      {/* {menuOpen && (
+      {menuOpen && (
         <div className="lg:hidden fixed inset-0 z-40 flex">
           <div
             className="absolute inset-0 bg-black/40"
@@ -116,7 +138,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           <div className="relative ml-auto w-[75%] max-w-xs bg-white h-full flex flex-col shadow-xl animate-slide-in">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <Image
-                src="/logo/taxi.svg"
+                src="/logo/logo.svg"
                 alt="Popular Rides Logo"
                 width={70}
                 height={60}
@@ -159,13 +181,19 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             </ul>
 
             <div className="mt-auto px-5 py-6 border-t border-gray-100 flex flex-col gap-3">
-              <Link
-                href="/signin"
-                onClick={() => setMenuOpen(false)}
-                className="text-center text-[15px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-              >
-                Sign In
-              </Link>
+              {isAuthenticated ? (
+                <UserMenu />
+              ) : (
+                <button
+                  onClick={() => {
+                    openModal("login");
+                    setMenuOpen(false);
+                  }}
+                  className="text-center text-[15px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/10 transition-colors font-poppins"
+                >
+                  Sign In
+                </button>
+              )}
               <Link
                 href="/get-started"
                 onClick={() => setMenuOpen(false)}
@@ -176,7 +204,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             </div>
           </div>
         </div>
-      )} */}
+      )}
     </>
   );
 }
