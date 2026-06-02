@@ -29,7 +29,7 @@ export default function OurValues() {
               key={item.id}
               className={`p-8 ${
                 index !== OUR_VALUES.length - 1
-                  ? "lg:border-r border-b border-[#C3C3C3]"
+                  ? "lg:border-r sm:border-b lg:border-b-none border-[#C3C3C3]"
                   : ""
               }`}
             >
