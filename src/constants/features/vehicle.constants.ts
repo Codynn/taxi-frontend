@@ -83,3 +83,32 @@ export const RIDES_READY_CONTENT = {
   description: "Compare and choose the one that suits your needs and budget.",
   browseAllLabel: "Browse All",
 };
+
+export const FILTER_OPTIONS = {
+  vehicleTypes: [
+    { label: "All", count: 8 },
+    { label: "Economic", count: 8 },
+    { label: "Luxary", count: 10 },
+    { label: "Premium", count: 100 },
+  ],
+  gearTypes: [
+    { label: "All", count: 8 },
+    { label: "Automatic", count: 8 },
+    { label: "Manual", count: 10 },
+  ],
+  fuelTypes: [
+    { label: "All", count: 8 },
+    { label: "Petrol", count: 10 },
+    { label: "Diesel", count: 10 },
+    { label: "Electric", count: 100 },
+  ],
+  priceRange: { min: 0, max: 1000, defaultMin: 150, defaultMax: 650 },
+};
+
+export const SORT_OPTIONS = [
+  { label: "Recommended", value: "recommended" },
+  { label: "A to Z", value: "a-z" },
+  { label: "Z to A", value: "z-a" },
+  { label: "Price: Low to High", value: "price-asc" },
+  { label: "Price: High to Low", value: "price-desc" },
+];

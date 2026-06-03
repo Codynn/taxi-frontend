@@ -23,3 +23,10 @@ export interface VehicleTab {
   label: string;
   icon: string;
 }
+
+export interface FilterState {
+  vehicleTypes: string[];
+  gearTypes: string[];
+  fuelTypes: string[];
+  priceRange: [number, number];
+}

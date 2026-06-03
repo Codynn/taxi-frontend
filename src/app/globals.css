@@ -159,3 +159,12 @@
     @apply font-sans;
   }
 }
+
+[data-slot="slider-range"] {
+  background-color: #fea800 !important;
+}
+
+[data-slot="slider-thumb"] {
+  background-color: #fea800 !important;
+  border-color: #fea800 !important;
+}

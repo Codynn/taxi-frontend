@@ -6,7 +6,7 @@ export default function MobileHero() {
   return (
     <div className="relative flex flex-col w-full lg:hidden pb-20">
       <div className="relative pl-4 pt-25 pb-4">
-        <h1 className="relative font-sora font-extrabold text-black leading-[1.5] z-10 lg:text-[40px] md:text-[38px] text-[26px] sm:pt-12">
+        <h1 className="relative font-sora font-extrabold max-w-[476px] text-black leading-[1.5] z-10 text-[40px] sm:pt-12">
           <span className="relative inline-block px-4 py-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
