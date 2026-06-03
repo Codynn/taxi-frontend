@@ -19,7 +19,7 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
   } = vehicle;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#808080]/50  transition-shadow duration-300 flex flex-col p-4">
+    <div className="bg-white rounded-2xl border border-[#808080]/50 transition-all duration-300 ease-out hover:translate-y-2 hover:shadow-xl flex flex-col p-4">
       <div className="relative w-full h-[200px] rounded-xl overflow-hidden mb-2">
         <Image
           src={`/${image}`}

@@ -6,25 +6,26 @@ export default function MobileHero() {
   return (
     <div className="relative flex flex-col w-full lg:hidden pb-20">
       <div className="relative pl-4 pt-25 pb-4">
-        <h1 className="relative font-sora font-extrabold max-w-[476px] text-black leading-[1.5] z-10 text-[40px] sm:pt-12">
-          <span className="relative inline-block px-4 py-1">
+        <h1 className="relative font-sora font-extrabold max-w-119 text-black leading-[1.5] z-10 text-[35px] sm:pt-12">
+          <span className="relative inline-block px-3 py-1 z-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/about/rectangle.svg"
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 -z-10 w-full h-full object-contain"
+              className="absolute inset-0 -z-10 w-full h-full object-fill scale-y-110"
             />
             Book
           </span>{" "}
-          the Right Car for Every Journey,{" "}
-          <span className="relative inline-block">
+          the Right Car for Every Journey
+          {/* MOVED THE COMMA HERE outside the span tag */},{" "}
+          <span className="relative inline-block px-3 py-1 z-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/about/rectangle.svg"
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 w-full h-full -z-10 object-fill"
+              className="absolute inset-0 -z-10 w-full h-full object-fill scale-y-110"
             />
             Anytime
           </span>{" "}

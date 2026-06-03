@@ -15,16 +15,16 @@ export default function ContactHero() {
           alt="Contact background"
           fill
           priority
-          className="object-cover object-[center_30%]"
+          className="object-cover object-center"
           sizes="100vw"
         />
       </div>
 
       {/* Centered text */}
-      <div className="absolute inset-0 top-[56%] flex flex-col items-center justify-center text-center px-4">
-        <h1 className="text-black font-sora font-bold tracking-tight leading-none drop-shadow-md m-0 text-[60px]">
+      <div className="absolute inset-0 top-[70%] flex flex-col items-center justify-center text-center px-4">
+        <h1 className="text-black font-sora font-bold tracking-tight leading-none drop-shadow-md m-0 text-[48px]">
           <span className="relative inline-block mr-3">
-            <div className="absolute left-1/7 top-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-20 z-0">
+            <div className="absolute left-1/7 top-1/2 -translate-x-1/2 -translate-y-1/2 w-65 h-20 z-0">
               <Image
                 src="/about/rectangle.svg"
                 alt=""
