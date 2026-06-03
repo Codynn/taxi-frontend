@@ -34,7 +34,6 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           scrolled ? "bg-white shadow-md" : "bg-transparent",
         ].join(" ")}
       >
-        {/* Desktop */}
         <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto">
           <Link href="/" className="shrink-0">
             <Image
