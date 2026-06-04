@@ -20,10 +20,11 @@ import {
   VEHICLE_TABS,
   SORT_OPTIONS,
 } from "@/constants/features/vehicle.constants";
-import type { VehicleCategory } from "@/types/features/vehicle.types";
+import type { Vehicle, VehicleCategory } from "@/types/features/vehicle.types";
 import VehicleTabs from "../vehicles/VehicleTabs";
 import RideCollectionVehicleCard from "./RideCollectionVehicleCard";
 import RideFilterPanel from "./RideFilterPanel";
+import BookingModal from "../Booking/Bookingmodal ";
 
 const ITEMS_PER_PAGE = 6;
 const TOTAL_PAGES = 20;
@@ -32,6 +33,9 @@ export default function RideCollectionSection() {
   const [activeTab, setActiveTab] = useState<VehicleCategory>("cars");
   const [sortBy, setSortBy] = useState("recommended");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
   const filtered = VEHICLES.filter((v) => v.category === activeTab);
 
@@ -166,6 +170,10 @@ export default function RideCollectionSection() {
                   <RideCollectionVehicleCard
                     key={vehicle.id}
                     vehicle={vehicle}
+                    onChoose={(v) => {
+                      setSelectedVehicle(v);
+                      setModalOpen(true);
+                    }}
                   />
                 ))}
               </div>
@@ -226,6 +234,15 @@ export default function RideCollectionSection() {
           </div>
         </div>
       </div>
+
+      <BookingModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSearch={(state) => {
+          console.log("Booking for:", selectedVehicle?.name, state);
+          setModalOpen(false);
+        }}
+      />
     </section>
   );
 }

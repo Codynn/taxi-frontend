@@ -9,13 +9,7 @@ import {
   SheetClose,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import Navbar from "@/components/layout/navbar";
 import VehicleTabs from "@/components/vehicles/VehicleTabs";
 import RideCollectionVehicleCard from "@/components/rides/RideCollectionVehicleCard";
@@ -39,7 +33,6 @@ export default function ChooseRidePage() {
     DEFAULT_BOOKING_STATE,
   );
   const [activeTab, setActiveTab] = useState<VehicleCategory>("cars");
-  const [sortBy, setSortBy] = useState("recommended");
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = VEHICLES.filter((v) => v.category === activeTab);
@@ -142,7 +135,21 @@ export default function ChooseRidePage() {
           <div className="flex-1 min-w-0 flex flex-col gap-4">
             {paginated.length > 0 ? (
               paginated.map((vehicle) => (
-                <RideCollectionVehicleCard key={vehicle.id} vehicle={vehicle} />
+                <RideCollectionVehicleCard
+                  key={vehicle.id}
+                  vehicle={vehicle}
+                  onChoose={(v) => {
+                    sessionStorage.setItem(
+                      "selectedVehicle",
+                      JSON.stringify(v),
+                    );
+                    sessionStorage.setItem(
+                      "bookingState",
+                      JSON.stringify(bookingState),
+                    );
+                    router.push("/complete-booking");
+                  }}
+                />
               ))
             ) : (
               <div className="text-center py-16 text-gray-400 font-poppins text-sm">
