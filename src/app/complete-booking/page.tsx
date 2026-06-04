@@ -42,7 +42,7 @@ export default function CompleteBookingPage() {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-[#F5F5F5] font-poppins">
+      <div className="min-h-screen  font-poppins">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5 pt-25">
           {/* Go Back */}
           <button

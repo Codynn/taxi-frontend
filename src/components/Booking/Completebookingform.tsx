@@ -19,8 +19,7 @@ import {
   InputGroupText,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-
-// ── Zod Schema ───────────────────────────────────────────────────────────────
+import { Clock, Clock3 } from "lucide-react";
 
 export const completeBookingSchema = z.object({
   fullName: z
@@ -42,15 +41,18 @@ export const completeBookingSchema = z.object({
 
 export type CompleteBookingFormValues = z.infer<typeof completeBookingSchema>;
 
-// ── Props ─────────────────────────────────────────────────────────────────────
-
 interface CompleteBookingFormProps {
   onSubmit: (values: CompleteBookingFormValues) => void;
   isSubmitting?: boolean;
   defaultValues?: Partial<CompleteBookingFormValues>;
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
+// Shared input className — no border, no outline, bg matches card
+const inputCls =
+  "border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none shadow-none bg-white rounded-xl h-11 text-[14px] font-poppins placeholder:text-[#7E7E7E] [&:-webkit-autofill]:!bg-white [&:-webkit-autofill]:[box-shadow:0_0_0_1000px_white_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:#000000]";
+
+const textareaCls =
+  "border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none shadow-none bg-white rounded-xl h-11 text-[14px] font-poppins placeholder:text-[#7E7E7E] resize-none [&:-webkit-autofill]:!bg-white [&:-webkit-autofill]:[box-shadow:0_0_0_1000px_white_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:#000000]";
 
 export default function CompleteBookingForm({
   onSubmit,
@@ -72,7 +74,7 @@ export default function CompleteBookingForm({
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 font-poppins">
+    <div className="rounded-2xl bg-[#f5f5f5] p-6 font-poppins">
       <h2 className="text-[20px] font-bold text-black font-sora mb-5">
         Complete Your Booking Details
       </h2>
@@ -94,6 +96,7 @@ export default function CompleteBookingForm({
                   placeholder="Eg. John Doe"
                   aria-invalid={fieldState.invalid}
                   autoComplete="name"
+                  className={inputCls}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -119,6 +122,7 @@ export default function CompleteBookingForm({
                     inputMode="numeric"
                     maxLength={10}
                     aria-invalid={fieldState.invalid}
+                    className={inputCls}
                     onChange={(e) => {
                       const val = e.target.value
                         .replace(/\D/g, "")
@@ -146,6 +150,7 @@ export default function CompleteBookingForm({
                     placeholder="Eg. JohnDoe@gmail.com"
                     aria-invalid={fieldState.invalid}
                     autoComplete="email"
+                    className={inputCls}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -170,6 +175,7 @@ export default function CompleteBookingForm({
                     id="pickupLocation"
                     placeholder="Enter pickup location"
                     aria-invalid={fieldState.invalid}
+                    className={inputCls}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -184,12 +190,16 @@ export default function CompleteBookingForm({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="pickupTime">Pickup Time</FieldLabel>
-                  <Input
-                    {...field}
-                    id="pickupTime"
-                    placeholder="Eg. 11:00 AM"
-                    aria-invalid={fieldState.invalid}
-                  />
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      id="pickupTime"
+                      placeholder="Eg. 11:00 AM"
+                      aria-invalid={fieldState.invalid}
+                      className={`${inputCls} pr-10`}
+                    />
+                    <Clock3 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black pointer-events-none" />
+                  </div>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -212,6 +222,7 @@ export default function CompleteBookingForm({
                   id="dropoffLocation"
                   placeholder="Enter dropoff location"
                   aria-invalid={fieldState.invalid}
+                  className={inputCls}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -227,21 +238,14 @@ export default function CompleteBookingForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="message">Message</FieldLabel>
-                <InputGroup>
-                  <InputGroupTextarea
-                    {...field}
-                    id="message"
-                    placeholder="Enter your inquiry message here"
-                    rows={4}
-                    className="resize-none"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  <InputGroupAddon align="block-end">
-                    <InputGroupText className="tabular-nums">
-                      {(field.value ?? "").length}/500 characters
-                    </InputGroupText>
-                  </InputGroupAddon>
-                </InputGroup>
+                <InputGroupTextarea
+                  {...field}
+                  id="message"
+                  placeholder="Enter your inquiry message here"
+                  rows={4}
+                  aria-invalid={fieldState.invalid}
+                  className={textareaCls}
+                />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}

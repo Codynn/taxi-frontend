@@ -45,10 +45,8 @@ export default function VehicleSelectedCard({
         </h3>
       </div>
 
-      {/* ── ROW layout — same on all screen sizes ── */}
-      <div className="flex flex-row gap-4 px-4 pb-4">
-        {/* Left: Image */}
-        <div className="relative w-[160px] sm:w-[200px] shrink-0 rounded-xl overflow-hidden">
+      <div className="flex flex-col sm:flex-row gap-4 px-4 pb-4">
+        <div className="relative w-full sm:w-[200px] h-[200px] sm:h-auto shrink-0 overflow-hidden rounded-2xl">
           <Image
             src={imageUrl}
             alt={name}
@@ -56,7 +54,7 @@ export default function VehicleSelectedCard({
             className="object-cover object-center"
           />
           {/* Rating badge */}
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-white text-black text-[10px] font-poppins font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white text-black text-[10px] font-poppins font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
             <Image src="/vehicle/star.svg" alt="star" width={11} height={11} />
             <span>
               {rating.toFixed(1)} ({totalTrips}+ trips)
