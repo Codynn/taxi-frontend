@@ -25,6 +25,7 @@ import VehicleTabs from "../vehicles/VehicleTabs";
 import RideCollectionVehicleCard from "./RideCollectionVehicleCard";
 import RideFilterPanel from "./RideFilterPanel";
 import BookingModal from "../Booking/Bookingmodal ";
+import { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
 
 const ITEMS_PER_PAGE = 6;
 const TOTAL_PAGES = 20;
@@ -35,7 +36,8 @@ export default function RideCollectionSection() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicle, setSelectedVehicle] =
+    useState<SelectedVehicle | null>(null);
 
   const filtered = VEHICLES.filter((v) => v.category === activeTab);
 

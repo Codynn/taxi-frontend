@@ -15,23 +15,21 @@ import VehicleTabs from "@/components/vehicles/VehicleTabs";
 import RideCollectionVehicleCard from "@/components/rides/RideCollectionVehicleCard";
 import RideFilterPanel from "@/components/rides/RideFilterPanel";
 import BookingSummaryBar from "@/components/Booking/BookingSummaryBar";
-import {
-  VEHICLES,
-  VEHICLE_TABS,
-  SORT_OPTIONS,
-} from "@/constants/features/vehicle.constants";
+import { VEHICLES, VEHICLE_TABS } from "@/constants/features/vehicle.constants";
 import { DEFAULT_BOOKING_STATE } from "@/constants/booking.constants";
 import type { VehicleCategory } from "@/types/features/vehicle.types";
 import type { BookingFormState } from "@/types/booking.types";
+import { useBookingStore } from "@/hooks/useBookingStore";
 
 const ITEMS_PER_PAGE = 6;
 const TOTAL_PAGES = 20;
 
 export default function ChooseRidePage() {
   const router = useRouter();
-  const [bookingState, setBookingState] = useState<BookingFormState>(
-    DEFAULT_BOOKING_STATE,
-  );
+
+  const { bookingState, setBookingState, setSelectedVehicle } =
+    useBookingStore();
+
   const [activeTab, setActiveTab] = useState<VehicleCategory>("cars");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -74,13 +72,15 @@ export default function ChooseRidePage() {
         {/* Go Back */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-[16px] font-poppins text-black  transition-colors w-fit cursor-pointer"
+          className="flex items-center gap-2 text-[16px] font-poppins text-black transition-colors w-fit cursor-pointer"
         >
           <ArrowLeft className="w-10 h-10 text-[#FEA900] bg-[#FEF1D8] p-2 rounded-full" />
           Go Back
         </button>
+
         {/* Summary bar */}
         <BookingSummaryBar state={bookingState} onUpdate={setBookingState} />
+
         {/* Title */}
         <h2 className="text-[20px] md:text-[24px] font-semibold font-sora text-black text-center">
           Available Rides for Your Trip
@@ -115,6 +115,7 @@ export default function ChooseRidePage() {
             </SheetContent>
           </Sheet>
         </div>
+
         {/* Tabs */}
         <VehicleTabs
           tabs={VEHICLE_TABS}
@@ -124,6 +125,7 @@ export default function ChooseRidePage() {
             setCurrentPage(1);
           }}
         />
+
         {/* Body: filter + cards */}
         <div className="flex gap-6 items-start">
           {/* Desktop filter */}
@@ -138,15 +140,8 @@ export default function ChooseRidePage() {
                 <RideCollectionVehicleCard
                   key={vehicle.id}
                   vehicle={vehicle}
-                  onChoose={(v) => {
-                    sessionStorage.setItem(
-                      "selectedVehicle",
-                      JSON.stringify(v),
-                    );
-                    sessionStorage.setItem(
-                      "bookingState",
-                      JSON.stringify(bookingState),
-                    );
+                  onChoose={(selected) => {
+                    setSelectedVehicle(selected); // ← zustand
                     router.push("/complete-booking");
                   }}
                 />

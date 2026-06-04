@@ -3,10 +3,11 @@
 import Image from "next/image";
 import type { Vehicle } from "@/types/features/vehicle.types";
 import VehicleFeatureBadge from "../vehicles/VehicleFeatureBadge";
+import { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
 
 interface RideCollectionVehicleCardProps {
   vehicle: Vehicle;
-  onChoose?: (vehicle: Vehicle) => void;
+  onChoose?: (vehicle: SelectedVehicle) => void;
 }
 
 export default function RideCollectionVehicleCard({
@@ -64,7 +65,19 @@ export default function RideCollectionVehicleCard({
               </p>
             </div>
             <button
-              onClick={() => onChoose?.(vehicle)} // ← same as desktop now
+              onClick={() =>
+                onChoose?.({
+                  id: vehicle.id,
+                  name: vehicle.name,
+                  plateNumber: vehicle.plateNumber,
+                  imageUrl: `/${vehicle.image}`,
+                  rating: vehicle.rating,
+                  totalTrips: vehicle.trips,
+                  startingPrice: vehicle.startingPrice,
+                  currency: vehicle.currency,
+                  features: vehicle.features,
+                })
+              }
               className="bg-[#FEA800] text-black text-[13px] font-medium font-poppins px-5 py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"
             >
               Choose Vehicle
@@ -111,7 +124,19 @@ export default function RideCollectionVehicleCard({
               </p>
             </div>
             <button
-              onClick={() => onChoose?.(vehicle)}
+              onClick={() =>
+                onChoose?.({
+                  id: vehicle.id,
+                  name: vehicle.name,
+                  plateNumber: vehicle.plateNumber,
+                  imageUrl: `/${vehicle.image}`,
+                  rating: vehicle.rating,
+                  totalTrips: vehicle.trips,
+                  startingPrice: vehicle.startingPrice,
+                  currency: vehicle.currency,
+                  features: vehicle.features,
+                })
+              }
               className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-7 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"
             >
               Choose Vehicle
