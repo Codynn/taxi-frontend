@@ -18,6 +18,7 @@ import type {
 import DatePickerPopup from "./Datepickerpopup";
 import PassengersPopup from "./Passengerspopup";
 import DestinationPopup from "./Destinationpopup";
+import { useRouter } from "next/navigation";
 
 interface BookingModalProps {
   open: boolean;
@@ -84,6 +85,8 @@ export default function BookingModal({
     DEFAULT_BOOKING_STATE,
   );
 
+  const router = useRouter();
+
   // Only one popup open at a time
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
@@ -119,7 +122,7 @@ export default function BookingModal({
       }}
     >
       {/* Modal */}
-      <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-none sm:h-auto overflow-hidden">
+      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-none sm:h-auto overflow-hidden">
         {/* ── Tabs ── */}
         <div className="flex bg-[#F5F5F5] rounded-t-3xl overflow-hidden shrink-0">
           {TRIP_TABS.map((tab, i) => {
@@ -279,6 +282,7 @@ export default function BookingModal({
             onClick={() => {
               onSearch?.(formState);
               onClose();
+              router.push("/choose-ride");
             }}
             className="py-4 rounded-full bg-[#FEA800] text-black text-sm font-semibold font-poppins hover:bg-[#FEA800]/90 transition-colors shadow-sm"
           >

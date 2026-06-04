@@ -25,3 +25,11 @@ export interface BookingFormState {
   dateRange: DateRange;
   passengers: Passengers;
 }
+
+export interface BookingSearchState {
+  tripType: TripType;
+  driverType: DriverType;
+  destination: { from: string; to: string };
+  dateRange: { pickup: string; return: string };
+  passengers: { adults: number; children: number };
+}
