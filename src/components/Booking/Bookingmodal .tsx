@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
+
 import {
   TRIP_TABS,
   DEFAULT_BOOKING_STATE,
@@ -75,6 +76,68 @@ function CustomRadioGroup<T extends string>({
   );
 }
 
+// ── Loading Overlay ────────────────────────────────────────────────────────
+
+function SearchLoadingOverlay() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<any>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLottie() {
+      try {
+        const lottie = (await import("lottie-web")).default;
+        if (cancelled || !containerRef.current) return;
+
+        animRef.current = lottie.loadAnimation({
+          container: containerRef.current,
+          renderer: "svg",
+          loop: true,
+          autoplay: true,
+          path: "/animations/car.json",
+        });
+      } catch (e) {
+        console.error("Lottie failed to load", e);
+      }
+    }
+
+    loadLottie();
+    return () => {
+      cancelled = true;
+      animRef.current?.destroy();
+    };
+  }, []);
+
+  return (
+    <div className="absolute inset-0 z-10 bg-white rounded-3xl flex flex-col items-center justify-center gap-6 px-6">
+      {/* Lottie animation */}
+      <div ref={containerRef} className="w-full max-w-sm min-h-[180px]" />
+
+      {/* Text */}
+      <div className="text-center">
+        <p className="text-gray-700 text-base font-medium font-poppins leading-relaxed">
+          Please wait while we prepare your journey and find the best available
+          rides for you...
+        </p>
+      </div>
+
+      {/* Animated dots */}
+      <div className="flex items-center gap-2">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="w-2 h-2 rounded-full bg-[#FEA800] animate-bounce"
+            style={{ animationDelay: `${i * 0.15}s` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Modal ─────────────────────────────────────────────────────────────
+
 export default function BookingModal({
   open,
   onClose,
@@ -84,10 +147,10 @@ export default function BookingModal({
   const [formState, setFormState] = useState<BookingFormState>(
     DEFAULT_BOOKING_STATE,
   );
+  const [isSearching, setIsSearching] = useState(false);
 
   const router = useRouter();
 
-  // Only one popup open at a time
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
@@ -107,10 +170,23 @@ export default function BookingModal({
     };
   }, [open]);
 
-  // Close all popups when modal closes
   useEffect(() => {
-    if (!open) setActivePopup(null);
+    if (!open) {
+      setActivePopup(null);
+      setIsSearching(false);
+    }
   }, [open]);
+
+  const handleSearchRide = () => {
+    onSearch?.(formState);
+    setIsSearching(true);
+
+    setTimeout(() => {
+      setIsSearching(false);
+      onClose();
+      router.push("/choose-ride");
+    }, 2000);
+  };
 
   if (!open) return null;
 
@@ -118,11 +194,14 @@ export default function BookingModal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget && !isSearching) onClose();
       }}
     >
       {/* Modal */}
-      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-none sm:h-auto overflow-hidden">
+      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-none sm:h-auto overflow-hidden">
+        {/* ── Loading overlay (sits on top when searching) ── */}
+        {isSearching && <SearchLoadingOverlay />}
+
         {/* ── Tabs ── */}
         <div className="flex bg-[#F5F5F5] rounded-t-3xl overflow-hidden shrink-0">
           {TRIP_TABS.map((tab, i) => {
@@ -153,7 +232,7 @@ export default function BookingModal({
           })}
         </div>
 
-        {/* ── Body — scrollable on mobile only ── */}
+        {/* ── Body ── */}
         <div className="overflow-y-auto sm:overflow-visible flex-1 sm:flex-none">
           <div className="px-5 py-5 flex flex-col gap-4">
             {activeTab === "custom" ? (
@@ -162,7 +241,7 @@ export default function BookingModal({
               </p>
             ) : (
               <>
-                {/* Radio row — single row on desktop, wraps on mobile */}
+                {/* Radio row */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-3">
                   <CustomRadioGroup<TripType>
                     options={TRIP_TYPES}
@@ -171,7 +250,6 @@ export default function BookingModal({
                       setFormState((s) => ({ ...s, tripType: v }))
                     }
                   />
-                  {/* Divider — vertical on desktop, horizontal on mobile */}
                   <div className="sm:w-px sm:h-5 sm:bg-gray-300 w-full h-px bg-gray-100" />
                   <CustomRadioGroup<DriverType>
                     options={DRIVER_TYPES}
@@ -261,7 +339,9 @@ export default function BookingModal({
                     </div>
                     <ChevronDown
                       size={16}
-                      className={`text-gray-400 shrink-0 transition-transform duration-200 ${activePopup === "pass" ? "rotate-180" : ""}`}
+                      className={`text-gray-400 shrink-0 transition-transform duration-200 ${
+                        activePopup === "pass" ? "rotate-180" : ""
+                      }`}
                     />
                   </button>
                 </div>
@@ -274,23 +354,22 @@ export default function BookingModal({
         <div className="px-5 pb-6 pt-3 grid grid-cols-2 gap-3 shrink-0 bg-white">
           <button
             onClick={onClose}
-            className="py-4 rounded-full border border-gray-200 bg-gray-100 text-gray-700 text-sm font-semibold font-poppins hover:bg-gray-200 transition-colors"
+            disabled={isSearching}
+            className="py-4 rounded-full border border-gray-200 bg-gray-100 text-gray-700 text-sm font-semibold font-poppins hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              onSearch?.(formState);
-              onClose();
-              router.push("/choose-ride");
-            }}
-            className="py-4 rounded-full bg-[#FEA800] text-black text-sm font-semibold font-poppins hover:bg-[#FEA800]/90 transition-colors shadow-sm"
+            onClick={handleSearchRide}
+            disabled={isSearching}
+            className="py-4 rounded-full bg-[#FEA800] text-black text-sm font-semibold font-poppins hover:bg-[#FEA800]/90 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Search Ride
+            {isSearching ? "Searching..." : "Search Ride"}
           </button>
         </div>
       </div>
 
+      {/* ── Sub-popups ── */}
       {activePopup === "dest" && (
         <div
           className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0 bg-black/30"

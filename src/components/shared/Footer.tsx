@@ -139,22 +139,23 @@ export default function Footer() {
           </div>
 
           <div className="mt-10 relative flex max-w-7xl w-full px-6 lg:px-0">
-           <p className="text-[80px] sm:text-[90px] lg:text-[130px] font-extrabold font-luckiest-guy text-[#ffffff]/10 leading-none tracking-wider select-none uppercase">
-  {FOOTER_TAGLINE}
-</p>
+            <p className="text-[80px] sm:text-[90px] lg:text-[130px] font-extrabold font-luckiest-guy text-[#ffffff]/10 leading-none tracking-wider select-none uppercase">
+              {FOOTER_TAGLINE}
+            </p>
           </div>
 
           <div className="mt-4 border-t border-white/50 pt-5 flex items-center justify-center gap-2">
             <p className="text-[#FFFFFF] text-[16px] font-poppins">
               {FOOTER_COPYRIGHT}
             </p>
-            <Image
-              src="/footer/void.svg"
-              alt="Void NP"
-              width={56}
-              height={40}
-
-            />
+            <Link href={"https://voidnepal.com.np/"}>
+              <Image
+                src="/footer/void.svg"
+                alt="Void NP"
+                width={56}
+                height={40}
+              />
+            </Link>
           </div>
         </div>
       </div>
