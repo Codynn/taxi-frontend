@@ -33,3 +33,57 @@ export interface BookingSearchState {
   dateRange: { pickup: string; return: string };
   passengers: { adults: number; children: number };
 }
+
+export type BookingStatus = "Completed" | "Cancelled" | "Pending";
+
+export interface BookingVehicleFeature {
+  label: string;
+  icon: string;
+}
+
+export interface BookingVehicle {
+  name: string;
+  plateNumber: string;
+  image: string;
+  features: BookingVehicleFeature[];
+}
+
+export interface BookingRecord {
+  id: string;
+  bookingNumber: string;
+  status: BookingStatus;
+  from: string;
+  to: string;
+  pickup: string;
+  return: string;
+  vehicle: BookingVehicle;
+  paid: number;
+  currency: string;
+  tripType: TripTab;
+}
+
+export interface BookingVehicleFeature {
+  label: string;
+  icon: string;
+}
+
+export interface BookingVehicle {
+  name: string;
+  plateNumber: string;
+  image: string;
+  features: BookingVehicleFeature[];
+}
+
+export interface BookingRecord {
+  id: string;
+  bookingNumber: string;
+  status: BookingStatus;
+  from: string;
+  to: string;
+  pickup: string;
+  return: string;
+  vehicle: BookingVehicle;
+  paid: number;
+  currency: string;
+  tripType: TripTab;
+}

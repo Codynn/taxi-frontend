@@ -35,24 +35,43 @@ export default function HowItWorksSection() {
   const [before, after] = heading.split(highlightedWord);
 
   return (
-    <section className="bg-[#FEA800]/10 lg:pt-50 pt-85 pb-0">
+    <section className="bg-[#FEA800]/10 lg:pt-50 pt-90 pb-0">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center pt-6">
-          <h2 className="text-3xl md:text-[48px] font-semibold font-sora text-[#000000]">
+        <div className="relative mb-8 md:mb-10 text-center pt-10">
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={320}
+            height={150}
+            className="absolute top-10 left-[48%] -translate-x-1/2 z-0 md:block hidden"
+            aria-hidden
+          />
+
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={200}
+            height={150}
+            className="absolute top-10 left-[62%] -translate-x-1/2 z-0 min-[423px]:block hidden"
+            aria-hidden
+          />
+
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={150}
+            height={150}
+            className="absolute top-10 left-[40%] -translate-x-1/2 z-0 min-[424px]:max-[767px]:block"
+            aria-hidden
+          />
+
+          <h2 className="relative z-10 md:text-[48px] text-[28px]  font-semibold font-sora text-[#000000]">
             {before}
-            <span className="relative inline-block px-2">
-              <Image
-                src="/about/rectangle.svg"
-                alt=""
-                fill
-                className="absolute inset-0 object-fill z-0"
-                aria-hidden
-              />
-              <span className="relative z-10">{highlightedWord}</span>
-            </span>
+            <span className="px-2 rounded-sm">{highlightedWord}</span>
             {after}
           </h2>
-          <p className="mt-4 text-sm md:text-[16px] text-[#000000]/65 font-poppins max-w-4xl mx-auto leading-relaxed">
+
+          <p className="relative z-10 mt-4 text-sm md:text-[16px] text-[#000000]/65 font-poppins max-w-4xl mx-auto leading-relaxed">
             {description}
           </p>
         </div>
