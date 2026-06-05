@@ -13,6 +13,7 @@ import {
 import type { VehicleCategory } from "@/types/features/vehicle.types";
 import VehicleTabs from "../vehicles/VehicleTabs";
 import VehicleCard from "../vehicles/VehicleCard";
+import Image from "next/image";
 
 const SWIPER_BREAKPOINTS = {
   0: { slidesPerView: 1.2, spaceBetween: 16 },
@@ -34,17 +35,42 @@ export default function RidesReadySection() {
   return (
     <section className="bg-white py-16 md:py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-[48px] font-semibold font-sora text-gray-900 leading-tight">
-            {heading}{" "}
-            <span className="bg-[#FEA800] px-2 rounded-sm">
-              {highlightedWord}
-            </span>
+        <div className="relative text-center pt-10">
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={350}
+            height={50}
+            className="absolute top-10 left-[60%] -translate-x-1/2 z-0 lg:block hidden"
+            aria-hidden
+          />
+
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={150}
+            height={150}
+            className="absolute top-10 left-[44%]  z-0 lg:hidden md:hidden block"
+            aria-hidden
+          />
+
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={250}
+            height={150}
+            className="absolute top-10 left-[45%]  z-0 lg:hidden hidden sm:block"
+            aria-hidden
+          />
+
+          <h2 className="relative z-10 mt-2 text-[20px] md:text-[32px] lg:text-[48px] font-semibold font-sora text-[#000000]">
+            {heading}
+            <span className="px-2 rounded-sm">{highlightedWord}</span>
           </h2>
-          <p className="mt-3 text-sm md:text-base text-gray-500 font-poppins max-w-xl mx-auto">
-            {description}
-          </p>
         </div>
+        <p className="relative text-center z-10 text-[14px] lg:text-[16px] text-[#000000]/65 font-poppins max-w-4xl mx-auto leading-relaxed">
+          {description}
+        </p>
 
         <div className="flex items-center justify-between mb-8 gap-4">
           <div className="flex-1 min-w-0">
