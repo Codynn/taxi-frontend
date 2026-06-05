@@ -61,16 +61,16 @@ export default function ForgotPasswordModal({ onClose }: Props) {
         <div className="flex min-h-[480px]">
           <div className="hidden md:flex flex-col items-start justify-between w-[45%] bg-[#F0F4FF] p-6">
             <Image
-              src="/header/dajubhaipharmacy.png"
+              src="/logo/logo.svg"
               alt="Daju Bhai Pharmacy"
-              width={360}
+              width={200}
               height={200}
-              className="h-30 w-auto"
+              className="h-20 w-auto"
             />
             <div className="flex-1 flex items-center justify-center w-full py-4">
               <Image
-                src="/footer/Pharmacist.svg"
-                alt="Pharmacy illustration"
+                src="ride/jeep.svg"
+                alt="taxi"
                 width={340}
                 height={320}
                 className="w-full max-w-[320px] object-contain"
@@ -81,7 +81,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
           <div className="flex flex-col flex-1 px-6 md:px-8 py-6 md:py-8 bg-white relative">
             <div className="flex items-center justify-between mb-5 md:mb-0">
               <Image
-                src="/header/dajubhaipharmacy.png"
+                src="/logo/logo.svg"
                 alt="Daju Bhai Pharmacy"
                 width={140}
                 height={120}
@@ -102,7 +102,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
                   <button
                     type="button"
                     onClick={() => switchView("login")}
-                    className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#294F98] transition-colors mb-4"
+                    className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#FEA800] transition-colors mb-4"
                   >
                     <ArrowLeft size={14} /> Back to login
                   </button>
@@ -134,7 +134,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
                               id="forgot-email"
                               type="email"
                               placeholder="you@example.com"
-                              className="pr-10 rounded-xl border-gray-200 bg-gray-50 focus-visible:ring-[#294F98] focus-visible:border-[#294F98] h-11"
+                              className="pr-10 rounded-xl border-gray-200 bg-gray-50 focus-visible:ring-[#FEA800] focus-visible:border-[#FEA800] h-11"
                             />
                             <Mail
                               size={16}
@@ -152,7 +152,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
                   <Button
                     type="submit"
                     disabled={isPending}
-                    className="w-full h-11 rounded-xl bg-[#294F98] hover:bg-[#1e3d7a] text-white font-semibold text-[14px] transition-colors disabled:opacity-60"
+                    className="w-full h-11 rounded-xl bg-[#FEA800] hover:bg-[#FEA801] text-white font-semibold text-[14px] transition-colors disabled:opacity-60"
                   >
                     {isPending ? "Sending…" : "Send Temporary Password"}
                   </Button>
@@ -162,7 +162,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
                     <button
                       type="button"
                       onClick={() => switchView("login")}
-                      className="text-[#294F98] font-semibold hover:underline"
+                      className="text-[#FEA800] font-semibold hover:underline"
                     >
                       Sign in
                     </button>
@@ -188,7 +188,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
                       {sentEmail}
                     </span>
                     . Use it to log in, then go to{" "}
-                    <span className="font-semibold text-[#294F98]">
+                    <span className="font-semibold text-[#FEA800]">
                       My Profile → Change Password
                     </span>{" "}
                     to set a new secure password immediately.
@@ -209,7 +209,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
                 <Button
                   type="button"
                   onClick={goToLogin}
-                  className="w-full max-w-sm h-11 rounded-xl bg-[#294F98] hover:bg-[#1e3d7a] text-white font-semibold text-[14px]"
+                  className="w-full max-w-sm h-11 rounded-xl bg-[#FEA800] hover:bg-[#FEA801] text-white font-semibold text-[14px]"
                 >
                   Login with Temporary Password
                 </Button>
@@ -220,7 +220,7 @@ export default function ForgotPasswordModal({ onClose }: Props) {
                     form.reset();
                     setStep("email");
                   }}
-                  className="text-[13px] text-gray-400 hover:text-[#294F98] transition-colors"
+                  className="text-[13px] text-gray-400 hover:text-[#FEA800] transition-colors"
                 >
                   Didn&apos;t receive the email? Try again
                 </button>
