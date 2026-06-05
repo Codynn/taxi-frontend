@@ -38,10 +38,17 @@ export default function HowItWorksSection() {
     <section className="bg-[#FEA800]/10 lg:pt-50 pt-85 pb-0">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center pt-6">
-          <h2 className="text-3xl md:text-[48px] font-semibold font-sora text-[#000000] ">
+          <h2 className="text-3xl md:text-[48px] font-semibold font-sora text-[#000000]">
             {before}
-            <span className="bg-[#FEA800] px-2 rounded-sm">
-              {highlightedWord}
+            <span className="relative inline-block px-2">
+              <Image
+                src="/about/rectangle.svg"
+                alt=""
+                fill
+                className="absolute inset-0 object-fill z-0"
+                aria-hidden
+              />
+              <span className="relative z-10">{highlightedWord}</span>
             </span>
             {after}
           </h2>

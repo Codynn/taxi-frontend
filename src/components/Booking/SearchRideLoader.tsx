@@ -55,7 +55,7 @@ export default function SearchRideLoader({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40 px-4">
+    <div className="fixed inset-0 z-[999] flex items-center justify-center  px-4">
       <div className="bg-white rounded-3xl w-full max-w-lg px-8 pt-10 pb-10 flex flex-col items-center gap-6 shadow-2xl">
         {/* Lottie animation */}
         <div ref={containerRef} className="w-full max-w-sm min-h-[180px]" />

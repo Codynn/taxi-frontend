@@ -182,7 +182,6 @@ export default function BookingForm({
     return (
       <>
         <div className="flex flex-col gap-4">
-          {/* ── Radio row ── */}
           <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
             <CustomRadioGroup<TripType>
               options={TRIP_TYPES}
@@ -197,7 +196,6 @@ export default function BookingForm({
             />
           </div>
 
-          {/* MOBILE layout */}
           <div className="flex flex-col gap-3 lg:hidden">
             <div
               ref={destRef}
@@ -291,7 +289,6 @@ export default function BookingForm({
             </button>
           </div>
 
-          {/* DESKTOP layout */}
           <div className="hidden lg:flex items-stretch border border-gray-200 rounded-xl overflow-hidden">
             <div
               ref={destRef}
@@ -380,13 +377,11 @@ export default function BookingForm({
             </button>
           </div>
 
-          {/* ── Custom trip note — only shown on custom tab, below the form ── */}
           <p className="text-sm text-gray-500 font-poppins leading-relaxed mt-2">
             {CUSTOM_TRIP_NOTE}
           </p>
         </div>
 
-        {/* Dropdowns */}
         <PortalDropdown
           anchorRef={destRef as React.RefObject<HTMLElement>}
           open={destOpen}
@@ -438,7 +433,6 @@ export default function BookingForm({
   return (
     <>
       <div className="flex flex-col gap-4">
-        {/* ── Radio row ── */}
         <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
           <CustomRadioGroup<TripType>
             options={TRIP_TYPES}
@@ -454,7 +448,6 @@ export default function BookingForm({
         </div>
 
         <div className="flex flex-col gap-3 lg:hidden">
-          {/* From / To combined card */}
           <div
             ref={destRef}
             className="border border-gray-200 rounded-2xl overflow-hidden bg-white"
@@ -469,7 +462,6 @@ export default function BookingForm({
               </p>
             </button>
 
-            {/* Divider with swap icon */}
             <div className="relative flex items-center px-4">
               <div className="flex-1 h-px bg-gray-200" />
               <div className="mx-3 w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
@@ -489,7 +481,6 @@ export default function BookingForm({
             </button>
           </div>
 
-          {/* Pickup + Return */}
           <div
             className={`grid border border-gray-200 rounded-2xl gap-3 grid-cols-2`}
           >
@@ -523,7 +514,6 @@ export default function BookingForm({
             </div>
           </div>
 
-          {/* Passengers */}
           <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
             <button
               ref={passRef}
@@ -545,15 +535,12 @@ export default function BookingForm({
             </button>
           </div>
 
-          {/* Search button — full width on mobile */}
           <button className="w-full bg-[#FEA800] text-black font-semibold text-sm font-poppins py-4 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm mt-1">
             Search Ride
           </button>
         </div>
 
-        {/* DESKTOP layout — visible from md up */}
         <div className="hidden lg:flex items-stretch border border-gray-200 rounded-xl overflow-hidden">
-          {/* From → To */}
           <div
             ref={destRef}
             className="flex items-stretch"
@@ -586,7 +573,6 @@ export default function BookingForm({
 
           <div className="w-px bg-gray-200 shrink-0" />
 
-          {/* Pickup */}
           <button
             ref={dateRef}
             onClick={() => setDateOpen(!dateOpen)}
@@ -599,7 +585,6 @@ export default function BookingForm({
             </p>
           </button>
 
-          {/* Return — round trip only */}
           {state.tripType === "round-trip" && (
             <>
               <div className="w-px bg-gray-200 shrink-0" />
@@ -618,7 +603,6 @@ export default function BookingForm({
 
           <div className="w-px bg-gray-200 shrink-0" />
 
-          {/* Passengers */}
           <button
             ref={passRef}
             onClick={() => setPassOpen(!passOpen)}
@@ -640,7 +624,6 @@ export default function BookingForm({
           </button>
         </div>
 
-        {/* Search button */}
         <div className="hidden lg:flex justify-end">
           <button
             onClick={() => setLoaderOpen(true)}
@@ -651,7 +634,6 @@ export default function BookingForm({
         </div>
       </div>
 
-      {/* ── Dropdowns (shared for both layouts) ── */}
       <PortalDropdown
         anchorRef={destRef as React.RefObject<HTMLElement>}
         open={destOpen}
