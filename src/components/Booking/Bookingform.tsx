@@ -17,6 +17,7 @@ import type {
 import DatePickerPopup from "./Datepickerpopup";
 import PassengersPopup from "./Passengerspopup";
 import DestinationPopup from "./Destinationpopup";
+import SearchRideLoader from "./SearchRideLoader";
 
 interface BookingFormProps {
   tripTab: TripTab;
@@ -168,6 +169,8 @@ export default function BookingForm({
   const [dateOpen, setDateOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
 
+  const [loaderOpen, setLoaderOpen] = useState(false);
+
   const destRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLButtonElement>(null);
   const passRef = useRef<HTMLButtonElement>(null);
@@ -177,11 +180,258 @@ export default function BookingForm({
 
   if (tripTab === "custom") {
     return (
-      <div className="py-4 px-1">
-        <p className="text-sm text-gray-500 font-poppins leading-relaxed">
-          {CUSTOM_TRIP_NOTE}
-        </p>
-      </div>
+      <>
+        <div className="flex flex-col gap-4">
+          {/* ── Radio row ── */}
+          <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
+            <CustomRadioGroup<TripType>
+              options={TRIP_TYPES}
+              value={state.tripType}
+              onChange={(v) => onChange({ ...state, tripType: v })}
+            />
+            <div className="hidden sm:block w-px h-5 bg-gray-200 mx-5" />
+            <CustomRadioGroup<DriverType>
+              options={DRIVER_TYPES}
+              value={state.driverType}
+              onChange={(v) => onChange({ ...state, driverType: v })}
+            />
+          </div>
+
+          {/* MOBILE layout */}
+          <div className="flex flex-col gap-3 lg:hidden">
+            <div
+              ref={destRef}
+              className="border border-gray-200 rounded-2xl overflow-hidden bg-white"
+            >
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
+              >
+                <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                  From
+                </p>
+                <p className="text-sm font-medium text-gray-800 font-poppins">
+                  {state.destination.from || "Enter pickup location"}
+                </p>
+              </button>
+              <div className="relative flex items-center px-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <div className="mx-3 w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
+                  <ArrowUpDown size={13} className="text-[#FEA800]" />
+                </div>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
+              >
+                <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
+                <p className="text-sm font-medium text-gray-800 font-poppins">
+                  {state.destination.to || "Enter drop location"}
+                </p>
+              </button>
+            </div>
+
+            <div className="grid border border-gray-200 rounded-2xl gap-3 grid-cols-2">
+              <div className="rounded-2xl bg-white overflow-hidden">
+                <button
+                  ref={dateRef}
+                  onClick={() => setDateOpen(!dateOpen)}
+                  className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                    Pickup
+                  </p>
+                  <p className="text-sm font-medium text-gray-800 font-poppins">
+                    {state.dateRange.pickup || "2083/02/07"}
+                  </p>
+                </button>
+              </div>
+              <div className="rounded-2xl bg-white overflow-hidden">
+                <button
+                  onClick={() => setDateOpen(true)}
+                  className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                    Return
+                  </p>
+                  <p className="text-sm font-medium text-gray-800 font-poppins">
+                    {state.dateRange.return || "2083/02/07"}
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
+              <button
+                ref={passRef}
+                onClick={() => setPassOpen(!passOpen)}
+                className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left flex items-center justify-between"
+              >
+                <div>
+                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                    Total Passengers
+                  </p>
+                  <p className="text-sm font-medium text-gray-800 font-poppins">
+                    {passengerLabel}
+                  </p>
+                </div>
+                <ChevronDown
+                  size={16}
+                  className={`text-gray-400 shrink-0 transition-transform duration-200 ${passOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+            </div>
+
+            <button
+              onClick={() => setLoaderOpen(true)}
+              className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
+            >
+              Search Ride
+            </button>
+          </div>
+
+          {/* DESKTOP layout */}
+          <div className="hidden lg:flex items-stretch border border-gray-200 rounded-xl overflow-hidden">
+            <div
+              ref={destRef}
+              className="flex items-stretch"
+              style={{ flex: "2 1 0%" }}
+            >
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="flex-1 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+              >
+                <p className="text-xs text-gray-400 font-poppins">From</p>
+                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                  {state.destination.from || "Enter pickup location"}
+                </p>
+              </button>
+              <div className="flex items-center justify-center px-3 bg-white shrink-0">
+                <ArrowRight size={16} className="text-[#FEA800]" />
+              </div>
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="flex-1 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+              >
+                <p className="text-xs text-gray-400 font-poppins">To</p>
+                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                  {state.destination.to || "Enter drop location"}
+                </p>
+              </button>
+            </div>
+
+            <div className="w-px bg-gray-200 shrink-0" />
+
+            <button
+              ref={dateRef}
+              onClick={() => setDateOpen(!dateOpen)}
+              className="px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+              style={{ flex: "1 1 0%" }}
+            >
+              <p className="text-xs text-gray-400 font-poppins">Pickup</p>
+              <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                {state.dateRange.pickup || "2083/02/07-08:00 AM"}
+              </p>
+            </button>
+
+            <div className="w-px bg-gray-200 shrink-0" />
+
+            <button
+              onClick={() => setDateOpen(true)}
+              className="px-5 py-3.5 hover:bg-gray-50 transition-colors text-left min-w-0"
+              style={{ flex: "1 1 0%" }}
+            >
+              <p className="text-xs text-gray-400 font-poppins">Return</p>
+              <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                {state.dateRange.return || "2083/02/07-08:00 AM"}
+              </p>
+            </button>
+
+            <div className="w-px bg-gray-200 shrink-0" />
+
+            <button
+              ref={passRef}
+              onClick={() => setPassOpen(!passOpen)}
+              className="flex items-center justify-between gap-2 px-5 py-3.5 hover:bg-gray-50 transition-colors text-left shrink-0"
+              style={{ minWidth: "160px" }}
+            >
+              <div className="min-w-0">
+                <p className="text-xs text-gray-400 font-poppins">
+                  Total Passengers
+                </p>
+                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                  {passengerLabel}
+                </p>
+              </div>
+              <ChevronDown
+                size={16}
+                className={`text-gray-400 shrink-0 transition-transform ${passOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+          </div>
+
+          <div className="hidden lg:flex justify-end">
+            <button
+              onClick={() => setLoaderOpen(true)}
+              className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
+            >
+              Search Ride
+            </button>
+          </div>
+
+          {/* ── Custom trip note — only shown on custom tab, below the form ── */}
+          <p className="text-sm text-gray-500 font-poppins leading-relaxed mt-2">
+            {CUSTOM_TRIP_NOTE}
+          </p>
+        </div>
+
+        {/* Dropdowns */}
+        <PortalDropdown
+          anchorRef={destRef as React.RefObject<HTMLElement>}
+          open={destOpen}
+          onClose={() => setDestOpen(false)}
+          align="left"
+          minWidth={460}
+        >
+          <DestinationPopup
+            open={destOpen}
+            onClose={() => setDestOpen(false)}
+            onSelect={(dest) => onChange({ ...state, destination: dest })}
+            inline
+          />
+        </PortalDropdown>
+        <PortalDropdown
+          anchorRef={dateRef as React.RefObject<HTMLElement>}
+          open={dateOpen}
+          onClose={() => setDateOpen(false)}
+          align="left"
+          minWidth={600}
+        >
+          <DatePickerPopup
+            open={dateOpen}
+            onClose={() => setDateOpen(false)}
+            dateRange={state.dateRange}
+            onConfirm={(range) => onChange({ ...state, dateRange: range })}
+            inline
+          />
+        </PortalDropdown>
+        <PortalDropdown
+          anchorRef={passRef as React.RefObject<HTMLElement>}
+          open={passOpen}
+          onClose={() => setPassOpen(false)}
+          align="right"
+          minWidth={320}
+        >
+          <PassengersPopup
+            open={passOpen}
+            onClose={() => setPassOpen(false)}
+            passengers={state.passengers}
+            onConfirm={(p) => onChange({ ...state, passengers: p })}
+            inline
+          />
+        </PortalDropdown>
+      </>
     );
   }
 
@@ -203,13 +453,6 @@ export default function BookingForm({
           />
         </div>
 
-        {/* ── Fields ──
-            Mobile:  stacked vertically, each in its own bordered card
-            Desktop: single horizontal bar with dividers
-        ── */}
-
-        {/* MOBILE layout — visible below md */}
-        {/* MOBILE layout — visible below md */}
         <div className="flex flex-col gap-3 lg:hidden">
           {/* From / To combined card */}
           <div
@@ -399,7 +642,10 @@ export default function BookingForm({
 
         {/* Search button */}
         <div className="hidden lg:flex justify-end">
-          <button className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm">
+          <button
+            onClick={() => setLoaderOpen(true)}
+            className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
+          >
             Search Ride
           </button>
         </div>
@@ -452,6 +698,11 @@ export default function BookingForm({
           inline
         />
       </PortalDropdown>
+
+      <SearchRideLoader
+        open={loaderOpen}
+        onClose={() => setLoaderOpen(false)}
+      />
     </>
   );
 }

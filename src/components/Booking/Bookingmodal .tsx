@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 
 import {
@@ -20,6 +20,7 @@ import DatePickerPopup from "./Datepickerpopup";
 import PassengersPopup from "./Passengerspopup";
 import DestinationPopup from "./Destinationpopup";
 import { useRouter } from "next/navigation";
+import SearchRideLoader from "./SearchRideLoader";
 
 interface BookingModalProps {
   open: boolean;
@@ -76,77 +77,14 @@ function CustomRadioGroup<T extends string>({
   );
 }
 
-function SearchLoadingOverlay() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const animRef = useRef<any>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadLottie() {
-      try {
-        const lottie = (await import("lottie-web")).default;
-        if (cancelled || !containerRef.current) return;
-
-        animRef.current = lottie.loadAnimation({
-          container: containerRef.current,
-          renderer: "svg",
-          loop: true,
-          autoplay: true,
-          path: "/animations/car.json",
-        });
-      } catch (e) {
-        console.error("Lottie failed to load", e);
-      }
-    }
-
-    loadLottie();
-    return () => {
-      cancelled = true;
-      animRef.current?.destroy();
-    };
-  }, []);
-
-  return (
-    <div className="absolute inset-0 z-10 bg-white rounded-3xl flex flex-col items-center justify-center gap-6 px-6">
-      <div ref={containerRef} className="w-full max-w-sm min-h-[180px]" />
-
-      {/* Text */}
-      <div className="text-center">
-        <p className="text-gray-700 text-base font-medium font-poppins leading-relaxed">
-          Please wait while we prepare your journey and find the best available
-          rides for you...
-        </p>
-      </div>
-
-      {/* Animated dots */}
-      <div className="flex items-center gap-2">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="w-2 h-2 rounded-full bg-[#FEA800] animate-bounce"
-            style={{ animationDelay: `${i * 0.15}s` }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── Main Modal ─────────────────────────────────────────────────────────────
-
-export default function BookingModal({
-  open,
-  onClose,
-  onSearch,
-}: BookingModalProps) {
+export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [activeTab, setActiveTab] = useState<TripTab>("long");
   const [formState, setFormState] = useState<BookingFormState>(
     DEFAULT_BOOKING_STATE,
   );
   const [isSearching, setIsSearching] = useState(false);
 
-  const router = useRouter();
+  const [loaderOpen, setLoaderOpen] = useState(false);
 
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
@@ -174,17 +112,6 @@ export default function BookingModal({
     }
   }, [open]);
 
-  const handleSearchRide = () => {
-    onSearch?.(formState);
-    setIsSearching(true);
-
-    setTimeout(() => {
-      setIsSearching(false);
-      onClose();
-      router.push("/choose-ride");
-    }, 2000);
-  };
-
   if (!open) return null;
 
   return (
@@ -194,12 +121,7 @@ export default function BookingModal({
         if (e.target === e.currentTarget && !isSearching) onClose();
       }}
     >
-      {/* Modal */}
       <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-none sm:h-auto overflow-hidden">
-        {/* ── Loading overlay (sits on top when searching) ── */}
-        {isSearching && <SearchLoadingOverlay />}
-
-        {/* ── Tabs ── */}
         <div className="flex bg-[#F5F5F5] rounded-t-3xl overflow-hidden shrink-0">
           {TRIP_TABS.map((tab, i) => {
             const isActive = activeTab === tab.value;
@@ -229,16 +151,10 @@ export default function BookingModal({
           })}
         </div>
 
-        {/* ── Body ── */}
         <div className="overflow-y-auto sm:overflow-visible flex-1 sm:flex-none">
           <div className="px-5 py-5 flex flex-col gap-4">
             {activeTab === "custom" ? (
-              <p className="text-sm text-gray-500 font-poppins leading-relaxed py-2">
-                {CUSTOM_TRIP_NOTE}
-              </p>
-            ) : (
               <>
-                {/* Radio row */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-3">
                   <CustomRadioGroup<TripType>
                     options={TRIP_TYPES}
@@ -257,7 +173,110 @@ export default function BookingModal({
                   />
                 </div>
 
-                {/* From / To */}
+                <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
+                  <button
+                    onClick={() => setActivePopup("dest")}
+                    className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                      From
+                    </p>
+                    <p className="text-sm font-medium text-gray-800 font-poppins">
+                      {formState.destination.from || "Enter pickup location"}
+                    </p>
+                  </button>
+                  <div className="relative flex items-center px-4">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <button className="mx-3 w-8 h-8 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
+                      <ArrowUpDown size={14} className="text-[#FEA800]" />
+                    </button>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+                  <button
+                    onClick={() => setActivePopup("dest")}
+                    className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                      To
+                    </p>
+                    <p className="text-sm font-medium text-gray-800 font-poppins">
+                      {formState.destination.to || "Enter drop location"}
+                    </p>
+                  </button>
+                </div>
+
+                <div className="border border-gray-200 rounded-2xl overflow-hidden grid grid-cols-2 divide-x divide-gray-200">
+                  <button
+                    onClick={() => setActivePopup("date")}
+                    className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                      Pickup
+                    </p>
+                    <p className="text-sm font-medium text-gray-800 font-poppins">
+                      {formState.dateRange.pickup || "2083/02/07-08:00 AM"}
+                    </p>
+                  </button>
+                  <button
+                    onClick={() => setActivePopup("date")}
+                    className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                      Return
+                    </p>
+                    <p className="text-sm font-medium text-gray-800 font-poppins">
+                      {formState.dateRange.return || "2083/02/07-08:00 AM"}
+                    </p>
+                  </button>
+                </div>
+
+                <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
+                  <button
+                    onClick={() =>
+                      setActivePopup((p) => (p === "pass" ? null : "pass"))
+                    }
+                    className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                        Total Passengers
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 font-poppins">
+                        {passengerLabel}
+                      </p>
+                    </div>
+                    <ChevronDown
+                      size={16}
+                      className={`text-gray-400 shrink-0 transition-transform duration-200 ${activePopup === "pass" ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                </div>
+
+                {/* Custom trip note at the bottom */}
+                <p className="text-sm text-gray-500 font-poppins leading-relaxed">
+                  {CUSTOM_TRIP_NOTE}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-3">
+                  <CustomRadioGroup<TripType>
+                    options={TRIP_TYPES}
+                    value={formState.tripType}
+                    onChange={(v) =>
+                      setFormState((s) => ({ ...s, tripType: v }))
+                    }
+                  />
+                  <div className="sm:w-px sm:h-5 sm:bg-gray-300 w-full h-px bg-gray-100" />
+                  <CustomRadioGroup<DriverType>
+                    options={DRIVER_TYPES}
+                    value={formState.driverType}
+                    onChange={(v) =>
+                      setFormState((s) => ({ ...s, driverType: v }))
+                    }
+                  />
+                </div>
+
                 <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
                   <button
                     onClick={() => setActivePopup("dest")}
@@ -292,7 +311,6 @@ export default function BookingModal({
                   </button>
                 </div>
 
-                {/* Pickup + Return */}
                 <div className="border border-gray-200 rounded-2xl overflow-hidden grid grid-cols-2 divide-x divide-gray-200">
                   <button
                     onClick={() => setActivePopup("date")}
@@ -318,7 +336,6 @@ export default function BookingModal({
                   </button>
                 </div>
 
-                {/* Passengers */}
                 <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden">
                   <button
                     onClick={() =>
@@ -347,7 +364,6 @@ export default function BookingModal({
           </div>
         </div>
 
-        {/* ── Footer ── */}
         <div className="px-5 pb-6 pt-3 grid grid-cols-2 gap-3 shrink-0 bg-white">
           <button
             onClick={onClose}
@@ -357,16 +373,14 @@ export default function BookingModal({
             Cancel
           </button>
           <button
-            onClick={handleSearchRide}
-            disabled={isSearching}
-            className="py-4 rounded-full bg-[#FEA800] text-black text-sm font-semibold font-poppins hover:bg-[#FEA800]/90 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+            onClick={() => setLoaderOpen(true)}
+            className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
           >
-            {isSearching ? "Searching..." : "Search Ride"}
+            Search Ride
           </button>
         </div>
       </div>
 
-      {/* ── Sub-popups ── */}
       {activePopup === "dest" && (
         <div
           className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0 bg-black/30"
@@ -440,6 +454,11 @@ export default function BookingModal({
           </div>
         </div>
       )}
+
+      <SearchRideLoader
+        open={loaderOpen}
+        onClose={() => setLoaderOpen(false)}
+      />
     </div>
   );
 }
