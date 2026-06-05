@@ -76,8 +76,6 @@ function CustomRadioGroup<T extends string>({
   );
 }
 
-// ── Loading Overlay ────────────────────────────────────────────────────────
-
 function SearchLoadingOverlay() {
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<any>(null);
@@ -111,7 +109,6 @@ function SearchLoadingOverlay() {
 
   return (
     <div className="absolute inset-0 z-10 bg-white rounded-3xl flex flex-col items-center justify-center gap-6 px-6">
-      {/* Lottie animation */}
       <div ref={containerRef} className="w-full max-w-sm min-h-[180px]" />
 
       {/* Text */}
