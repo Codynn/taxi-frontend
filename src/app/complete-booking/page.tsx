@@ -16,56 +16,52 @@ import { useCreateBooking } from "@/lib/api/booking.api";
 
 export default function CompleteBookingPage() {
   const router = useRouter();
-  const { bookingState, setBookingState, selectedVehicle, resetBooking } =
-    useBookingStore();
+
+  const {
+    bookingState,
+    setBookingState,
+    selectedVehicle,
+    modalData,
+    resetBooking,
+  } = useBookingStore();
 
   const { mutate: createBooking, isPending } = useCreateBooking();
 
-  // Guard: redirect if no vehicle selected
+  // Guard: must have both vehicle and modal data
   useEffect(() => {
-    if (!selectedVehicle) {
+    if (!selectedVehicle || !modalData) {
       router.replace("/choose-ride");
     }
-  }, [selectedVehicle, router]);
+  }, [selectedVehicle, modalData, router]);
 
-  if (!selectedVehicle) return null;
-
-  // Map bookingState tripType/driverType → API enums
-  const bookingType =
-    bookingState.tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY";
-
-  const driverRequired = bookingState.driverType === "with-driver";
+  if (!selectedVehicle || !modalData) return null;
 
   const handleSubmit = (values: CompleteBookingFormValues) => {
-    createBooking(
-      {
-        fullName: values.fullName,
-        contactNumber: values.contactNumber,
-        email: values.email,
-        message: values.message,
-        pickUpLocation: values.pickupLocation,
-        dropOffLocation: values.dropoffLocation,
-        pickUpDate: bookingState.dateRange.pickup,
-        pickUpTime: values.pickupTime,
-        returnDate: bookingState.dateRange.return,
-        bookingType,
-        tripType: "LONG_TRIP", // adjust if you have a field for this
-        driverRequired,
-        vechicleId: selectedVehicle.id,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Booking confirmed!");
-          resetBooking();
-          router.push("/booking-confirmed");
-        },
-        onError: (err: any) => {
-          toast.error(
-            err?.response?.data?.message ?? "Failed to create booking",
-          );
-        },
-      },
-    );
+    const toISO = (value: string | Date) => {
+      return new Date(value).toISOString();
+    };
+
+    createBooking({
+      // Step 1 (modalData)
+      pickUpLocation: modalData.pickUpLocation,
+      dropOffLocation: modalData.dropOffLocation,
+      pickUpDate: toISO(modalData.pickUpDate),
+      returnDate: modalData.returnDate ? toISO(modalData.returnDate) : "",
+      bookingType: modalData.bookingType,
+      tripType: modalData.tripType,
+      driverRequired: modalData.driverRequired,
+
+      // Step 2 (form)
+      fullName: values.fullName,
+      contactNumber: values.contactNumber,
+      email: values.email,
+      message: values.message,
+
+      pickUpTime: toISO(values.pickupTime),
+
+      // Vehicle
+      vechicleId: selectedVehicle.id,
+    });
   };
 
   return (
@@ -87,19 +83,24 @@ export default function CompleteBookingPage() {
 
           {/* Main content */}
           <div className="flex flex-col lg:flex-row gap-5 items-start">
-            {/* Left: Vehicle Selected */}
-            <div className="w-full lg:flex-1 shrink-0">
+            {/* Left: Vehicle */}
+            <div className="w-full lg:w-[380px] shrink-0">
               <VehicleSelectedCard
                 vehicle={selectedVehicle}
                 onChangeVehicle={() => router.push("/choose-ride")}
               />
             </div>
 
-            {/* Right: Booking form */}
-            <div className="basis-1/2 min-w-0">
+            {/* Right: Form */}
+            <div className="flex-1 min-w-0">
               <CompleteBookingForm
                 onSubmit={handleSubmit}
                 isSubmitting={isPending}
+                // Pre-fill locations from step 1
+                defaultValues={{
+                  pickupLocation: modalData.pickUpLocation,
+                  dropoffLocation: modalData.dropOffLocation,
+                }}
               />
             </div>
           </div>

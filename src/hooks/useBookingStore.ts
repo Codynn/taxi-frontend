@@ -1,27 +1,25 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { SelectedVehicle } from "@/components/vehicles/Vehicleselectedcard";
-import type { BookingFormState, TripType } from "@/types/booking.types";
-import { DEFAULT_BOOKING_STATE } from "@/constants/booking.constants";
-import { BookingType } from "@/lib/api/booking.api";
+import type { BookingFormState } from "@/types/booking.types";
 
+import { DEFAULT_BOOKING_STATE } from "@/constants/booking.constants";
+import type { BookingType, TripType as ApiTripType } from "@/lib/api/booking.api";
+
+// Fields collected in BookingModal (step 1) — uses API enums, not UI enums
 export interface BookingModalData {
   pickUpLocation: string;
   dropOffLocation: string;
   pickUpDate: string;
-  pickUpTime: string;
-  returnDate: string;
-  bookingType: BookingType;
-  tripType: TripType;
+  returnDate?: string;
+  bookingType: BookingType;     // "ROUND_TRIP" | "ONE_WAY"
+  tripType: ApiTripType;        // "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP"
   driverRequired: boolean;
 }
 
 interface BookingStore {
-  // Summary bar UI state
   bookingState: BookingFormState;
-  // Step 1 data from BookingModal
   modalData: BookingModalData | null;
-  // Step 2 selected vehicle
   selectedVehicle: SelectedVehicle | null;
 
   setBookingState: (state: BookingFormState) => void;

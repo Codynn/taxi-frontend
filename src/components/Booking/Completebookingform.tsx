@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Clock3 } from "lucide-react";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import dayjs from "dayjs";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +16,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputGroupTextarea } from "@/components/ui/input-group";
 
 export const completeBookingSchema = z.object({
   fullName: z
@@ -182,19 +183,24 @@ export default function CompleteBookingForm({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="pickupTime">Pickup Time</FieldLabel>
-                  <div className="relative">
-                    <Input
-                      {...field}
-                      id="pickupTime"
-                      placeholder="Eg. 11:00 AM"
-                      aria-invalid={fieldState.invalid}
-                      className={`${inputCls} pr-10`}
+
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <TimePicker
+                      label="Select time"
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(value) => {
+                        field.onChange(value ? value.toISOString() : "");
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: fieldState.invalid,
+                          helperText: fieldState.error?.message,
+                          className: inputCls,
+                        },
+                      }}
                     />
-                    <Clock3 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black pointer-events-none" />
-                  </div>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
+                  </LocalizationProvider>
                 </Field>
               )}
             />

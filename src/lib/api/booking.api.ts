@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios";
+import { toast } from "sonner";
 
 export type BookingStatus =
   | "PENDING"
@@ -75,6 +76,8 @@ export interface BookingListResponse {
   };
 }
 
+// ... types unchanged ...
+
 // ── Create booking ──────────────────────────────────────────────
 export const useCreateBooking = () => {
   const queryClient = useQueryClient();
@@ -87,8 +90,14 @@ export const useCreateBooking = () => {
       }>("booking", data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      toast.success(data.message || "Booking created successfully!");
       queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
+    },
+    onError: (error: Error) => {
+      toast.error(
+        error.message || "Failed to create booking. Please try again.",
+      );
     },
   });
 };
@@ -103,6 +112,10 @@ export const useMyBookings = (params?: BookingListParams) => {
         { params: params || {} },
       );
       return response.data;
+    },
+    throwOnError: (error: Error) => {
+      toast.error(error.message || "Failed to load bookings.");
+      return false;
     },
   });
 };
