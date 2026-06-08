@@ -376,7 +376,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
             onClick={() => setLoaderOpen(true)}
             className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
           >
-            Search Ride
+            Submit
           </button>
         </div>
       </div>

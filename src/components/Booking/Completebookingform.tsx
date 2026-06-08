@@ -4,6 +4,7 @@ import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Clock3 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,13 +14,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
-import { Clock, Clock3 } from "lucide-react";
+import { InputGroupTextarea } from "@/components/ui/input-group";
 
 export const completeBookingSchema = z.object({
   fullName: z
@@ -47,12 +42,11 @@ interface CompleteBookingFormProps {
   defaultValues?: Partial<CompleteBookingFormValues>;
 }
 
-// Shared input className — no border, no outline, bg matches card
 const inputCls =
   "border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none shadow-none bg-white rounded-xl h-11 text-[14px] font-poppins placeholder:text-[#7E7E7E] [&:-webkit-autofill]:!bg-white [&:-webkit-autofill]:[box-shadow:0_0_0_1000px_white_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:#000000]";
 
 const textareaCls =
-  "border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none shadow-none bg-white rounded-xl h-11 text-[14px] font-poppins placeholder:text-[#7E7E7E] resize-none [&:-webkit-autofill]:!bg-white [&:-webkit-autofill]:[box-shadow:0_0_0_1000px_white_inset] [&:-webkit-autofill]:[-webkit-text-fill-color:#000000]";
+  "border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none shadow-none bg-white rounded-xl text-[14px] font-poppins placeholder:text-[#7E7E7E] resize-none w-full p-3";
 
 export default function CompleteBookingForm({
   onSubmit,
@@ -94,8 +88,8 @@ export default function CompleteBookingForm({
                   {...field}
                   id="fullName"
                   placeholder="Eg. John Doe"
-                  aria-invalid={fieldState.invalid}
                   autoComplete="name"
+                  aria-invalid={fieldState.invalid}
                   className={inputCls}
                 />
                 {fieldState.invalid && (
@@ -136,7 +130,6 @@ export default function CompleteBookingForm({
                 </Field>
               )}
             />
-
             <Controller
               name="email"
               control={form.control}
@@ -148,8 +141,8 @@ export default function CompleteBookingForm({
                     id="email"
                     type="email"
                     placeholder="Eg. JohnDoe@gmail.com"
-                    aria-invalid={fieldState.invalid}
                     autoComplete="email"
+                    aria-invalid={fieldState.invalid}
                     className={inputCls}
                   />
                   {fieldState.invalid && (
@@ -183,7 +176,6 @@ export default function CompleteBookingForm({
                 </Field>
               )}
             />
-
             <Controller
               name="pickupTime"
               control={form.control}
@@ -231,19 +223,20 @@ export default function CompleteBookingForm({
             )}
           />
 
-          {/* Message */}
+          {/* Message — plain textarea, zero border/outline */}
           <Controller
             name="message"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="message">Message</FieldLabel>
-                <InputGroupTextarea
+                <textarea
                   {...field}
                   id="message"
-                  placeholder="Enter your inquiry message here"
                   rows={4}
+                  placeholder="Enter your inquiry message here"
                   aria-invalid={fieldState.invalid}
+                  maxLength={500}
                   className={textareaCls}
                 />
                 {fieldState.invalid && (

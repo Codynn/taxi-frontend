@@ -18,6 +18,12 @@ function FeatureBadge({ label, icon }: { label: string; icon: string }) {
   );
 }
 
+function getGearIcon(gearType: string): string {
+  return gearType.toLowerCase() === "automatic"
+    ? "vehicle/battery.svg"
+    : "vehicle/settings.svg";
+}
+
 export default function RideCollectionVehicleCard({
   vehicle,
   onChoose,
@@ -81,7 +87,7 @@ export default function RideCollectionVehicleCard({
             {vechileGearType && (
               <FeatureBadge
                 label={vechileGearType}
-                icon="vehicle/settings.svg"
+                icon={getGearIcon(vechileGearType)}
               />
             )}
             <FeatureBadge
@@ -136,7 +142,7 @@ export default function RideCollectionVehicleCard({
             {vechileGearType && (
               <FeatureBadge
                 label={vechileGearType}
-                icon="vehicle/settings.svg"
+                icon={getGearIcon(vechileGearType)}
               />
             )}
             <FeatureBadge
