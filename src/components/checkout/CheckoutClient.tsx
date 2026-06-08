@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
@@ -8,47 +8,225 @@ import Navbar from "@/components/layout/navbar";
 
 import VehicleSelectedCard from "@/components/vehicles/Vehicleselectedcard";
 import CheckoutBookingSummary from "./CheckoutBookingSummary";
-import { DEFAULT_BOOKING_STATE } from "@/constants/booking.constants";
-import type { BookingFormState } from "@/types/booking.types";
-import type { SelectedVehicle } from "@/components/vehicles/Vehicleselectedcard";
-
-const DUMMY_VEHICLE: SelectedVehicle = {
-  id: "v1",
-  name: "SUV Carrera S 2024",
-  plateNumber: "Ba 1 PA 1414",
-  imageUrl: "/vehicle/suv1.png",
-  rating: 5.0,
-  totalTrips: 120,
-  startingPrice: 5000,
-  currency: "Rs",
-  features: [
-    { icon: "vehicle/battery.svg", label: "Electric" },
-    { icon: "vehicle/seat.svg", label: "5 Seats" },
-    { icon: "vehicle/wind.svg", label: "AC" },
-  ],
-};
-
-const FARE_DETAILS = [
-  { label: "Base Fare:", amount: 3500 },
-  { label: "Distance Charge:", amount: 3500 },
-  { label: "Vehicle Type Adjustment:", amount: 3500 },
-  { label: "Service Fee:", amount: 3500 },
-];
-
-const TOTAL = FARE_DETAILS.reduce((s, f) => s + f.amount, 0);
+import { useBookingStore } from "@/hooks/useBookingStore";
+import { useCreateBooking } from "@/lib/api/booking.api";
 
 type PaymentMethod = "esewa" | "khalti" | null;
+type ModalState = "success" | "failure" | null;
+
+/* ── Success Modal ── */
+function SuccessModal({
+  onClose,
+  onViewDetails,
+}: {
+  onClose: () => void;
+  onViewDetails: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-3xl p-8 mx-4 max-w-sm w-full flex flex-col items-center gap-4 text-center shadow-xl">
+        {/* Green checkmark circle */}
+        <div className="w-32 h-32 rounded-full bg-green-500 flex items-center justify-center mb-2">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 60 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 30L24 42L48 18"
+              stroke="white"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <h2 className="text-[22px] font-bold font-poppins text-black">
+          Booking Successful!
+        </h2>
+        <p className="text-[15px] font-poppins text-black/70 leading-relaxed">
+          Thank you for choosing us. Your ride is confirmed and ready for your
+          journey.
+        </p>
+        <div className="flex gap-3 w-full mt-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3.5 rounded-full bg-red-500 text-white font-semibold font-poppins text-[15px] hover:bg-red-600 transition-colors"
+          >
+            Close
+          </button>
+          <button
+            onClick={onViewDetails}
+            className="flex-1 py-3.5 rounded-full bg-[#FEA800] text-black font-semibold font-poppins text-[15px] hover:bg-[#e09700] transition-colors"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Failure Modal ── */
+function FailureModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-3xl p-8 mx-4 max-w-sm w-full flex flex-col items-center gap-4 text-center shadow-xl">
+        {/* Red X circle */}
+        <div className="w-32 h-32 rounded-full bg-red-500 flex items-center justify-center mb-2">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 60 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 18L42 42M42 18L18 42"
+              stroke="white"
+              strokeWidth="6"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+        <h2 className="text-[22px] font-bold font-poppins text-black">
+          Booking Failed!
+        </h2>
+        <p className="text-[15px] font-poppins text-black/70 leading-relaxed">
+          Something went wrong while processing your booking. Please try again.
+        </p>
+        <div className="flex gap-3 w-full mt-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3.5 rounded-full bg-red-500 text-white font-semibold font-poppins text-[15px] hover:bg-red-600 transition-colors"
+          >
+            Close
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 py-3.5 rounded-full bg-[#FEA800] text-black font-semibold font-poppins text-[15px] hover:bg-[#e09700] transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CheckoutClient() {
   const router = useRouter();
-  const [bookingState, setBookingState] = useState<BookingFormState>(
-    DEFAULT_BOOKING_STATE,
-  );
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
+  const [modalState, setModalState] = useState<ModalState>(null);
+
+  const {
+    bookingState,
+    setBookingState,
+    selectedVehicle,
+    modalData,
+    resetBooking,
+  } = useBookingStore();
+
+  const { mutate: createBooking, isPending } = useCreateBooking();
+
+  // Guard: must have both vehicle and modal data
+  useEffect(() => {
+    if (!selectedVehicle || !modalData) {
+      router.replace("/choose-ride");
+    }
+  }, [selectedVehicle, modalData, router]);
+
+  if (!selectedVehicle || !modalData) return null;
+
+  // Calculate fare details from real data
+  const pricePerDay = selectedVehicle.startingPrice;
+  const pickUpDate = new Date(modalData.pickUpDate);
+  const returnDate = modalData.returnDate
+    ? new Date(modalData.returnDate)
+    : null;
+  const days = returnDate
+    ? Math.max(
+        1,
+        Math.ceil(
+          (returnDate.getTime() - pickUpDate.getTime()) / (1000 * 60 * 60 * 24),
+        ),
+      )
+    : 1;
+
+  const baseFare = pricePerDay * days;
+  const serviceFee = Math.round(baseFare * 0.05);
+  const driverCharge = modalData.driverRequired
+    ? Math.round(pricePerDay * days * 0.2)
+    : 0;
+  const total = baseFare + serviceFee + driverCharge;
+
+  const fareDetails = [
+    { label: "Base Fare:", amount: baseFare },
+    ...(driverCharge > 0
+      ? [{ label: "Driver Charge:", amount: driverCharge }]
+      : []),
+    { label: "Service Fee:", amount: serviceFee },
+  ];
+
+  const handleContinueToPayment = () => {
+    if (!selectedPayment) return;
+
+    const toISO = (value: string | Date) => new Date(value).toISOString();
+
+    // Since payment isn't integrated yet, directly trigger booking creation
+    createBooking(
+      {
+        pickUpLocation: modalData.pickUpLocation,
+        dropOffLocation: modalData.dropOffLocation,
+        pickUpDate: toISO(modalData.pickUpDate),
+        returnDate: modalData.returnDate
+          ? toISO(modalData.returnDate)
+          : undefined,
+        bookingType: modalData.bookingType,
+        tripType: modalData.tripType,
+        driverRequired: modalData.driverRequired,
+        // These should come from a form if available; fallback to store/placeholder
+        fullName: "",
+        contactNumber: "",
+        email: "",
+        pickUpTime: toISO(modalData.pickUpDate),
+        vechicleId: selectedVehicle.id,
+      },
+      {
+        onSuccess: () => {
+          setModalState("success");
+        },
+        onError: () => {
+          setModalState("failure");
+        },
+      },
+    );
+  };
 
   return (
     <main className="w-full bg-white min-h-screen">
       <Navbar />
+
+      {/* Modals */}
+      {modalState === "success" && (
+        <SuccessModal
+          onClose={() => {
+            setModalState(null);
+            resetBooking();
+            router.push("/choose-ride");
+          }}
+          onViewDetails={() => {
+            setModalState(null);
+            resetBooking();
+            router.push("/my-bookings");
+          }}
+        />
+      )}
+      {modalState === "failure" && (
+        <FailureModal onClose={() => setModalState(null)} />
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5 pt-25">
         {/* Go Back */}
@@ -67,17 +245,19 @@ export default function CheckoutClient() {
               variant="desktop"
             />
             <VehicleSelectedCard
-              vehicle={DUMMY_VEHICLE}
+              vehicle={selectedVehicle}
               onChangeVehicle={() => router.back()}
             />
           </div>
 
           {/* RIGHT */}
           <div className="flex flex-col gap-5">
-            <FareDetailsCard fareDetails={FARE_DETAILS} total={TOTAL} />
+            <FareDetailsCard fareDetails={fareDetails} total={total} />
             <PaymentCard
               selectedPayment={selectedPayment}
               onSelect={setSelectedPayment}
+              onContinue={handleContinueToPayment}
+              isLoading={isPending}
             />
           </div>
         </div>
@@ -89,13 +269,15 @@ export default function CheckoutClient() {
             variant="mobile"
           />
           <VehicleSelectedCard
-            vehicle={DUMMY_VEHICLE}
+            vehicle={selectedVehicle}
             onChangeVehicle={() => router.back()}
           />
-          <FareDetailsCard fareDetails={FARE_DETAILS} total={TOTAL} />
+          <FareDetailsCard fareDetails={fareDetails} total={total} />
           <PaymentCard
             selectedPayment={selectedPayment}
             onSelect={setSelectedPayment}
+            onContinue={handleContinueToPayment}
+            isLoading={isPending}
           />
         </div>
       </div>
@@ -141,9 +323,13 @@ function FareDetailsCard({
 function PaymentCard({
   selectedPayment,
   onSelect,
+  onContinue,
+  isLoading,
 }: {
   selectedPayment: "esewa" | "khalti" | null;
   onSelect: (v: "esewa" | "khalti") => void;
+  onContinue: () => void;
+  isLoading: boolean;
 }) {
   return (
     <div className="bg-[#f5f5f5] rounded-2xl p-5">
@@ -187,10 +373,11 @@ function PaymentCard({
         </button>
       </div>
       <button
-        disabled={!selectedPayment}
+        disabled={!selectedPayment || isLoading}
+        onClick={onContinue}
         className="w-full py-4 rounded-full bg-[#FEA800] text-black font-semibold font-poppins text-[15px] hover:bg-[#e09700] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Continue to Payment
+        {isLoading ? "Processing..." : "Continue to Payment"}
       </button>
     </div>
   );
