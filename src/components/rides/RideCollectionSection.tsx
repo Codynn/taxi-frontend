@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
+  Car,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,50 +20,124 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  VEHICLES,
-  VEHICLE_TABS,
-  SORT_OPTIONS,
-} from "@/constants/features/vehicle.constants";
-import type { Vehicle, VehicleCategory } from "@/types/features/vehicle.types";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import VehicleTabs from "../vehicles/VehicleTabs";
 import RideCollectionVehicleCard from "./RideCollectionVehicleCard";
 import RideFilterPanel from "./RideFilterPanel";
 import BookingModal from "../Booking/Bookingmodal ";
-import { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
+
+import { useVehicles } from "@/hooks/useVehicle";
+import type { ApiVehicle, VehicleCategory } from "@/hooks/useVehicle";
+import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
+
+// ── Map API vehicle → SelectedVehicle ──────────────────────────────────────
+function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
+  return {
+    id: v.id,
+    name: v.vechileName,
+    plateNumber: v.vechileNumber,
+    imageUrl: v.vechileImage,
+    rating: 0,
+    totalTrips: 0,
+    startingPrice: 0,
+    currency: "Rs",
+    features: [
+      { label: v.vechileFuelType, icon: "vehicle/electric.svg" },
+      { label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" },
+      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/ac.svg" }] : []),
+    ],
+  };
+}
+
+// ── Tabs config matching API categories ───────────────────────────────────
+const VEHICLE_TABS = [
+  { value: "CAR" as VehicleCategory, label: "Cars", icon: "vehicle/car.svg" },
+  {
+    value: "AUTO_RICKSHAW" as VehicleCategory,
+    label: "Auto Rickshaw",
+    icon: "vehicle/auto.svg",
+  },
+  {
+    value: "BIKE_SCOOTER" as VehicleCategory,
+    label: "Bike & Scooters",
+    icon: "vehicle/bike.svg",
+  },
+];
+
+const SORT_OPTIONS = [
+  { value: "recommended", label: "Recommended" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "price-high", label: "Price: High to Low" },
+];
 
 const ITEMS_PER_PAGE = 6;
-const TOTAL_PAGES = 20;
+
+// ── Skeleton loader ────────────────────────────────────────────────────────
+function VehicleCardSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      {/* Mobile skeleton */}
+      <div className="flex flex-col lg:hidden p-4 gap-3">
+        <Skeleton className="w-full h-[200px] rounded-xl" />
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-14 w-full rounded-xl" />
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="h-10 w-32 rounded-full" />
+        </div>
+      </div>
+      {/* Desktop skeleton */}
+      <div className="hidden lg:flex p-4 gap-4">
+        <Skeleton className="w-[290px] h-[180px] rounded-xl shrink-0" />
+        <div className="flex flex-col flex-1 gap-3 py-2">
+          <div className="flex justify-between">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <div className="flex justify-between items-center mt-auto">
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-10 w-36 rounded-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function RideCollectionSection() {
-  const [activeTab, setActiveTab] = useState<VehicleCategory>("cars");
+  const [activeTab, setActiveTab] = useState<VehicleCategory>("CAR");
   const [sortBy, setSortBy] = useState("recommended");
   const [currentPage, setCurrentPage] = useState(1);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] =
     useState<SelectedVehicle | null>(null);
 
-  const filtered = VEHICLES.filter((v) => v.category === activeTab);
+  const { data: allVehicles = [], isLoading, isError } = useVehicles();
 
+  const filtered = allVehicles.filter((v) => v.category === activeTab);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const getPageNumbers = () => {
-    if (TOTAL_PAGES <= 7)
-      return Array.from({ length: TOTAL_PAGES }, (_, i) => i + 1);
-    if (currentPage <= 4) return [1, 2, 3, 4, 5, "...", TOTAL_PAGES];
-    if (currentPage >= TOTAL_PAGES - 3)
+  const getPageNumbers = (): (number | "...")[] => {
+    if (totalPages <= 7)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (currentPage <= 4) return [1, 2, 3, 4, 5, "...", totalPages];
+    if (currentPage >= totalPages - 3)
       return [
         1,
         "...",
-        TOTAL_PAGES - 4,
-        TOTAL_PAGES - 3,
-        TOTAL_PAGES - 2,
-        TOTAL_PAGES - 1,
-        TOTAL_PAGES,
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
       ];
     return [
       1,
@@ -67,20 +146,20 @@ export default function RideCollectionSection() {
       currentPage,
       currentPage + 1,
       "...",
-      TOTAL_PAGES,
+      totalPages,
     ];
   };
 
   return (
     <section className="bg-white py-10 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ── Header: title + sort ── */}
-        <div className="flex flex-col lg:flex-row  items-center justify-between mb-6 gap-4">
+        {/* ── Header ── */}
+        <div className="flex flex-col lg:flex-row items-center justify-between mb-6 gap-4">
           <h2 className="text-[22px] md:text-[28px] font-semibold font-sora text-black">
             Our Ride Collection
           </h2>
 
-          <div className="flex  items-center  gap-3">
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-[13px] text-black font-poppins hidden sm:block">
                 Sort By:
@@ -88,7 +167,7 @@ export default function RideCollectionSection() {
               <Select
                 value={sortBy}
                 onValueChange={(val) => {
-                  if (val !== null) setSortBy(val);
+                  if (val) setSortBy(val);
                 }}
               >
                 <SelectTrigger className="h-9 text-[13px] font-poppins border-gray-200 rounded-lg min-w-[150px] focus:ring-0 focus:ring-offset-0">
@@ -115,12 +194,10 @@ export default function RideCollectionSection() {
                   Filter
                 </button>
               </SheetTrigger>
-
               <SheetContent
                 side="bottom"
                 className="h-full w-full rounded-t-3xl p-0 flex flex-col"
               >
-                {/* Header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <SlidersHorizontal className="w-4 h-4 text-black" />
@@ -128,16 +205,9 @@ export default function RideCollectionSection() {
                       Filters
                     </h3>
                   </div>
-
-                  <SheetClose>
-                    <button className="rounded-full p-1 hover:bg-gray-100 transition-colors">
-                      {/* <X className="w-5 h-5 text-black" /> */}
-                    </button>
-                  </SheetClose>
+                  <SheetClose />
                 </div>
-
-                {/* Filter content — hide the internal header since we have one above */}
-                <div className="p-5">
+                <div className="p-5 overflow-y-auto">
                   <RideFilterPanel hideHeader />
                 </div>
               </SheetContent>
@@ -157,16 +227,45 @@ export default function RideCollectionSection() {
           />
         </div>
 
-        {/* ── Body: filter left + cards right ── */}
+        {/* ── Body ── */}
         <div className="flex gap-6 items-start">
-          {/* Left filter — desktop only */}
+          {/* Desktop filter */}
           <div className="hidden lg:block w-[260px] shrink-0 sticky top-6">
             <RideFilterPanel />
           </div>
 
-          {/* Right — cards */}
+          {/* Cards */}
           <div className="flex-1 min-w-0">
-            {paginated.length > 0 ? (
+            {/* Loading */}
+            {isLoading && (
+              <div className="flex flex-col gap-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <VehicleCardSkeleton key={i} />
+                ))}
+              </div>
+            )}
+
+            {/* Error */}
+            {isError && (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
+                  <Car className="w-7 h-7 text-red-400" />
+                </div>
+                <p className="text-[14px] text-gray-500 font-poppins">
+                  Failed to load vehicles. Please try again.
+                </p>
+              </div>
+            )}
+
+            {/* Empty */}
+            {!isLoading && !isError && paginated.length === 0 && (
+              <div className="text-center py-16 text-gray-400 font-poppins text-sm">
+                No vehicles available in this category yet.
+              </div>
+            )}
+
+            {/* Vehicle cards */}
+            {!isLoading && !isError && paginated.length > 0 && (
               <div className="flex flex-col gap-4">
                 {paginated.map((vehicle) => (
                   <RideCollectionVehicleCard
@@ -179,20 +278,15 @@ export default function RideCollectionSection() {
                   />
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-16 text-gray-400 font-poppins text-sm">
-                No vehicles available in this category yet.
-              </div>
             )}
 
-            {/* ── Pagination ── */}
-            {filtered.length > 0 && (
+            {/* Pagination */}
+            {!isLoading && filtered.length > ITEMS_PER_PAGE && (
               <div className="flex items-center justify-start gap-1.5 mt-10">
-                {/* Prev */}
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="w-10 h-10 flex items-center justify-center rounded-[8px]  bg-[#f5f5f5] text-black  disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm"
+                  className="w-10 h-10 flex items-center justify-center rounded-[8px] bg-[#f5f5f5] text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={24} />
                 </button>
@@ -200,7 +294,7 @@ export default function RideCollectionSection() {
                 {getPageNumbers().map((page, i) =>
                   page === "..." ? (
                     <span
-                      key={`ellipsis-${i}`}
+                      key={`e-${i}`}
                       className="w-8 h-8 flex items-center justify-center text-[#2E2E2E] text-sm font-poppins"
                     >
                       ...
@@ -213,7 +307,7 @@ export default function RideCollectionSection() {
                         "w-10 h-10 flex items-center justify-center rounded-[8px] text-[18px] font-poppins transition-colors cursor-pointer",
                         currentPage === page
                           ? "bg-[#FEA800] text-black font-semibold"
-                          : "text-[#2E2E2E] hover:border-[#FEA800] hover:text-[#000000]",
+                          : "text-[#2E2E2E] hover:text-black",
                       ].join(" ")}
                     >
                       {page}
@@ -221,13 +315,12 @@ export default function RideCollectionSection() {
                   ),
                 )}
 
-                {/* Next */}
                 <button
                   onClick={() =>
-                    setCurrentPage((p) => Math.min(TOTAL_PAGES, p + 1))
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
-                  disabled={currentPage === TOTAL_PAGES}
-                  className="w-10 h-10 flex items-center justify-center rounded-[8px] bg-[#f5f5f5]  text-black  disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm"
+                  disabled={currentPage === totalPages}
+                  className="w-10 h-10 flex items-center justify-center rounded-[8px] bg-[#f5f5f5] text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={24} />
                 </button>

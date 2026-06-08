@@ -1,67 +1,85 @@
+"use client";
+
 import Image from "next/image";
-import type { Vehicle } from "@/types/features/vehicle.types";
-import VehicleFeatureBadge from "./VehicleFeatureBadge";
+import type { ApiVehicle } from "@/lib/api/vehicle.api";
 
 interface VehicleCardProps {
-  vehicle: Vehicle;
+  vehicle: ApiVehicle;
+  onChoose?: (vehicle: ApiVehicle) => void;
 }
 
-export default function VehicleCard({ vehicle }: VehicleCardProps) {
+function FeatureBadge({ label, icon }: { label: string; icon: string }) {
+  return (
+    <span className="flex items-center gap-1.5 text-[12px] text-gray-600 font-poppins">
+      <Image src={`/${icon}`} alt={label} width={14} height={14} />
+      {label}
+    </span>
+  );
+}
+
+export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
   const {
-    name,
-    plateNumber,
-    image,
-    rating,
-    trips,
-    features,
-    startingPrice,
-    currency,
+    vechileName,
+    vechileImage,
+    vechileNumber,
+    vechileFuelType,
+    vechileGearType,
+    noOfSeats,
+    hasAC,
+    pricePerDay,
   } = vehicle;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#808080]/50 transition-all duration-300 ease-out hover:translate-y-2 hover:shadow-xl flex flex-col p-4">
+    <div className="bg-white rounded-2xl border border-[#808080]/50 transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl flex flex-col p-4">
+      {/* Image */}
       <div className="relative w-full h-[200px] rounded-xl overflow-hidden mb-2">
         <Image
-          src={`/${image}`}
-          alt={name}
+          src={vechileImage}
+          alt={vechileName}
           fill
           priority
-          className="rounded-xl object-center"
+          className="rounded-xl object-cover object-center"
+          unoptimized
         />
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white text-black text-[11px] font-poppins font-semibold px-2.5 py-1 rounded-full shadow-sm">
-          <Image src="/vehicle/star.svg" alt="star" width={12} height={12} />
-          <span>
-            {rating.toFixed(1)} ({trips}+ trips)
-          </span>
-        </div>
       </div>
 
       <div className="flex flex-col gap-4 flex-1">
+        {/* Name + plate */}
         <div>
           <h3 className="text-[18px] font-medium text-[#000000] font-poppins leading-snug">
-            {name}
+            {vechileName}
           </h3>
           <p className="text-[14px] text-[#000000] font-poppins mt-0.5">
-            {plateNumber}
+            {vechileNumber}
           </p>
         </div>
 
+        {/* Features */}
         <div className="bg-gray-50 rounded-xl px-4 py-3.5 grid grid-cols-2 gap-x-6 gap-y-3">
-          {features.map((f) => (
-            <VehicleFeatureBadge key={f.label} {...f} />
-          ))}
+          {vechileFuelType && (
+            <FeatureBadge label={vechileFuelType} icon="vehicle/fuel.svg" />
+          )}
+          {vechileGearType && (
+            <FeatureBadge label={vechileGearType} icon="vehicle/battery.svg" />
+          )}
+          <FeatureBadge label={`${noOfSeats} Seats`} icon="vehicle/seat.svg" />
+          {hasAC && <FeatureBadge label="AC" icon="vehicle/wind.svg" />}
         </div>
 
+        {/* Price + CTA */}
         <div className="flex items-center justify-between gap-3 mt-auto pt-1">
           <div>
             <p className="text-[12px] text-[#000000] font-poppins leading-none mb-1">
-              Starting from
+              Per Day
             </p>
-            <p className="text-[23px]  text-[#FEA800] font-poppins font-bold leading-tight">
-              {currency} {startingPrice.toLocaleString()}
+            <p className="text-[23px] text-[#FEA800] font-poppins font-bold leading-tight">
+              Rs {pricePerDay?.toLocaleString()}
             </p>
           </div>
-          <button className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-5 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0 whitespace-nowrap">
+          <button
+            onClick={() => onChoose?.(vehicle)}
+            className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-5 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0 whitespace-nowrap"
+          >
             Choose Vehicle
           </button>
         </div>

@@ -1,19 +1,32 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Mousewheel } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import {
-  VEHICLES,
-  VEHICLE_TABS,
-  RIDES_READY_CONTENT,
-} from "@/constants/features/vehicle.constants";
-import type { VehicleCategory } from "@/types/features/vehicle.types";
+import Image from "next/image";
+import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import VehicleTabs from "../vehicles/VehicleTabs";
 import VehicleCard from "../vehicles/VehicleCard";
-import Image from "next/image";
+import { useVehicles } from "@/hooks/useVehicle";
+import type { VehicleCategory } from "@/lib/api/vehicle.api";
+import { RIDES_READY_CONTENT } from "@/constants/features/vehicle.constants";
+
+const VEHICLE_TABS = [
+  { value: "CAR" as VehicleCategory, label: "Cars", icon: "vehicle/car.svg" },
+  {
+    value: "AUTO_RICKSHAW" as VehicleCategory,
+    label: "Auto Rickshaw",
+    icon: "vehicle/auto.svg",
+  },
+  {
+    value: "BIKE_SCOOTER" as VehicleCategory,
+    label: "Bike & Scooters",
+    icon: "vehicle/bike.svg",
+  },
+];
 
 const SWIPER_BREAKPOINTS = {
   0: { slidesPerView: 1.2, spaceBetween: 16 },
@@ -23,18 +36,37 @@ const SWIPER_BREAKPOINTS = {
   1280: { slidesPerView: 4, spaceBetween: 24 },
 };
 
+// ── Card skeleton ─────────────────────────────────────────────────────────
+function CardSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-4">
+      <Skeleton className="w-full h-[200px] rounded-xl" />
+      <Skeleton className="h-5 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+      <Skeleton className="h-16 w-full rounded-xl" />
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-7 w-24" />
+        <Skeleton className="h-10 w-32 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
 export default function RidesReadySection() {
-  const [activeTab, setActiveTab] = useState<VehicleCategory>("cars");
+  const [activeTab, setActiveTab] = useState<VehicleCategory>("CAR");
   const swiperRef = useRef<SwiperType | null>(null);
 
   const { heading, highlightedWord, description, browseAllLabel } =
     RIDES_READY_CONTENT;
 
-  const filtered = VEHICLES.filter((v) => v.category === activeTab);
+  // ── Real API data ─────────────────────────────────────────────────────
+  const { data: allVehicles = [], isLoading, isError } = useVehicles();
+  const filtered = allVehicles.filter((v) => v.category === activeTab);
 
   return (
     <section className="bg-white py-16 md:py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* ── Heading ── */}
         <div className="relative text-center pt-10">
           <Image
             src="/about/rectangle.svg"
@@ -44,34 +76,33 @@ export default function RidesReadySection() {
             className="absolute top-10 left-[60%] -translate-x-1/2 z-0 lg:block hidden"
             aria-hidden
           />
-
           <Image
             src="/about/rectangle.svg"
             alt=""
             width={150}
             height={150}
-            className="absolute top-10 left-[44%]  z-0 lg:hidden md:hidden block"
+            className="absolute top-10 left-[44%] z-0 lg:hidden md:hidden block"
             aria-hidden
           />
-
           <Image
             src="/about/rectangle.svg"
             alt=""
             width={250}
             height={150}
-            className="absolute top-10 left-[45%]  z-0 lg:hidden hidden sm:block"
+            className="absolute top-10 left-[45%] z-0 lg:hidden hidden sm:block"
             aria-hidden
           />
-
           <h2 className="relative z-10 mt-2 text-[20px] md:text-[32px] lg:text-[48px] font-semibold font-sora text-[#000000]">
             {heading}
             <span className="px-2 rounded-sm">{highlightedWord}</span>
           </h2>
         </div>
-        <p className="relative text-center z-10 text-[14px] lg:text-[16px] text-[#000000]/65 font-poppins max-w-4xl mx-auto leading-relaxed">
+
+        <p className="relative text-center z-10 text-[14px] lg:text-[16px] text-[#000000]/65 font-poppins max-w-4xl mx-auto leading-relaxed mb-8">
           {description}
         </p>
 
+        {/* ── Tabs ── */}
         <div className="flex items-center justify-between mb-8 gap-4">
           <div className="flex-1 min-w-0">
             <VehicleTabs
@@ -86,7 +117,26 @@ export default function RidesReadySection() {
         </div>
       </div>
 
-      {filtered.length > 0 ? (
+      {/* ── Loading ── */}
+      {isLoading && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Error ── */}
+      {isError && (
+        <div className="text-center py-16 text-gray-400 font-poppins text-sm">
+          Failed to load vehicles. Please try again.
+        </div>
+      )}
+
+      {/* ── Swiper ── */}
+      {!isLoading && !isError && filtered.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Swiper
             modules={[FreeMode, Mousewheel]}
@@ -106,16 +156,22 @@ export default function RidesReadySection() {
             ))}
           </Swiper>
         </div>
-      ) : (
+      )}
+
+      {/* ── Empty ── */}
+      {!isLoading && !isError && filtered.length === 0 && (
         <div className="text-center py-16 text-gray-400 font-poppins text-sm">
           No vehicles available in this category yet.
         </div>
       )}
 
+      {/* ── Browse all ── */}
       <div className="flex justify-center mt-10">
-        <button className="border border-[#FEA800] text-[#FEA800] text-[16px] font-semibold font-poppins px-8 py-2.5 rounded-full hover:bg-[#FEA800]/10 transition-colors">
-          {browseAllLabel}
-        </button>
+        <Link href="/our-rides">
+          <button className="border border-[#FEA800] text-[#FEA800] text-[16px] font-semibold font-poppins px-8 py-2.5 rounded-full hover:bg-[#FEA800]/10 transition-colors">
+            {browseAllLabel}
+          </button>
+        </Link>
       </div>
     </section>
   );

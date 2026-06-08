@@ -1,4 +1,4 @@
-export type VehicleCategory = "cars" | "auto-rickshaw" | "bikes";
+export type VehicleCategory = "CAR" | "AUTO_RICKSHAW" | "BIKE_SCOOTER";
 
 export interface VehicleFeature {
   icon: string;
