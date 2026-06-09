@@ -16,6 +16,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export const completeBookingSchema = z.object({
   fullName: z
@@ -54,12 +55,14 @@ export default function CompleteBookingForm({
   isSubmitting = false,
   defaultValues,
 }: CompleteBookingFormProps) {
+  const user = useAuthStore((s) => s.user);
+
   const form = useForm<CompleteBookingFormValues>({
     resolver: zodResolver(completeBookingSchema),
     defaultValues: {
-      fullName: "",
-      contactNumber: "",
-      email: "",
+      fullName: user?.name ?? "",
+      contactNumber: user?.phoneNumber ?? "",
+      email: user?.email ?? "",
       pickupLocation: "",
       pickupTime: "",
       dropoffLocation: "",

@@ -1,8 +1,33 @@
 "use client";
 
-import { DESTINATIONS } from "@/constants/booking.constants";
 import type { Destination } from "@/types/booking.types";
 import { ArrowLeftRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/axios";
+
+interface LocationRoute {
+  id: string;
+  fromLocation: string;
+  toLocation: string;
+  oneWayFare: number;
+  roundTripFare: number;
+  outsideDistrict: boolean;
+}
+
+interface LocationResponse {
+  success: boolean;
+  data: LocationRoute[];
+}
+
+function useLocations() {
+  return useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => {
+      const res = await api.get<LocationResponse>("/location");
+      return res.data.data;
+    },
+  });
+}
 
 interface DestinationPopupProps {
   open: boolean;
@@ -18,6 +43,8 @@ function DestinationContent({
   onClose: () => void;
   onSelect: (dest: Destination) => void;
 }) {
+  const { data: routes, isLoading } = useLocations();
+
   return (
     <>
       <div className="px-8 py-5 border-b border-gray-200">
@@ -27,24 +54,30 @@ function DestinationContent({
       </div>
 
       <div className="flex flex-col max-h-[60vh] overflow-y-auto">
-        {DESTINATIONS.map((dest, i) => (
-          <button
-            key={i}
-            onClick={() => {
-              onSelect(dest);
-              onClose();
-            }}
-            className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
-          >
-            <span className="text-sm font-medium text-gray-800 font-poppins w-1/3 text-left">
-              {dest.from}
-            </span>
-            <ArrowLeftRight size={18} className="text-[#FEA800] shrink-0" />
-            <span className="text-sm font-medium text-gray-800 font-poppins w-1/3 text-right">
-              {dest.to}
-            </span>
-          </button>
-        ))}
+        {isLoading ? (
+          <div className="py-8 text-center text-sm font-poppins text-gray-400">
+            Loading destinations...
+          </div>
+        ) : (
+          (routes ?? []).map((route) => (
+            <button
+              key={route.id}
+              onClick={() => {
+                onSelect({ from: route.fromLocation, to: route.toLocation });
+                onClose();
+              }}
+              className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
+            >
+              <span className="text-sm font-medium text-gray-800 font-poppins w-1/3 text-left">
+                {route.fromLocation}
+              </span>
+              <ArrowLeftRight size={18} className="text-[#FEA800] shrink-0" />
+              <span className="text-sm font-medium text-gray-800 font-poppins w-1/3 text-right">
+                {route.toLocation}
+              </span>
+            </button>
+          ))
+        )}
       </div>
 
       <div className="px-8 py-5 border-t border-gray-100 flex items-center justify-between gap-6">
