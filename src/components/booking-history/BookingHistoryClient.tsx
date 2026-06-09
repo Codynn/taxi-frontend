@@ -153,7 +153,7 @@ export default function BookingHistoryClient() {
 
   return (
     <main className="w-full bg-white min-h-screen">
-      <Navbar />
+      <Navbar forceWhite />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 flex flex-col gap-6">
         <BookingHistoryHeader />
 

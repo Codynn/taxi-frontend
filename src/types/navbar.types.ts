@@ -5,4 +5,5 @@ export interface NavLink {
 
 export interface NavbarProps {
   transparent?: boolean;
+  forceWhite?: boolean;
 }

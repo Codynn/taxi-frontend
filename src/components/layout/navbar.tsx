@@ -10,7 +10,10 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import UserMenu from "../shared/UserMenu";
 
-export default function Navbar({ transparent = false }: NavbarProps) {
+export default function Navbar({
+  transparent = false,
+  forceWhite = false,
+}: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { openModal } = useAuthModal();
@@ -31,7 +34,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
       <nav
         className={[
           "max-w-7xl lg:mx-auto z-50 mt-2 mx-2 px-4 lg:px-8 py-3 fixed top-0 left-0 right-0 transition-all duration-300 rounded-4xl",
-          scrolled ? "bg-white shadow-md" : "bg-transparent",
+          forceWhite || scrolled ? "bg-white shadow-md" : "bg-transparent",
         ].join(" ")}
       >
         <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto">
@@ -128,29 +131,31 @@ export default function Navbar({ transparent = false }: NavbarProps) {
       </nav>
 
       {menuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 flex">
+        <div className="lg:hidden fixed inset-0 z-60 flex">
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => setMenuOpen(false)}
           />
 
-          <div className="relative ml-auto w-[75%] max-w-xs bg-white h-full flex flex-col shadow-xl animate-slide-in">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <Image
-                src="/logo/logo.svg"
-                alt="Popular Rides Logo"
-                width={70}
-                height={60}
-              />
+          {/* Slides down from top */}
+          <div
+            className="relative w-full bg-no-repeat bg-cover bg-top flex flex-col shadow-xl"
+            style={{
+              backgroundImage: "url('/home/mobilenav.svg')",
+              animation: "slideDown 0.3s ease-out",
+            }}
+          >
+            {/* Close button */}
+            <div className="flex justify-end px-5 pt-5">
               <button
                 onClick={() => setMenuOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5"
                 aria-label="Close menu"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <svg width="32" height="16" viewBox="0 0 16 16" fill="none">
                   <path
                     d="M1 1l14 14M15 1L1 15"
-                    stroke="#111"
+                    stroke="#FEA800"
                     strokeWidth="2"
                     strokeLinecap="round"
                   />
@@ -158,18 +163,19 @@ export default function Navbar({ transparent = false }: NavbarProps) {
               </button>
             </div>
 
-            <ul className="flex flex-col px-5 py-6 gap-1">
+            {/* Nav links — centered */}
+            <ul className="flex flex-col items-center px-5 py-6 gap-2">
               {NAV_LINKS.map((link) => {
                 const isActive = pathname === link.href;
                 return (
-                  <li key={link.href}>
+                  <li key={link.href} className="w-full text-center">
                     <Link
                       href={link.href}
                       onClick={() => setMenuOpen(false)}
-                      className={`block text-[15px] font-medium font-poppins py-3 px-3 rounded-lg transition-colors ${
+                      className={`block text-[18px] font-semibold font-poppins py-3 uppercase tracking-wide transition-colors ${
                         isActive
-                          ? "text-[#FEA800] bg-[#FEA800]/10"
-                          : "text-gray-800 hover:text-[#FEA800] hover:bg-[#FEA800]/5"
+                          ? "text-[#FEA800]"
+                          : "text-gray-900 hover:text-[#FEA800]"
                       }`}
                     >
                       {link.label}
@@ -179,7 +185,8 @@ export default function Navbar({ transparent = false }: NavbarProps) {
               })}
             </ul>
 
-            <div className="mt-auto px-5 py-6 border-t border-gray-100 flex flex-col gap-3">
+            {/* Auth buttons */}
+            <div className="flex flex-col items-center px-8 pb-10 gap-3">
               {isAuthenticated ? (
                 <UserMenu />
               ) : (
@@ -188,7 +195,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                     openModal("login");
                     setMenuOpen(false);
                   }}
-                  className="text-center text-[15px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/10 transition-colors font-poppins"
+                  className="w-full text-center text-[16px] font-semibold text-[#FEA800] border-2 border-[#FEA800] rounded-full px-6 py-3 hover:bg-[#FEA800]/10 transition-colors font-poppins"
                 >
                   Sign In
                 </button>
@@ -196,7 +203,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
               <Link
                 href="/get-started"
                 onClick={() => setMenuOpen(false)}
-                className="text-center text-[15px] font-medium bg-[#FEA800] text-black rounded-full px-6 py-2.5 hover:bg-[#FEA800]/90 transition-colors font-poppins"
+                className="w-full text-center text-[16px] font-semibold bg-[#FEA800] text-black rounded-full px-6 py-3 hover:bg-[#FEA800]/90 transition-colors font-poppins"
               >
                 Get Started
               </Link>

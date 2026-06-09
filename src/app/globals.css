@@ -168,3 +168,14 @@
   background-color: #fea800 !important;
   border-color: #fea800 !important;
 }
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
