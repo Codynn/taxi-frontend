@@ -53,7 +53,7 @@ function BookingCardDesktop({ booking }: { booking: BookingRecord }) {
       <div className="flex flex-1 items-center gap-4 p-5  min-w-0">
         <div className="relative w-[180px] h-[110px] shrink-0 rounded-xl overflow-hidden">
           <Image
-            src={`/${booking.vehicle.image}`}
+            src={`${booking.vehicle.image}`}
             alt={booking.vehicle.name}
             fill
             className="object-cover"
@@ -130,7 +130,7 @@ function BookingCardMobile({ booking }: { booking: BookingRecord }) {
       <div className="flex gap-3">
         <div className="relative w-[120px] h-[80px] shrink-0 rounded-xl overflow-hidden">
           <Image
-            src={`/${booking.vehicle.image}`}
+            src={`${booking.vehicle.image}`}
             alt={booking.vehicle.name}
             fill
             className="object-cover"

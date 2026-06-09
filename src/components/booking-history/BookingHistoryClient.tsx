@@ -70,11 +70,28 @@ function calcDays(from: string, to?: string): number {
 
 function buildFeatures(v: ApiVehicleFull) {
   const features = [];
-  if (v?.vechileFuelType)
-    features.push({ label: v.vechileFuelType, icon: "fuel" });
+
+  if (v?.vechileFuelType) {
+    const fuelIcon =
+      v.vechileFuelType.toLowerCase() === "electric"
+        ? "vehicle/battery.svg"
+        : "vehicle/fuel.svg";
+    features.push({ label: v.vechileFuelType, icon: fuelIcon });
+  }
+
+  if (v?.vechileGearType) {
+    const gearIcon =
+      v.vechileGearType.toLowerCase() === "automatic"
+        ? "vehicle/battery.svg"
+        : "vehicle/settings.svg";
+    features.push({ label: v.vechileGearType, icon: gearIcon });
+  }
+
   if (v?.noOfSeats)
-    features.push({ label: `${v.noOfSeats} Seats`, icon: "users" });
-  if (v?.hasAC) features.push({ label: "AC", icon: "wind" });
+    features.push({ label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" });
+
+  if (v?.hasAC) features.push({ label: "AC", icon: "vehicle/wind.svg" });
+
   return features;
 }
 
