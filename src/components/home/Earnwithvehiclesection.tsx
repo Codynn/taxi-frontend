@@ -5,12 +5,37 @@ export default function EarnWithVehicleSection() {
   return (
     <section className="bg-white py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row lg:items-center lg:justify-between gap-10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
           <div className="order-2 md:order-1 flex flex-col gap-5 max-w-2xl">
-            <h2 className="font-sora font-extrabold text-black text-[48px]  leading-tight">
-              Earn With{" "}
-              <span className="bg-[#FEA800] px-2 rounded-sm">Your Vehicle</span>
-            </h2>
+            <div className="relative text-center pt-10">
+              <Image
+                src="/about/rectangle.svg"
+                alt=""
+                width={480}
+                height={50}
+                className="absolute top-8 left-[55%] -translate-x-1/2 z-0 lg:block hidden"
+                aria-hidden
+              />
+              <Image
+                src="/about/rectangle.svg"
+                alt=""
+                width={220}
+                height={150}
+                className="absolute top-10 left-[22%] z-0 lg:hidden md:hidden block"
+                aria-hidden
+              />
+              <Image
+                src="/about/rectangle.svg"
+                alt=""
+                width={320}
+                height={150}
+                className="absolute top-10 left-[30%] z-0 lg:hidden hidden sm:block"
+                aria-hidden
+              />
+              <h2 className="relative z-10 mt-2 text-[20px] md:text-[32px] lg:text-[48px] font-semibold font-sora text-[#000000]">
+                Earn With <span className="px-2 rounded-sm">Your Vehicle</span>
+              </h2>
+            </div>
 
             <p className="font-poppins text-[#000000]/65 text-[16px]  leading-relaxed">
               List your vehicle on our platform and turn everyday availability

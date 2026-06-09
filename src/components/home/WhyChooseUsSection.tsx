@@ -17,17 +17,38 @@ export default function WhyChooseUsSection() {
   return (
     <section className="bg-white py-16 md:py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-[48px] font-semibold font-sora text-gray-900 leading-tight">
-            {heading}{" "}
-            <span className="bg-[#FEA800] px-2 rounded-sm">
-              {highlightedWord}
-            </span>
+        <div className="relative text-center pt-10">
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={420}
+            height={50}
+            className="absolute top-10 left-[58%] -translate-x-1/2 z-0 lg:block hidden"
+            aria-hidden
+          />
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={200}
+            height={150}
+            className="absolute top-10 left-[34%] z-0 lg:hidden md:hidden block"
+            aria-hidden
+          />
+          <Image
+            src="/about/rectangle.svg"
+            alt=""
+            width={300}
+            height={150}
+            className="absolute top-10 left-[38%] z-0 lg:hidden hidden sm:block"
+            aria-hidden
+          />
+          <h2 className="relative z-10 mt-2 text-[20px] md:text-[32px] lg:text-[48px] font-semibold font-sora text-[#000000]">
+            {heading} <span className="px-2 rounded-sm">{highlightedWord}</span>
           </h2>
-          <p className="mt-4 text-sm md:text-base text-gray-500 font-poppins max-w-2xl mx-auto leading-relaxed">
-            {description}
-          </p>
         </div>
+        <p className="mt-4 text-sm md:text-base text-gray-500 font-poppins max-w-2xl mx-auto leading-relaxed">
+          {description}
+        </p>
 
         {/* Desktop */}
         <div className="hidden lg:block relative">
