@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
 
 import BookingSummaryBar from "@/components/Booking/BookingSummaryBar";
 import VehicleSelectedCard from "@/components/vehicles/Vehicleselectedcard";
@@ -12,7 +11,6 @@ import CompleteBookingForm, {
 } from "@/components/Booking/Completebookingform";
 import Navbar from "@/components/layout/navbar";
 import { useBookingStore } from "@/hooks/useBookingStore";
-import { useCreateBooking } from "@/lib/api/booking.api";
 
 export default function CompleteBookingPage() {
   const router = useRouter();
@@ -22,12 +20,10 @@ export default function CompleteBookingPage() {
     setBookingState,
     selectedVehicle,
     modalData,
-    resetBooking,
+    setContactData,
   } = useBookingStore();
 
-  const { mutate: createBooking, isPending } = useCreateBooking();
-
-  // Guard: must have both vehicle and modal data
+  // Guard: must have vehicle + modal data from prior step
   useEffect(() => {
     if (!selectedVehicle || !modalData) {
       router.replace("/choose-ride");
@@ -37,37 +33,24 @@ export default function CompleteBookingPage() {
   if (!selectedVehicle || !modalData) return null;
 
   const handleSubmit = (values: CompleteBookingFormValues) => {
-    const toISO = (value: string | Date) => {
-      return new Date(value).toISOString();
-    };
-
-    createBooking({
-      // Step 1 (modalData)
-      pickUpLocation: modalData.pickUpLocation,
-      dropOffLocation: modalData.dropOffLocation,
-      pickUpDate: toISO(modalData.pickUpDate),
-      returnDate: modalData.returnDate ? toISO(modalData.returnDate) : "",
-      bookingType: modalData.bookingType,
-      tripType: modalData.tripType,
-      driverRequired: modalData.driverRequired,
-
-      // Step 2 (form)
+    // Persist form values so CheckoutClient can use them
+    setContactData({
       fullName: values.fullName,
       contactNumber: values.contactNumber,
       email: values.email,
+      pickupLocation: values.pickupLocation,
+      dropoffLocation: values.dropoffLocation,
+      pickUpTime: values.pickupTime,
       message: values.message,
-
-      pickUpTime: toISO(values.pickupTime),
-
-      // Vehicle
-      vechicleId: selectedVehicle.id,
     });
+
+    router.push("/checkout");
   };
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen  font-poppins">
+      <div className="min-h-screen font-poppins">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5 pt-25">
           {/* Go Back */}
           <button
@@ -95,8 +78,6 @@ export default function CompleteBookingPage() {
             <div className="basis-1/2 min-w-0">
               <CompleteBookingForm
                 onSubmit={handleSubmit}
-                isSubmitting={isPending}
-                // Pre-fill locations from step 1
                 defaultValues={{
                   pickupLocation: modalData.pickUpLocation,
                   dropoffLocation: modalData.dropOffLocation,

@@ -11,8 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import VehicleTabs from "../vehicles/VehicleTabs";
 import VehicleCard from "../vehicles/VehicleCard";
 import { useVehicles } from "@/hooks/useVehicle";
-import type { VehicleCategory } from "@/lib/api/vehicle.api";
+import type { ApiVehicle, VehicleCategory } from "@/lib/api/vehicle.api";
 import { RIDES_READY_CONTENT } from "@/constants/features/vehicle.constants";
+import BookingModal from "../Booking/Bookingmodal ";
 
 const VEHICLE_TABS = [
   { value: "CAR" as VehicleCategory, label: "Cars", icon: "vehicle/car.svg" },
@@ -62,6 +63,11 @@ export default function RidesReadySection() {
   // ── Real API data ─────────────────────────────────────────────────────
   const { data: allVehicles = [], isLoading, isError } = useVehicles();
   const filtered = allVehicles.filter((v) => v.category === activeTab);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<ApiVehicle | null>(
+    null,
+  );
 
   return (
     <section className="bg-white py-16 md:py-24 overflow-hidden">
@@ -151,7 +157,13 @@ export default function RidesReadySection() {
                 key={vehicle.id}
                 className="!h-auto flex items-stretch"
               >
-                <VehicleCard vehicle={vehicle} />
+                <VehicleCard
+                  vehicle={vehicle}
+                  onChoose={(vehicle) => {
+                    setSelectedVehicle(vehicle);
+                    setModalOpen(true);
+                  }}
+                />
               </SwiperSlide>
             ))}
           </Swiper>
@@ -167,12 +179,21 @@ export default function RidesReadySection() {
 
       {/* ── Browse all ── */}
       <div className="flex justify-center mt-10">
-        <Link href="/our-rides">
+        <Link href="/rides">
           <button className="border border-[#FEA800] text-[#FEA800] text-[16px] font-semibold font-poppins px-8 py-2.5 rounded-full hover:bg-[#FEA800]/10 transition-colors">
             {browseAllLabel}
           </button>
         </Link>
       </div>
+
+      <BookingModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSearch={(state) => {
+          console.log("Booking:", selectedVehicle, state);
+          setModalOpen(false);
+        }}
+      />
     </section>
   );
 }
