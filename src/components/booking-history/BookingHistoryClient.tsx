@@ -3,12 +3,17 @@
 import { useState } from "react";
 import Navbar from "@/components/layout/navbar";
 import { BookingRecord, BookingStatus, TripTab } from "@/types/booking.types";
-import { useMyBookings, ApiBooking } from "@/lib/api/booking.api";
+import {
+  useMyBookings,
+  ApiBooking,
+  BookingStatus as ApiBookingStatus,
+} from "@/lib/api/booking.api";
 import BookingHistoryHeader from "./BookingHistoryHeader";
 import BookingHistoryFilters from "./BookingHistoryFilters";
 import BookingHistoryTabs from "./BookingHistoryTabs";
 import BookingHistoryPagination from "./BookingHistoryPagination";
 import BookingHistoryList from "./BookingHistoryList";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ApiVehicleFull {
   id: string;
@@ -28,7 +33,6 @@ interface ApiBookingRaw extends Omit<ApiBooking, "vehicle"> {
   vechicle: ApiVehicleFull;
 }
 
-// ── Lookup maps ───────────────────────────────────────────────────────────────
 const TRIP_TYPE_MAP: Record<string, TripTab> = {
   LONG_TRIP: "long",
   SHORT_TRIP: "short",
@@ -44,7 +48,7 @@ const UI_TO_API_TRIP: Record<
   custom: "CUSTOM_TRIP",
 };
 
-const STATUS_MAP: Record<string, BookingStatus> = {
+const STATUS_UI_MAP: Record<string, BookingStatus> = {
   PENDING: "Pending",
   CONFIRMED: "Pending",
   IN_PROGRESS: "Pending",
@@ -52,7 +56,6 @@ const STATUS_MAP: Record<string, BookingStatus> = {
   CANCELLED: "Cancelled",
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function formatDate(iso: string): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-US", {
@@ -70,7 +73,6 @@ function calcDays(from: string, to?: string): number {
 
 function buildFeatures(v: ApiVehicleFull) {
   const features = [];
-
   if (v?.vechileFuelType) {
     const fuelIcon =
       v.vechileFuelType.toLowerCase() === "electric"
@@ -78,7 +80,6 @@ function buildFeatures(v: ApiVehicleFull) {
         : "vehicle/fuel.svg";
     features.push({ label: v.vechileFuelType, icon: fuelIcon });
   }
-
   if (v?.vechileGearType) {
     const gearIcon =
       v.vechileGearType.toLowerCase() === "automatic"
@@ -86,12 +87,9 @@ function buildFeatures(v: ApiVehicleFull) {
         : "vehicle/settings.svg";
     features.push({ label: v.vechileGearType, icon: gearIcon });
   }
-
   if (v?.noOfSeats)
     features.push({ label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" });
-
   if (v?.hasAC) features.push({ label: "AC", icon: "vehicle/wind.svg" });
-
   return features;
 }
 
@@ -107,7 +105,7 @@ function toBookingRecord(b: ApiBookingRaw): BookingRecord {
     to: b.dropOffLocation,
     pickup: formatDate(b.pickUpDate),
     return: b.returnDate ? formatDate(b.returnDate) : "—",
-    status: STATUS_MAP[b.status] ?? "Pending",
+    status: STATUS_UI_MAP[b.status] ?? "Pending",
     currency: "Rs",
     paid,
     tripType: TRIP_TYPE_MAP[b.tripType] ?? "long",
@@ -120,40 +118,36 @@ function toBookingRecord(b: ApiBookingRaw): BookingRecord {
   };
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
 const ITEMS_PER_PAGE = 6;
 
-// ── Component ─────────────────────────────────────────────────────────────────
 export default function BookingHistoryClient() {
   const [activeTab, setActiveTab] = useState<TripTab>("long");
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
-  const [sortBy, setSortBy] = useState("latest");
+  const [statusFilter, setStatusFilter] = useState(""); // "" = All Status (API value)
+  const [sortBy, setSortBy] = useState<"latest" | "oldest">("latest");
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading, isError } = useMyBookings({
     tripType: UI_TO_API_TRIP[activeTab],
-    sort: sortBy as "latest" | "oldest",
+    status: statusFilter ? (statusFilter as ApiBookingStatus) : undefined,
+    sort: sortBy,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });
 
-  // Transform raw API data → BookingRecord[]
   const allBookings: BookingRecord[] = (
     (data?.data ?? []) as unknown as ApiBookingRaw[]
   ).map(toBookingRecord);
 
-  // Client-side filter by status and search (server already filters by tripType + sort + page)
-  const filtered = allBookings.filter((b) => {
-    const matchesStatus =
-      statusFilter === "All Status" || b.status === statusFilter;
-    const matchesSearch =
-      searchQuery === "" ||
-      b.vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.from.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.to.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+  // Search is client-side only (backend doesn't support text search)
+  const filtered = searchQuery
+    ? allBookings.filter(
+        (b) =>
+          b.vehicle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          b.from.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          b.to.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : allBookings;
 
   const totalPages = data?.pagination?.totalPages ?? 1;
 
@@ -176,7 +170,7 @@ export default function BookingHistoryClient() {
           }}
           sortBy={sortBy}
           onSortChange={(v) => {
-            setSortBy(v);
+            setSortBy(v as "latest" | "oldest");
             setCurrentPage(1);
           }}
         />
@@ -190,8 +184,10 @@ export default function BookingHistoryClient() {
         />
 
         {isLoading && (
-          <div className="text-center py-16 text-black font-poppins text-[16px]">
-            Loading bookings…
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-[160px] w-full rounded-2xl" />
+            ))}
           </div>
         )}
 
@@ -203,7 +199,7 @@ export default function BookingHistoryClient() {
 
         {!isLoading && !isError && <BookingHistoryList bookings={filtered} />}
 
-        {!isLoading && !isError && filtered.length > 0 && (
+        {!isLoading && !isError && totalPages > 1 && (
           <BookingHistoryPagination
             currentPage={currentPage}
             totalPages={totalPages}
