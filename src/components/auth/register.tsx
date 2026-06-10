@@ -219,7 +219,7 @@ export default function RegisterModal() {
                   render={({ field }) => (
                     <Field
                       orientation="horizontal"
-                      className="flex items-center space-y-0"
+                      className="flex items-center gap-2"
                     >
                       <Checkbox
                         id="reg-remember"
@@ -239,7 +239,7 @@ export default function RegisterModal() {
                 <button
                   type="button"
                   onClick={() => switchView("forgot-password")}
-                  className="text-[12px] text-[#000000] font-poppins hover:text-[#FEA800] transition-colors"
+                  className="text-[12px] text-[#000000] font-poppins hover:text-[#FEA800] transition-colors whitespace-nowrap"
                 >
                   Forgot password?
                 </button>

@@ -162,7 +162,7 @@ export default function LoginModal() {
                 />
               </FieldGroup>
 
-              <div className="flex">
+              <div className="flex items-center justify-between">
                 <Controller
                   name="rememberMe"
                   control={form.control}
@@ -189,7 +189,7 @@ export default function LoginModal() {
                 <button
                   type="button"
                   onClick={() => switchView("forgot-password")}
-                  className="text-[16px] text-[#000000] font-poppins hover:text-[#FFB119] transition-colors"
+                  className="text-[16px] text-[#000000] font-poppins hover:text-[#FFB119] transition-colors whitespace-nowrap"
                 >
                   Forgot password?
                 </button>
