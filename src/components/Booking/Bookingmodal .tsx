@@ -95,7 +95,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [formState, setFormState] = useState<BookingFormState>(
     DEFAULT_BOOKING_STATE,
   );
-  const [loaderOpen, setLoaderOpen] = useState(false);
+
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
@@ -121,11 +121,9 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
 
   if (!open) return null;
 
-  // UI "round-trip" | "one-way"  →  API "ROUND_TRIP" | "ONE_WAY"
   const bookingType: BookingType =
     formState.tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY";
 
-  // UI tab "long" | "short" | "custom"  →  API "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP"
   const apiTripType: ApiTripType =
     activeTab === "long"
       ? "LONG_TRIP"
@@ -149,7 +147,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
     });
 
     setBookingState(formState);
-    setLoaderOpen(true);
+    router.push("/complete-booking");
   };
 
   const FormContent = () => (
@@ -205,7 +203,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
         >
           <p className="text-xs text-gray-400 font-poppins mb-0.5">Pickup</p>
           <p className="text-sm font-medium text-gray-800 font-poppins">
-            {formState.dateRange.pickup || "2083/02/07-08:00 AM"}
+            {formState.dateRange.pickup || "Enter a pickup date"}
           </p>
         </button>
         <button
@@ -214,7 +212,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
         >
           <p className="text-xs text-gray-400 font-poppins mb-0.5">Return</p>
           <p className="text-sm font-medium text-gray-800 font-poppins">
-            {formState.dateRange.return || "2083/02/07-08:00 AM"}
+            {formState.dateRange.return || "Enter a return date"}
           </p>
         </button>
       </div>
@@ -380,15 +378,6 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
           </div>
         </div>
       )}
-
-      <SearchRideLoader
-        open={loaderOpen}
-        onClose={() => {
-          setLoaderOpen(false);
-          onClose();
-          router.push("/choose-ride");
-        }}
-      />
     </div>
   );
 }

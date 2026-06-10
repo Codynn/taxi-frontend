@@ -17,7 +17,9 @@ import type {
 import DatePickerPopup from "./Datepickerpopup";
 import PassengersPopup from "./Passengerspopup";
 import DestinationPopup from "./Destinationpopup";
-import SearchRideLoader from "./SearchRideLoader";
+import { useRouter } from "next/navigation";
+import { useBookingStore } from "@/hooks/useBookingStore";
+import { BookingType, TripType as ApiTripType } from "@/lib/api/booking.api";
 
 interface BookingFormProps {
   tripTab: TripTab;
@@ -160,6 +162,10 @@ function PortalDropdown({
   );
 }
 
+const toISO = (value: string) => {
+  return new Date(value).toISOString();
+};
+
 export default function BookingForm({
   tripTab,
   state,
@@ -169,14 +175,44 @@ export default function BookingForm({
   const [dateOpen, setDateOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
 
-  const [loaderOpen, setLoaderOpen] = useState(false);
+  const router = useRouter();
 
   const destRef = useRef<HTMLDivElement>(null);
   const dateRef = useRef<HTMLButtonElement>(null);
   const passRef = useRef<HTMLButtonElement>(null);
 
+  const { setModalData, setBookingState } = useBookingStore();
+
   const totalPassengers = state.passengers.adults + state.passengers.children;
   const passengerLabel = `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`;
+
+  const handleSubmit = () => {
+    const bookingType: BookingType =
+      state.tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY";
+
+    const apiTripType: ApiTripType =
+      tripTab === "long"
+        ? "LONG_TRIP"
+        : tripTab === "short"
+          ? "SHORT_TRIP"
+          : "CUSTOM_TRIP";
+
+    const driverRequired = state.driverType === "with-driver";
+
+    setModalData({
+      pickUpLocation: state.destination.from,
+      dropOffLocation: state.destination.to,
+      pickUpDate: toISO(state.dateRange.pickup),
+      returnDate: state.dateRange.return ? toISO(state.dateRange.return) : "",
+      bookingType,
+      tripType: apiTripType,
+      driverRequired,
+    });
+
+    setBookingState(state);
+
+    router.push("/choose-ride");
+  };
 
   if (tripTab === "custom") {
     return (
@@ -241,7 +277,7 @@ export default function BookingForm({
                     Pickup
                   </p>
                   <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.dateRange.pickup || "2083/02/07"}
+                    {state.dateRange.pickup || "Enter a pickup date"}
                   </p>
                 </button>
               </div>
@@ -254,7 +290,7 @@ export default function BookingForm({
                     Return
                   </p>
                   <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.dateRange.return || "2083/02/07"}
+                    {state.dateRange.return || "Enter a return date"}
                   </p>
                 </button>
               </div>
@@ -282,7 +318,7 @@ export default function BookingForm({
             </div>
 
             <button
-              onClick={() => setLoaderOpen(true)}
+              onClick={handleSubmit}
               className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
             >
               Search Ride
@@ -328,7 +364,7 @@ export default function BookingForm({
             >
               <p className="text-xs text-gray-400 font-poppins">Pickup</p>
               <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                {state.dateRange.pickup || "2083/02/07-08:00 AM"}
+                {state.dateRange.pickup || "Enter a pickup date"}
               </p>
             </button>
 
@@ -341,7 +377,7 @@ export default function BookingForm({
             >
               <p className="text-xs text-gray-400 font-poppins">Return</p>
               <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                {state.dateRange.return || "2083/02/07-08:00 AM"}
+                {state.dateRange.return || "Enter a return date"}
               </p>
             </button>
 
@@ -370,7 +406,7 @@ export default function BookingForm({
 
           <div className="hidden lg:flex justify-end">
             <button
-              onClick={() => setLoaderOpen(true)}
+              onClick={handleSubmit}
               className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
             >
               Search Ride
@@ -494,7 +530,7 @@ export default function BookingForm({
                   Pickup
                 </p>
                 <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {state.dateRange.pickup || "2083/02/07"}
+                  {state.dateRange.pickup || "Enter a pickup date"}
                 </p>
               </button>
             </div>
@@ -508,7 +544,7 @@ export default function BookingForm({
                   Return
                 </p>
                 <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {state.dateRange.return || "2083/02/07"}
+                  {state.dateRange.return || "Enter a return date"}
                 </p>
               </button>
             </div>
@@ -535,7 +571,10 @@ export default function BookingForm({
             </button>
           </div>
 
-          <button className="w-full bg-[#FEA800] text-black font-semibold text-sm font-poppins py-4 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm mt-1">
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-[#FEA800] text-black font-semibold text-sm font-poppins py-4 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm mt-1"
+          >
             Search Ride
           </button>
         </div>
@@ -581,7 +620,7 @@ export default function BookingForm({
           >
             <p className="text-xs text-gray-400 font-poppins">Pickup</p>
             <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-              {state.dateRange.pickup || "2083/02/07-08:00 AM"}
+              {state.dateRange.pickup || "Enter a pickup date"}
             </p>
           </button>
 
@@ -595,7 +634,7 @@ export default function BookingForm({
               >
                 <p className="text-xs text-gray-400 font-poppins">Return</p>
                 <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                  {state.dateRange.return || "2083/02/07-08:00 AM"}
+                  {state.dateRange.return || "Enter return date"}
                 </p>
               </button>
             </>
@@ -626,7 +665,7 @@ export default function BookingForm({
 
         <div className="hidden lg:flex justify-end">
           <button
-            onClick={() => setLoaderOpen(true)}
+            onClick={handleSubmit}
             className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
           >
             Search Ride
@@ -680,11 +719,6 @@ export default function BookingForm({
           inline
         />
       </PortalDropdown>
-
-      <SearchRideLoader
-        open={loaderOpen}
-        onClose={() => setLoaderOpen(false)}
-      />
     </>
   );
 }
