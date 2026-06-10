@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Navbar from "@/components/layout/navbar";
 import ProfileForm from "@/components/shared/ProfileForm";
+import ChangePasswordForm from "@/components/shared/ChangePasswordForm";
 
 export const metadata: Metadata = {
   title: "My Profile | Popular Rides",
@@ -46,10 +47,23 @@ export default function ProfilePage() {
           </div>
 
           <p className="mb-8 text-[15px] text-gray-600 font-poppins">
-            View and Update your profile details.
+            View and update your profile details.
           </p>
 
           <ProfileForm />
+
+          <div className="max-w-xl my-10 border-t border-gray-200" />
+
+          <div className="mb-3">
+            <h2 className="text-[22px] font-semibold font-sora text-black">
+              Change Password
+            </h2>
+            <p className="mt-1 text-[14px] text-gray-500 font-poppins">
+              Keep your account secure with a strong password.
+            </p>
+          </div>
+
+          <ChangePasswordForm />
         </div>
       </section>
     </main>
