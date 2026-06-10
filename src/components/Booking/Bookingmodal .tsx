@@ -25,7 +25,6 @@ import type {
 import DatePickerPopup from "./Datepickerpopup";
 import PassengersPopup from "./Passengerspopup";
 import DestinationPopup from "./Destinationpopup";
-import SearchRideLoader from "./SearchRideLoader";
 import { useBookingStore } from "@/hooks/useBookingStore";
 
 interface BookingModalProps {
@@ -83,9 +82,7 @@ function CustomRadioGroup<T extends string>({
   );
 }
 
-const toISO = (value: string) => {
-  return new Date(value).toISOString();
-};
+const toISO = (value: string) => new Date(value).toISOString();
 
 export default function BookingModal({ open, onClose }: BookingModalProps) {
   const router = useRouter();
@@ -95,28 +92,30 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [formState, setFormState] = useState<BookingFormState>(
     DEFAULT_BOOKING_STATE,
   );
-
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
+  const [errors, setErrors] = useState<{
+    destination?: string;
+    date?: string;
+  }>({});
 
   const totalPassengers =
     formState.passengers.adults + formState.passengers.children;
   const passengerLabel = `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`;
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [open]);
 
   useEffect(() => {
-    if (!open) setActivePopup(null);
+    if (!open) {
+      setActivePopup(null);
+      setErrors({});
+    }
   }, [open]);
 
   if (!open) return null;
@@ -134,6 +133,18 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const driverRequired = formState.driverType === "with-driver";
 
   const handleSubmit = () => {
+    const newErrors: typeof errors = {};
+    if (!formState.destination.from || !formState.destination.to) {
+      newErrors.destination = "Please select pickup and drop location";
+    }
+    if (!formState.dateRange.pickup) {
+      newErrors.date = "Please select pickup date";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     setModalData({
       pickUpLocation: formState.destination.from,
       dropOffLocation: formState.destination.to,
@@ -145,7 +156,6 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
       tripType: apiTripType,
       driverRequired,
     });
-
     setBookingState(formState);
     router.push("/complete-booking");
   };
@@ -167,54 +177,77 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
       </div>
 
       {/* From / To */}
-      <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
-        <button
-          onClick={() => setActivePopup("dest")}
-          className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
+      <div>
+        <div
+          className={`border rounded-2xl overflow-hidden bg-white ${errors.destination ? "border-red-400" : "border-gray-200"}`}
         >
-          <p className="text-xs text-gray-400 font-poppins mb-0.5">From</p>
-          <p className="text-sm font-medium text-gray-800 font-poppins">
-            {formState.destination.from || "Enter pickup location"}
-          </p>
-        </button>
-        <div className="relative flex items-center px-4">
-          <div className="flex-1 h-px bg-gray-200" />
-          <button className="mx-3 w-8 h-8 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
-            <ArrowUpDown size={14} className="text-[#FEA800]" />
+          <button
+            onClick={() => setActivePopup("dest")}
+            className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
+          >
+            <p className="text-xs text-gray-400 font-poppins mb-0.5">From</p>
+            <p className="text-sm font-medium text-gray-800 font-poppins">
+              {formState.destination.from || "Enter pickup location"}
+            </p>
+            {errors.destination && !formState.destination.from && (
+              <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+                Please select a pickup location
+              </p>
+            )}
           </button>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="relative flex items-center px-4">
+            <div className="flex-1 h-px bg-gray-200" />
+            <button className="mx-3 w-8 h-8 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
+              <ArrowUpDown size={14} className="text-[#FEA800]" />
+            </button>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+          <button
+            onClick={() => setActivePopup("dest")}
+            className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
+          >
+            <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
+            <p className="text-sm font-medium text-gray-800 font-poppins">
+              {formState.destination.to || "Enter drop location"}
+            </p>
+            {errors.destination && !formState.destination.to && (
+              <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+                Please select a drop location
+              </p>
+            )}
+          </button>
         </div>
-        <button
-          onClick={() => setActivePopup("dest")}
-          className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
-        >
-          <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
-          <p className="text-sm font-medium text-gray-800 font-poppins">
-            {formState.destination.to || "Enter drop location"}
-          </p>
-        </button>
       </div>
 
       {/* Pickup + Return */}
-      <div className="border border-gray-200 rounded-2xl overflow-hidden grid grid-cols-2 divide-x divide-gray-200">
-        <button
-          onClick={() => setActivePopup("date")}
-          className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+      <div>
+        <div
+          className={`border rounded-2xl overflow-hidden grid grid-cols-2 divide-x divide-gray-200 ${errors.date ? "border-red-400 divide-red-200" : "border-gray-200"}`}
         >
-          <p className="text-xs text-gray-400 font-poppins mb-0.5">Pickup</p>
-          <p className="text-sm font-medium text-gray-800 font-poppins">
-            {formState.dateRange.pickup || "Enter a pickup date"}
-          </p>
-        </button>
-        <button
-          onClick={() => setActivePopup("date")}
-          className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
-        >
-          <p className="text-xs text-gray-400 font-poppins mb-0.5">Return</p>
-          <p className="text-sm font-medium text-gray-800 font-poppins">
-            {formState.dateRange.return || "Enter a return date"}
-          </p>
-        </button>
+          <button
+            onClick={() => setActivePopup("date")}
+            className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+          >
+            <p className="text-xs text-gray-400 font-poppins mb-0.5">Pickup</p>
+            <p className="text-sm font-medium text-gray-800 font-poppins">
+              {formState.dateRange.pickup || "Enter a pickup date"}
+            </p>
+            {errors.date && (
+              <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+                Please select a pickup date
+              </p>
+            )}
+          </button>
+          <button
+            onClick={() => setActivePopup("date")}
+            className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+          >
+            <p className="text-xs text-gray-400 font-poppins mb-0.5">Return</p>
+            <p className="text-sm font-medium text-gray-800 font-poppins">
+              {formState.dateRange.return || "Enter a return date"}
+            </p>
+          </button>
+        </div>
       </div>
 
       {/* Passengers */}
@@ -264,6 +297,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
                 onClick={() => {
                   setActiveTab(tab.value);
                   setFormState((s) => ({ ...s, tripTab: tab.value }));
+                  setErrors({});
                 }}
                 className={[
                   "flex-1 py-4 text-sm font-semibold font-poppins transition-all duration-200",
@@ -323,6 +357,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
               onClose={() => setActivePopup(null)}
               onSelect={(dest) => {
                 setFormState((s) => ({ ...s, destination: dest }));
+                setErrors((e) => ({ ...e, destination: undefined }));
                 setActivePopup(null);
               }}
               inline
@@ -347,6 +382,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
               dateRange={formState.dateRange}
               onConfirm={(range) => {
                 setFormState((s) => ({ ...s, dateRange: range }));
+                setErrors((e) => ({ ...e, date: undefined }));
                 setActivePopup(null);
               }}
               inline
