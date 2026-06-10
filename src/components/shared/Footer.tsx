@@ -13,8 +13,6 @@ import { Mail, MapPin, Phone } from "lucide-react";
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   facebook: <FaFacebookF size={16} />,
-  instagram: <FaInstagram size={16} />,
-  tiktok: <FaTiktok size={16} />,
 };
 
 export default function Footer() {

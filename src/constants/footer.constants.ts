@@ -17,11 +17,9 @@ export const FOOTER_LINK_GROUPS: FooterLinkGroup[] = [
   {
     title: "Help & Support",
     links: [
-      { label: "FAQs", href: "/faqs" },
       { label: "Privacy Policy", href: "/privacy-policy" },
       { label: "Terms & Conditions", href: "/terms" },
       { label: "Refund Policy", href: "/refund-policy" },
-      { label: "Support Center", href: "/support" },
     ],
   },
 ];
@@ -36,16 +34,9 @@ export const SOCIAL_LINKS: SocialLink[] = [
   {
     id: "facebook",
     label: "Facebook",
-    href: "https://facebook.com",
+    href: "https://www.facebook.com/lokpriya.taxi/",
     icon: "facebook",
   },
-  {
-    id: "instagram",
-    label: "Instagram",
-    href: "https://instagram.com",
-    icon: "instagram",
-  },
-  { id: "tiktok", label: "TikTok", href: "https://tiktok.com", icon: "tiktok" },
 ];
 
 export const FOOTER_DESCRIPTION =
