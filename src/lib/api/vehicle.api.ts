@@ -19,8 +19,7 @@ export interface ApiVehicle {
 }
 
 export async function getAllVehicles(): Promise<ApiVehicle[]> {
-  const res = await api.get<{ success: boolean; data: ApiVehicle[] }>(
-    "/vechicle/get-all",
-  );
-  return res.data.data;
+  const res = await api.get("/vechicle/get-all");
+
+  return res.data.data.data;
 }
