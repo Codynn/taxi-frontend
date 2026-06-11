@@ -18,12 +18,13 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const { openModal } = useAuthModal();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
       const heroHeight = window.innerHeight;
-      setScrolled(window.scrollY > heroHeight * 0.8);
+      setScrolled(window.scrollY > heroHeight * 0.1);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -71,22 +72,24 @@ export default function Navbar({
             </ul>
 
             <div className="flex items-center gap-3">
-              {isAuthenticated ? (
+              {!hasHydrated ? null : isAuthenticated ? (
                 <UserMenu />
               ) : (
-                <button
-                  onClick={() => openModal("login")}
-                  className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-                >
-                  Sign In
-                </button>
+                <>
+                  <button
+                    onClick={() => openModal("login")}
+                    className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => openModal("register")}
+                    className="text-[16px] font-medium bg-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/90 transition-colors font-poppins text-black"
+                  >
+                    Get Started
+                  </button>
+                </>
               )}
-              <Link
-                href="/get-started"
-                className="text-[16px] font-medium bg-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/90 transition-colors font-poppins text-black"
-              >
-                Get Started
-              </Link>
             </div>
           </div>
         </div>
@@ -187,26 +190,30 @@ export default function Navbar({
 
             {/* Auth buttons */}
             <div className="flex flex-col items-center px-8 pb-10 gap-3">
-              {isAuthenticated ? (
+              {!hasHydrated ? null : isAuthenticated ? (
                 <UserMenu />
               ) : (
-                <button
-                  onClick={() => {
-                    openModal("login");
-                    setMenuOpen(false);
-                  }}
-                  className="w-full text-center text-[16px] font-semibold text-[#FEA800] border-2 border-[#FEA800] rounded-full px-6 py-3 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-                >
-                  Sign In
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      openModal("login");
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-center text-[16px] font-semibold text-[#FEA800] border-2 border-[#FEA800] rounded-full px-6 py-3 hover:bg-[#FEA800]/10 transition-colors font-poppins"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => {
+                      openModal("register");
+                      setMenuOpen(false);
+                    }}
+                    className="w-full text-center text-[16px] font-semibold bg-[#FEA800] text-black rounded-full px-6 py-3 hover:bg-[#FEA800]/90 transition-colors font-poppins"
+                  >
+                    Get Started
+                  </button>
+                </>
               )}
-              <Link
-                href="/get-started"
-                onClick={() => setMenuOpen(false)}
-                className="w-full text-center text-[16px] font-semibold bg-[#FEA800] text-black rounded-full px-6 py-3 hover:bg-[#FEA800]/90 transition-colors font-poppins"
-              >
-                Get Started
-              </Link>
             </div>
           </div>
         </div>

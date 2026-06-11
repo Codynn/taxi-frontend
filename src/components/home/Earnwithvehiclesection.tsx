@@ -7,7 +7,7 @@ export default function EarnWithVehicleSection() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
           <div className="order-2 md:order-1 flex flex-col gap-5 max-w-2xl">
-            <div className="relative text-center pt-10">
+            <div className="relative  pt-10">
               <Image
                 src="/about/rectangle.svg"
                 alt=""
