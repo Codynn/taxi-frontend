@@ -26,7 +26,13 @@ function SuccessModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-3xl p-8 mx-4 max-w-sm w-full flex flex-col items-center gap-4 text-center shadow-xl">
         <div className="w-32 h-32 rounded-full bg-green-500 flex items-center justify-center mb-2">
-          <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 60 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               d="M12 30L24 42L48 18"
               stroke="white"
@@ -63,12 +69,24 @@ function SuccessModal({
 }
 
 /* ── Failure Modal ── */
-function FailureModal({ onClose }: { onClose: () => void }) {
+function FailureModal({
+  onClose,
+  onRetry,
+}: {
+  onClose: () => void;
+  onRetry: () => void;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-3xl p-8 mx-4 max-w-sm w-full flex flex-col items-center gap-4 text-center shadow-xl">
         <div className="w-32 h-32 rounded-full bg-red-500 flex items-center justify-center mb-2">
-          <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <svg
+            width="60"
+            height="60"
+            viewBox="0 0 60 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               d="M18 18L42 42M42 18L18 42"
               stroke="white"
@@ -91,7 +109,7 @@ function FailureModal({ onClose }: { onClose: () => void }) {
             Close
           </button>
           <button
-            onClick={onClose}
+            onClick={onRetry}
             className="flex-1 py-3.5 rounded-full bg-[#FEA800] text-black font-semibold font-poppins text-[15px] hover:bg-[#e09700] transition-colors"
           >
             Try Again
@@ -102,7 +120,6 @@ function FailureModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ── Main ── */
 export default function CheckoutClient() {
   const router = useRouter();
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
@@ -110,24 +127,30 @@ export default function CheckoutClient() {
 
   const {
     bookingState,
+    setBookingState,
     selectedVehicle,
     modalData,
-    contactData, // ← from CompleteBookingForm
+    contactData,
     resetBooking,
+    hasHydrated,
   } = useBookingStore();
 
   const { mutate: createBooking, isPending } = useCreateBooking();
 
-  // Guard: must have completed all prior steps
+  // Guard: must have vehicle, modal data and contact info (wait for persisted store to load)
   useEffect(() => {
-    if (!selectedVehicle || !modalData || !contactData) {
+    if (!hasHydrated) return;
+    if (!selectedVehicle || !modalData) {
       router.replace("/choose-ride");
+    } else if (!contactData) {
+      router.replace("/complete-booking");
     }
-  }, [selectedVehicle, modalData, contactData, router]);
+  }, [hasHydrated, selectedVehicle, modalData, contactData, router]);
 
+  if (!hasHydrated) return null;
   if (!selectedVehicle || !modalData || !contactData) return null;
 
-  // ── Fare calculation ────────────────────────────────────────────────────────
+  // Calculate fare details from real data
   const pricePerDay = selectedVehicle.startingPrice;
   const pickUpDate = new Date(modalData.pickUpDate);
   const returnDate = modalData.returnDate
@@ -157,7 +180,6 @@ export default function CheckoutClient() {
     { label: "Service Fee:", amount: serviceFee },
   ];
 
-  // ── Submit booking ──────────────────────────────────────────────────────────
   const handleContinueToPayment = () => {
     if (!selectedPayment) return;
 
@@ -165,15 +187,8 @@ export default function CheckoutClient() {
 
     createBooking(
       {
-        // From CompleteBookingForm (step 2)
-        fullName: contactData.fullName,
-        contactNumber: contactData.contactNumber,
-        email: contactData.email,
-        message: contactData.message,
-        pickUpLocation: contactData.pickupLocation,
-        dropOffLocation: contactData.dropoffLocation,
-        pickUpTime: toISO(contactData.pickUpTime),
-        // From BookingModal (step 1)
+        pickUpLocation: modalData.pickUpLocation,
+        dropOffLocation: modalData.dropOffLocation,
         pickUpDate: toISO(modalData.pickUpDate),
         returnDate: modalData.returnDate
           ? toISO(modalData.returnDate)
@@ -181,6 +196,11 @@ export default function CheckoutClient() {
         bookingType: modalData.bookingType,
         tripType: modalData.tripType,
         driverRequired: modalData.driverRequired,
+        fullName: contactData.fullName,
+        contactNumber: contactData.contactNumber,
+        email: contactData.email,
+        message: contactData.message,
+        pickUpTime: toISO(contactData.pickUpTime),
         vechicleId: selectedVehicle.id,
       },
       {
@@ -194,12 +214,13 @@ export default function CheckoutClient() {
     <main className="w-full bg-white min-h-screen">
       <Navbar />
 
+      {/* Modals */}
       {modalState === "success" && (
         <SuccessModal
           onClose={() => {
             setModalState(null);
             resetBooking();
-            router.push("/choose-ride");
+            router.push("/choose-ride=");
           }}
           onViewDetails={() => {
             setModalState(null);
@@ -209,19 +230,25 @@ export default function CheckoutClient() {
         />
       )}
       {modalState === "failure" && (
-        <FailureModal onClose={() => setModalState(null)} />
+        <FailureModal
+          onClose={() => setModalState(null)}
+          onRetry={() => {
+            setModalState(null);
+            handleContinueToPayment();
+          }}
+        />
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5 pt-25">
+        {/* Go Back */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-[16px] font-poppins text-black w-fit cursor-pointer"
+          className="flex items-center gap-2 text-[16px] font-poppins text-black transition-colors w-fit cursor-pointer"
         >
           <ArrowLeft className="w-10 h-10 text-[#FEA900] bg-[#FEF1D8] p-2 rounded-full" />
           Go Back
         </button>
 
-        {/* ── DESKTOP ── */}
         <div className="hidden lg:grid grid-cols-2 gap-6">
           <div className="flex flex-col gap-5">
             <CheckoutBookingSummary
@@ -233,6 +260,8 @@ export default function CheckoutClient() {
               onChangeVehicle={() => router.back()}
             />
           </div>
+
+          {/* RIGHT */}
           <div className="flex flex-col gap-5">
             <FareDetailsCard fareDetails={fareDetails} total={total} />
             <PaymentCard
@@ -267,7 +296,7 @@ export default function CheckoutClient() {
   );
 }
 
-/* ── Fare Details Card ── */
+/* ── Fare Details ── */
 function FareDetailsCard({
   fareDetails,
   total,
@@ -301,7 +330,7 @@ function FareDetailsCard({
   );
 }
 
-/* ── Payment Card ── */
+/* ── Payment ── */
 function PaymentCard({
   selectedPayment,
   onSelect,
@@ -332,7 +361,7 @@ function PaymentCard({
             src="/ride/esewa.svg"
             alt="eSewa"
             width={100}
-            height={40}
+            height={100}
             className="h-12 w-auto object-contain"
           />
         </button>

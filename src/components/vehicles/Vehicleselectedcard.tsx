@@ -36,6 +36,8 @@ export default function VehicleSelectedCard({
     currency = "Rs",
   } = vehicle;
 
+  console.log(imageUrl);
+
   return (
     <div className="bg-white rounded-2xl border border-[#808080]/50 overflow-hidden font-poppins">
       {/* Section title */}
@@ -46,13 +48,20 @@ export default function VehicleSelectedCard({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 px-4 pb-4">
-        <div className="relative w-full sm:w-[200px] h-[200px] sm:h-auto shrink-0 overflow-hidden rounded-2xl">
-          <Image
-            src={imageUrl}
-            alt={name}
-            fill
-            className="object-cover object-center"
-          />
+        <div className="relative w-full sm:w-[200px] h-[200px] sm:h-auto shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={name}
+              fill
+              className="object-cover object-center"
+              unoptimized
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs font-poppins">
+              No image
+            </div>
+          )}
           {/* Rating badge */}
           <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white text-black text-[10px] font-poppins font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
             <Image src="/vehicle/star.svg" alt="star" width={11} height={11} />

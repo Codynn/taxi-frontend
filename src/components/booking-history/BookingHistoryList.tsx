@@ -18,6 +18,8 @@ function StatusBadge({ status }: { status: BookingStatus }) {
 }
 
 function BookingCardDesktop({ booking }: { booking: BookingRecord }) {
+  console.log(booking.vehicle.image);
+
   return (
     <div className="hidden lg:flex bg-white rounded-2xl border border-[#808080]/50 overflow-hidden">
       <div className="flex flex-col justify-between p-5 w-[350px] shrink-0 ">

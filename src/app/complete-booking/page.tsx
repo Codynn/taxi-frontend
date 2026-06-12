@@ -21,26 +21,30 @@ export default function CompleteBookingPage() {
     selectedVehicle,
     modalData,
     setContactData,
+    hasHydrated,
   } = useBookingStore();
 
-  // Guard: must have vehicle + modal data from prior step
   useEffect(() => {
+    if (!hasHydrated) return;
     if (!selectedVehicle || !modalData) {
       router.replace("/choose-ride");
     }
-  }, [selectedVehicle, modalData, router]);
+  }, [hasHydrated, selectedVehicle, modalData, router]);
 
+  if (!hasHydrated) return null;
   if (!selectedVehicle || !modalData) return null;
 
   const handleSubmit = (values: CompleteBookingFormValues) => {
-    // Persist form values so CheckoutClient can use them
+    const toISO = (value: string | Date) => new Date(value).toISOString();
+
+    // Save step 2 (contact + pickup time + message) for use on the checkout page
     setContactData({
       fullName: values.fullName,
       contactNumber: values.contactNumber,
       email: values.email,
       pickupLocation: values.pickupLocation,
       dropoffLocation: values.dropoffLocation,
-      pickUpTime: values.pickupTime,
+      pickUpTime: toISO(values.pickupTime),
       message: values.message,
     });
 
@@ -50,7 +54,7 @@ export default function CompleteBookingPage() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen font-poppins">
+      <div className="min-h-screen bg-[#F5F5F5] font-poppins">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5 pt-25">
           {/* Go Back */}
           <button
@@ -78,6 +82,8 @@ export default function CompleteBookingPage() {
             <div className="basis-1/2 min-w-0">
               <CompleteBookingForm
                 onSubmit={handleSubmit}
+                isSubmitting={false}
+                // Pre-fill locations from step 1
                 defaultValues={{
                   pickupLocation: modalData.pickUpLocation,
                   dropoffLocation: modalData.dropOffLocation,

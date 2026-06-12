@@ -35,6 +35,7 @@ interface BookingStore {
   modalData: BookingModalData | null;
   selectedVehicle: SelectedVehicle | null;
   contactData: BookingContactData | null;
+  hasHydrated: boolean;
 
   setBookingState: (state: BookingFormState) => void;
   setModalData: (data: BookingModalData) => void;
@@ -42,6 +43,7 @@ interface BookingStore {
   clearSelectedVehicle: () => void;
   setContactData: (data: BookingContactData) => void;
   resetBooking: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 export const useBookingStore = create<BookingStore>()(
@@ -51,6 +53,7 @@ export const useBookingStore = create<BookingStore>()(
       modalData: null,
       selectedVehicle: null,
       contactData: null,
+      hasHydrated: false,
 
       setBookingState: (state) => set({ bookingState: state }),
       setModalData: (data) => set({ modalData: data }),
@@ -64,6 +67,7 @@ export const useBookingStore = create<BookingStore>()(
           selectedVehicle: null,
           contactData: null,
         }),
+      setHasHydrated: (state) => set({ hasHydrated: state }),
     }),
     {
       name: "booking-store",
@@ -73,6 +77,9 @@ export const useBookingStore = create<BookingStore>()(
         selectedVehicle: state.selectedVehicle,
         contactData: state.contactData,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );

@@ -29,6 +29,8 @@ export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
     pricePerDay,
   } = vehicle;
 
+  console.log(vechileImage);
+
   return (
     <div className="bg-white rounded-2xl border border-[#808080]/50 transition-all duration-300 ease-out  hover:shadow-xl flex flex-col p-4">
       {/* Image */}
