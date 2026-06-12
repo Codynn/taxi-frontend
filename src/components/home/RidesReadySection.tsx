@@ -37,7 +37,6 @@ const SWIPER_BREAKPOINTS = {
   1280: { slidesPerView: 4, spaceBetween: 24 },
 };
 
-// ── Card skeleton ─────────────────────────────────────────────────────────
 function CardSkeleton() {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-4">

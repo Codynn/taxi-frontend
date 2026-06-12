@@ -18,7 +18,7 @@ interface ApiVehicleRaw {
   updatedAt: string;
   category: {
     id: string;
-    name: string; // "CAR" | "AUTO_RICKSHAW" | "BIKE_SCOOTER"
+    name: string;
     createdAt: string;
     updatedAt: string;
   };
@@ -58,7 +58,7 @@ interface GetAllVehiclesResponse {
 
 export async function getAllVehicles(): Promise<ApiVehicle[]> {
   const res = await api.get<GetAllVehiclesResponse>("/vechicle/get-all");
-  const raw: ApiVehicleRaw[] = res.data.data.data;
+  const raw: ApiVehicleRaw[] = res.data.data;
 
   return raw.map((v) => ({
     id: v.id,
@@ -69,7 +69,7 @@ export async function getAllVehicles(): Promise<ApiVehicle[]> {
     vechileFuelType: v.vechileFuelType,
     vechileGearType: v.vechileGearType,
     categoryId: v.categoryId,
-    category: v.category.name as VehicleCategory, // ← normalize here
+    category: v.category.name as VehicleCategory,
     hasAC: v.hasAC,
     noOfSeats: v.noOfSeats,
     pricePerDay: v.pricePerDay,
