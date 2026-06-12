@@ -42,23 +42,34 @@ export interface ApiVehicle {
 }
 
 interface GetAllVehiclesResponse {
-  success: boolean;
-  data: {
-    data: ApiVehicleRaw[];
-    meta: {
-      total: number;
-      page: number;
-      limit: number;
-      totalPages: number;
-      hasNextPage: boolean;
-      hasPrevPage: boolean;
-    };
+  data: ApiVehicleRaw[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
   };
+}
+
+function normalizeCategory(name: string): VehicleCategory {
+  switch (name) {
+    case "CAR":
+      return "CAR";
+    case "AUTO_RICKSHAW":
+      return "AUTO_RICKSHAW";
+    case "BIKE_SCOOTER":
+      return "BIKE_SCOOTER";
+    default:
+      return "CAR";
+  }
 }
 
 export async function getAllVehicles(): Promise<ApiVehicle[]> {
   const res = await api.get<GetAllVehiclesResponse>("/vechicle/get-all");
-  const raw: ApiVehicleRaw[] = res.data.data;
+
+  const raw = res.data.data;
 
   return raw.map((v) => ({
     id: v.id,
@@ -69,7 +80,10 @@ export async function getAllVehicles(): Promise<ApiVehicle[]> {
     vechileFuelType: v.vechileFuelType,
     vechileGearType: v.vechileGearType,
     categoryId: v.categoryId,
-    category: v.category.name as VehicleCategory,
+
+    // safe mapping
+    category: normalizeCategory(v.category.name),
+
     hasAC: v.hasAC,
     noOfSeats: v.noOfSeats,
     pricePerDay: v.pricePerDay,
