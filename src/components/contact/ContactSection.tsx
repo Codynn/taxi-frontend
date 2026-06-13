@@ -8,6 +8,7 @@ import {
   SocialLink,
 } from "@/types/features/contact.types";
 import InquiryForm from "@/components/shared/InquiryForm";
+import { usePublicContact } from "@/hooks/useWebsiteData";
 
 const SOCIAL_ICONS = {
   facebook: FaFacebookF,
@@ -15,12 +16,28 @@ const SOCIAL_ICONS = {
   tiktok: FaTiktok,
 } as const;
 
+const FALLBACK = CONTACT_SECTION_DEFAULTS;
+
 export default function ContactSection({
-  heading = CONTACT_SECTION_DEFAULTS.heading,
-  subheading = CONTACT_SECTION_DEFAULTS.subheading,
-  contactInfo = CONTACT_SECTION_DEFAULTS.contactInfo,
-  socialLinks = CONTACT_SECTION_DEFAULTS.socialLinks,
+  heading = FALLBACK.heading,
+  subheading = FALLBACK.subheading,
+  socialLinks = FALLBACK.socialLinks,
 }: ContactSectionProps) {
+  const { data: cmsContact } = usePublicContact();
+
+  const phones = cmsContact?.contacts?.length
+    ? cmsContact.contacts
+    : FALLBACK.contactInfo.phones;
+  const email =
+    cmsContact?.supportEmail?.[0]?.trim() || FALLBACK.contactInfo.email;
+  const address =
+    cmsContact?.locationString?.trim() || FALLBACK.contactInfo.address;
+  const officeHours = cmsContact?.officeHours?.length
+    ? cmsContact.officeHours.join(" · ")
+    : FALLBACK.contactInfo.officeHours;
+  const mapEmbedUrl =
+    cmsContact?.mapUrl?.trim() || FALLBACK.contactInfo.mapEmbedUrl;
+
   return (
     <section className="w-full bg-white py-12 sm:py-16 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 xl:px-16 z-10">
       <div className="max-w-7xl mx-auto">
@@ -30,7 +47,6 @@ export default function ContactSection({
               {subheading}
             </p>
 
-            {/* Contact Details */}
             <div className="flex flex-col gap-3">
               <h3 className="font-sora font-bold text-gray-900 text-base">
                 Our Contact Details
@@ -40,21 +56,21 @@ export default function ContactSection({
                   className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500"
                   strokeWidth={1.8}
                 />
-                <span>{contactInfo.phones.join(", ")}</span>
+                <span>{phones.join(", ")}</span>
               </div>
               <div className="flex items-start gap-2 text-gray-600 text-sm font-poppins">
                 <Mail
                   className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500"
                   strokeWidth={1.8}
                 />
-                <span>{contactInfo.email}</span>
+                <span>{email}</span>
               </div>
               <div className="flex items-start gap-2 text-gray-600 text-sm font-poppins">
                 <MapPin
                   className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500"
                   strokeWidth={1.8}
                 />
-                <span>{contactInfo.address}</span>
+                <span>{address}</span>
               </div>
             </div>
 
@@ -68,7 +84,7 @@ export default function ContactSection({
                   className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-500"
                   strokeWidth={1.8}
                 />
-                <span>{contactInfo.officeHours}</span>
+                <span>{officeHours}</span>
               </div>
             </div>
 
@@ -97,7 +113,7 @@ export default function ContactSection({
             {/* Google Map */}
             <div className="w-full rounded-xl overflow-hidden border border-gray-200 h-[200px] sm:h-[240px]">
               <iframe
-                src={contactInfo.mapEmbedUrl}
+                src={mapEmbedUrl}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
