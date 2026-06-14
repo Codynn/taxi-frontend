@@ -9,6 +9,7 @@ import VehicleSelectedCard from "@/components/vehicles/Vehicleselectedcard";
 import CompleteBookingForm, {
   type CompleteBookingFormValues,
 } from "@/components/Booking/Completebookingform";
+import CustomTripRequestForm from "@/components/Booking/CustomTripRequestForm";
 import Navbar from "@/components/layout/navbar";
 import { useBookingStore } from "@/hooks/useBookingStore";
 
@@ -34,20 +35,18 @@ export default function CompleteBookingPage() {
   if (!hasHydrated) return null;
   if (!selectedVehicle || !modalData) return null;
 
-  const handleSubmit = (values: CompleteBookingFormValues) => {
-    const toISO = (value: string | Date) => new Date(value).toISOString();
+  const isCustomTrip = modalData.tripType === "CUSTOM_TRIP";
 
-    // Save step 2 (contact + pickup time + message) for use on the checkout page
+  const handleSubmit = (values: CompleteBookingFormValues) => {
     setContactData({
       fullName: values.fullName,
       contactNumber: values.contactNumber,
       email: values.email,
       pickupLocation: values.pickupLocation,
       dropoffLocation: values.dropoffLocation,
-      pickUpTime: toISO(values.pickupTime),
+      pickUpTime: new Date(values.pickupTime).toISOString(),
       message: values.message,
     });
-
     router.push("/checkout");
   };
 
@@ -68,29 +67,47 @@ export default function CompleteBookingPage() {
           {/* Booking Summary Bar */}
           <BookingSummaryBar state={bookingState} onUpdate={setBookingState} />
 
-          {/* Main content */}
-          <div className="flex flex-col lg:flex-row gap-5 items-start">
-            {/* Left: Vehicle */}
-            <div className="w-full flex-1 lg:w-[380px] shrink-0">
-              <VehicleSelectedCard
-                vehicle={selectedVehicle}
-                onChangeVehicle={() => router.push("/choose-ride")}
-              />
+          {isCustomTrip ? (
+            /* ── Custom Trip Layout ── */
+            <div className="flex flex-col lg:flex-row gap-5 items-start">
+              <div className="w-full flex-1 lg:w-[380px] shrink-0">
+                <VehicleSelectedCard
+                  vehicle={selectedVehicle}
+                  onChangeVehicle={() => router.push("/choose-ride")}
+                />
+              </div>
+              <div className="basis-1/2 min-w-0">
+                <CustomTripRequestForm
+                  defaultValues={{
+                    pickupLocation: modalData.pickUpLocation,
+                    dropoffLocation: modalData.dropOffLocation,
+                  }}
+                  vehicleId={selectedVehicle.id}
+                  modalData={modalData}
+                />
+              </div>
             </div>
-
-            {/* Right: Form */}
-            <div className="basis-1/2 min-w-0">
-              <CompleteBookingForm
-                onSubmit={handleSubmit}
-                isSubmitting={false}
-                // Pre-fill locations from step 1
-                defaultValues={{
-                  pickupLocation: modalData.pickUpLocation,
-                  dropoffLocation: modalData.dropOffLocation,
-                }}
-              />
+          ) : (
+            /* ── Normal Booking Layout ── */
+            <div className="flex flex-col lg:flex-row gap-5 items-start">
+              <div className="w-full flex-1 lg:w-[380px] shrink-0">
+                <VehicleSelectedCard
+                  vehicle={selectedVehicle}
+                  onChangeVehicle={() => router.push("/choose-ride")}
+                />
+              </div>
+              <div className="basis-1/2 min-w-0">
+                <CompleteBookingForm
+                  onSubmit={handleSubmit}
+                  isSubmitting={false}
+                  defaultValues={{
+                    pickupLocation: modalData.pickUpLocation,
+                    dropoffLocation: modalData.dropOffLocation,
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>
