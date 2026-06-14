@@ -8,11 +8,23 @@ import "swiper/css/free-mode";
 import { TESTIMONIALS } from "@/constants/features/voices.constants";
 import TestimonialCard from "../shared/TestimonialCard";
 import Image from "next/image";
+import { usePublicStories } from "@/hooks/useWebsiteData";
 
 export default function VoicesFromTheJourney() {
+  const { data: cmsStories } = usePublicStories();
+
+  const testimonials =
+    cmsStories && cmsStories.length > 0
+      ? cmsStories.map((s) => ({
+          id: Number(s.id),
+          name: s.username,
+          review: s.message,
+          rating: s.rating,
+        }))
+      : TESTIMONIALS;
+
   return (
     <section className="bg-white py-12 md:py-16 lg:py-20">
-      {/* Header */}
       <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-10 md:mb-14">
         <div className="flex flex-col items-center text-center">
           <div className="relative text-center pt-10">
@@ -53,10 +65,7 @@ export default function VoicesFromTheJourney() {
       </div>
 
       <div className="max-w-[100vw] mx-auto relative">
-        {/* Left fade */}
         <div className="pointer-events-none absolute left-0 top-0 h-full z-10 w-[60px] bg-gradient-to-r from-white/80 to-transparent" />
-
-        {/* Right fade */}
         <div className="pointer-events-none absolute right-0 top-0 h-full z-10 w-[60px] bg-gradient-to-l from-white/80 to-transparent" />
 
         <Swiper
@@ -70,10 +79,7 @@ export default function VoicesFromTheJourney() {
             disableOnInteraction: false,
             pauseOnMouseEnter: true,
           }}
-          keyboard={{
-            enabled: true,
-            onlyInViewport: true,
-          }}
+          keyboard={{ enabled: true, onlyInViewport: true }}
           spaceBetween={12}
           breakpoints={{
             0: { slidesPerView: 1.3, spaceBetween: 12 },
@@ -84,7 +90,7 @@ export default function VoicesFromTheJourney() {
             1280: { slidesPerView: 3.6, spaceBetween: 24 },
           }}
         >
-          {TESTIMONIALS.map((testimonial) => (
+          {testimonials.map((testimonial) => (
             <SwiperSlide key={testimonial.id} className="!h-auto py-1">
               <TestimonialCard testimonial={testimonial} />
             </SwiperSlide>

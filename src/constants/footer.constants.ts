@@ -37,6 +37,12 @@ export const SOCIAL_LINKS: SocialLink[] = [
     href: "https://www.facebook.com/lokpriya.taxi/",
     icon: "facebook",
   },
+  {
+    id: "tiktok",
+    label: "TikTok",
+    href: "https://www.tiktok.com/@lokpriya.taxi?_r=1&_t=ZS-977qfGVGWil",
+    icon: "tiktok",
+  },
 ];
 
 export const FOOTER_DESCRIPTION =

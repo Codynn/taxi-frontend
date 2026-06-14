@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/navbar";
 export default function AboutPage() {
   return (
     <main>
-      <Navbar />
+      <Navbar forceWhite />
       <AboutHeroSection />
       <OurStory />
       <OurValues />

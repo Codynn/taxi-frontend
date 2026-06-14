@@ -1,7 +1,22 @@
+"use client";
+
 import Image from "next/image";
 import Navbar from "../layout/navbar";
+import { usePublicWebsiteData } from "@/hooks/useWebsiteData";
+
+const FALLBACK = {
+  heading: "About Us",
+  subheading:
+    "Making travel across Nepal simpler, safer, and more reliable through smart vehicle booking. From work trips to family travel, vacations, or daily rides, Popular Ride connects you with trusted vehicles and a smooth booking experience — anytime you need it.",
+};
 
 export default function AboutHeroSection() {
+  const { data } = usePublicWebsiteData();
+
+  const heading = data?.aboutPageHeroHeading?.trim() || FALLBACK.heading;
+  const subheading =
+    data?.aboutPageHeroSubheading?.trim() || FALLBACK.subheading;
+
   return (
     <section className="relative w-full min-h-screen overflow-hidden bg-white">
       <div className="absolute inset-0">
@@ -12,46 +27,41 @@ export default function AboutHeroSection() {
           priority
           className="object-cover object-center"
         />
-        {/* <div className="absolute inset-0 bg-white/60" /> */}
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar />
 
-        <div className="flex flex-1 items-center max-w-7xl mx-auto w-full lg:px-6 lg:px-8 pl-4 pb-25  lg:py-0 z-10">
+        <div className="flex flex-1 items-center max-w-7xl mx-auto w-full lg:px-6 lg:px-8 pl-4 pb-25 lg:py-0 z-10">
           <div className="max-w-[520px] z-10 relative">
             <Image
               src="/about/rectangle.svg"
-              alt="Hero Car"
+              alt=""
               width={310}
               height={150}
-              className="mt-8 absolute -top-8  -left-28 z-0 hidden lg:block"
+              className="mt-8 absolute -top-8 -left-28 z-0 hidden lg:block"
             />
             <Image
               src="/about/rectangle.svg"
-              alt="Hero Car"
+              alt=""
               width={200}
               height={150}
-              className="mt-8 absolute -top-8  -left-18 z-0 block md:hidden lg:hidden"
+              className="mt-8 absolute -top-8 -left-18 z-0 block md:hidden lg:hidden"
             />
-
             <Image
               src="/about/rectangle.svg"
-              alt="Hero Car"
+              alt=""
               width={290}
               height={150}
-              className="mt-8 absolute  -top-8 -left-30 z-0  hidden md:block lg:hidden"
+              className="mt-8 absolute -top-8 -left-30 z-0 hidden md:block lg:hidden"
             />
 
             <h1 className="relative font-sora font-extrabold text-black leading-tight text-4xl md:text-5xl lg:text-6xl z-10">
-              <span className="px-2 rounded-sm z-10">About</span> Us
+              <span className="px-2 rounded-sm z-10">{heading}</span>
             </h1>
 
-            <p className="lg:mt-6 mt-2 text-[#000000] text-[16px]  lg:leading-relaxed font-medium font-poppins max-w-[240px] md:max-w-[390px] lg:max-w-[490px]">
-              Making travel across Nepal simpler, safer, and more reliable
-              through smart vehicle booking. From work trips to family travel,
-              vacations, or daily rides, Popular Ride connects you with trusted
-              vehicles and a smooth booking experience — anytime you need it.
+            <p className="lg:mt-6 mt-2 text-[#000000] text-[16px] lg:leading-relaxed font-medium font-poppins max-w-[240px] md:max-w-[390px] lg:max-w-[490px]">
+              {subheading}
             </p>
           </div>
         </div>

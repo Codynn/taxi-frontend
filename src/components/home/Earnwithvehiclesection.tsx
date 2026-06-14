@@ -13,7 +13,7 @@ export default function EarnWithVehicleSection() {
                 alt=""
                 width={480}
                 height={50}
-                className="absolute top-8 left-[55%] -translate-x-1/2 z-0 lg:block hidden"
+                className="absolute top-8 left-[47%] -translate-x-1/2 z-0 lg:block hidden"
                 aria-hidden
               />
               <Image
@@ -21,7 +21,7 @@ export default function EarnWithVehicleSection() {
                 alt=""
                 width={220}
                 height={150}
-                className="absolute top-10 left-[22%] z-0 lg:hidden md:hidden block"
+                className="absolute top-10 left-[8%] z-0 lg:hidden md:hidden block"
                 aria-hidden
               />
               <Image
@@ -29,7 +29,7 @@ export default function EarnWithVehicleSection() {
                 alt=""
                 width={320}
                 height={150}
-                className="absolute top-10 left-[30%] z-0 lg:hidden hidden sm:block"
+                className="absolute top-10 left-[8%] z-0 lg:hidden hidden sm:block"
                 aria-hidden
               />
               <h2 className="relative z-10 mt-2 text-[20px] md:text-[32px] lg:text-[48px] font-semibold font-sora text-[#000000]">

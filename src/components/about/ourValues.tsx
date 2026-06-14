@@ -1,7 +1,22 @@
+"use client";
+
 import { OUR_VALUES } from "@/constants/features/about.constants";
+import { usePublicValues } from "@/hooks/useWebsiteData";
 import Image from "next/image";
 
 export default function OurValues() {
+  const { data: cmsValues } = usePublicValues();
+
+  const values =
+    cmsValues && cmsValues.length > 0
+      ? cmsValues.map((v) => ({
+          id: v.id,
+          icon: v.icon,
+          title: v.title,
+          description: v.description,
+        }))
+      : OUR_VALUES;
+
   return (
     <section className="lg:pt-50 pt-80 pb-20">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -23,23 +38,29 @@ export default function OurValues() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-16 ">
-          {OUR_VALUES.map((item, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mt-16">
+          {values.map((item, index) => (
             <div
               key={item.id}
               className={`p-8 ${
-                index !== OUR_VALUES.length - 1
-                  ? "lg:border-r sm:border-b lg:border-b-none border-[#C3C3C3]"
+                index !== values.length - 1
+                  ? "lg:border-r border-[#C3C3C3]"
                   : ""
               }`}
             >
-              <div className="w-14 h-14 rounded-full  flex items-center justify-center mb-6">
-                <Image
-                  src={`/${item.icon}`}
-                  alt={item.title}
-                  width={52}
-                  height={52}
-                />
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mb-6">
+                {item.icon.startsWith("http") || item.icon.startsWith("/") ? (
+                  <Image
+                    src={
+                      item.icon.startsWith("http") ? item.icon : `/${item.icon}`
+                    }
+                    alt={item.title}
+                    width={52}
+                    height={52}
+                  />
+                ) : (
+                  <span className="text-[40px] leading-none">{item.icon}</span>
+                )}
               </div>
 
               <h3 className="text-[20px] font-semibold font-sora text-black mb-3">
