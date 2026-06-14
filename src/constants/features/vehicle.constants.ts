@@ -1,13 +1,14 @@
 import { Vehicle, VehicleTab } from "@/types/features/vehicle.types";
 
 export const VEHICLE_TABS: VehicleTab[] = [
-  { value: "CAR", label: "Cars", icon: "vehicle/car.svg" },
+  { value: "CAR", label: "Cars", icon: "vehicle/car.svg", categoryId: "CAR" },
   {
     value: "AUTO_RICKSHAW",
     label: "Auto Rickshaw",
     icon: "vehicle/auto.svg",
+    categoryId: "AUTO_RICKSHAW",
   },
-  { value: "BIKE_SCOOTER", label: "Bike & Scooters", icon: "vehicle/bike.svg" },
+  { value: "BIKE_SCOOTER", label: "Bike & Scooters", icon: "vehicle/bike.svg", categoryId: "BIKE_SCOOTER" },
 ];
 
 // export const VEHICLES: Vehicle[] = [

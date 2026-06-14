@@ -8,26 +8,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import VehicleTabs from "../vehicles/VehicleTabs";
 import VehicleCard from "../vehicles/VehicleCard";
-import { useVehicles } from "@/hooks/useVehicle";
-import type { ApiVehicle, VehicleCategory } from "@/lib/api/vehicle.api";
+import { ApiVehicle, useVehicles } from "@/hooks/useVehicle";
+import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
 import { RIDES_READY_CONTENT } from "@/constants/features/vehicle.constants";
 import BookingModal from "../Booking/Bookingmodal ";
-
-const VEHICLE_TABS = [
-  { value: "CAR" as VehicleCategory, label: "Cars", icon: "vehicle/car.svg" },
-  {
-    value: "AUTO_RICKSHAW" as VehicleCategory,
-    label: "Auto Rickshaw",
-    icon: "vehicle/auto.svg",
-  },
-  {
-    value: "BIKE_SCOOTER" as VehicleCategory,
-    label: "Bike & Scooters",
-    icon: "vehicle/bike.svg",
-  },
-];
+import { useBookingStore } from "@/hooks/useBookingStore";
+import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
 
 const SWIPER_BREAKPOINTS = {
   0: { slidesPerView: 1.2, spaceBetween: 16 },
@@ -52,21 +39,80 @@ function CardSkeleton() {
   );
 }
 
-export default function RidesReadySection() {
-  const [activeTab, setActiveTab] = useState<VehicleCategory>("CAR");
-  const swiperRef = useRef<SwiperType | null>(null);
+function TabsSkeleton() {
+  return (
+    <div className="w-full border-b border-gray-200 flex items-center justify-center gap-6 pb-3">
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-6 w-24 rounded-lg" />
+      ))}
+    </div>
+  );
+}
 
+function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
+  return {
+    id: v.id,
+    name: v.vechileName,
+    plateNumber: v.vechileNumber,
+    imageUrl: v.vechileImage,
+    rating: 0,
+    totalTrips: 0,
+    startingPrice: v.pricePerDay,
+    currency: "Rs",
+    features: [
+      { label: v.vechileFuelType, icon: "vehicle/electric.svg" },
+      { label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" },
+      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/ac.svg" }] : []),
+    ],
+  };
+}
+
+export default function RidesReadySection() {
+  const swiperRef = useRef<SwiperType | null>(null);
   const { heading, highlightedWord, description, browseAllLabel } =
     RIDES_READY_CONTENT;
 
-  // ── Real API data ─────────────────────────────────────────────────────
-  const { data: allVehicles = [], isLoading, isError } = useVehicles();
-  const filtered = allVehicles.filter((v) => v.category === activeTab);
+  const { data: categories = [], isLoading: catsLoading } =
+    usePublicVehicleCategories();
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const activeCat = activeCategoryId ?? categories[0]?.id ?? null;
+
+  const {
+    data: allVehicles = [],
+    isLoading,
+    isError,
+  } = useVehicles({
+    categoryId: activeCat ?? undefined,
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState<ApiVehicle | null>(
-    null,
-  );
+  const [pendingVehicle, setPendingVehicle] = useState<ApiVehicle | null>(null);
+  const { setSelectedVehicle } = useBookingStore();
+
+  const handleBeforeNavigate = () => {
+    if (pendingVehicle) {
+      setSelectedVehicle({
+        id: pendingVehicle.id,
+        name: pendingVehicle.vechileName,
+        plateNumber: pendingVehicle.vechileNumber,
+        imageUrl: pendingVehicle.vechileImage,
+        rating: 0,
+        totalTrips: 0,
+        startingPrice: pendingVehicle.pricePerDay,
+        currency: "Rs",
+        features: [
+          { label: pendingVehicle.vechileFuelType, icon: "vehicle/fuel.svg" },
+          {
+            label: `${pendingVehicle.noOfSeats} Seats`,
+            icon: "vehicle/seat.svg",
+          },
+          ...(pendingVehicle.hasAC
+            ? [{ label: "AC", icon: "vehicle/wind.svg" }]
+            : []),
+        ],
+      });
+    }
+  };
 
   return (
     <section className="bg-white py-16 md:py-24 overflow-hidden">
@@ -107,22 +153,54 @@ export default function RidesReadySection() {
           {description}
         </p>
 
-        {/* ── Tabs ── */}
-        <div className="flex items-center justify-between mb-8 gap-4">
-          <div className="flex-1 min-w-0">
-            <VehicleTabs
-              tabs={VEHICLE_TABS}
-              active={activeTab}
-              onChange={(v) => {
-                setActiveTab(v);
-                swiperRef.current?.slideTo(0);
-              }}
-            />
-          </div>
+        {/* ── Category Tabs from API ── */}
+        <div className="mb-8">
+          {catsLoading ? (
+            <TabsSkeleton />
+          ) : (
+            <div className="w-full border-b border-gray-200 overflow-x-auto scrollbar-none">
+              <div className="flex items-center justify-center min-w-max">
+                {categories.map((cat) => {
+                  const isActive =
+                    (activeCategoryId ?? categories[0]?.id) === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        setActiveCategoryId(cat.id);
+                        swiperRef.current?.slideTo(0);
+                      }}
+                      className={[
+                        "relative flex items-center gap-2 px-6 py-3 text-sm font-semibold font-poppins transition-colors duration-200 whitespace-nowrap",
+                        isActive
+                          ? "text-gray-900"
+                          : "text-gray-400 hover:text-gray-600",
+                      ].join(" ")}
+                    >
+                      {cat.icon && (
+                        <Image
+                          src={cat.icon}
+                          alt={cat.name}
+                          width={18}
+                          height={18}
+                          className={isActive ? "opacity-100" : "opacity-40"}
+                          unoptimized
+                        />
+                      )}
+                      {cat.name}
+                      {isActive && (
+                        <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-[#FEA800] rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Loading ── */}
+      {/* ── Loading skeletons ── */}
       {isLoading && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -141,7 +219,7 @@ export default function RidesReadySection() {
       )}
 
       {/* ── Swiper ── */}
-      {!isLoading && !isError && filtered.length > 0 && (
+      {!isLoading && !isError && allVehicles.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Swiper
             modules={[FreeMode, Mousewheel]}
@@ -151,15 +229,15 @@ export default function RidesReadySection() {
             breakpoints={SWIPER_BREAKPOINTS}
             onSwiper={(swiper) => (swiperRef.current = swiper)}
           >
-            {filtered.map((vehicle) => (
+            {allVehicles.map((vehicle) => (
               <SwiperSlide
                 key={vehicle.id}
                 className="!h-auto flex items-stretch"
               >
                 <VehicleCard
-                  vehicle={vehicle}
-                  onChoose={(vehicle) => {
-                    setSelectedVehicle(vehicle);
+                  vehicle={vehicle as any}
+                  onChoose={(v) => {
+                    setPendingVehicle(v);
                     setModalOpen(true);
                   }}
                 />
@@ -170,7 +248,7 @@ export default function RidesReadySection() {
       )}
 
       {/* ── Empty ── */}
-      {!isLoading && !isError && filtered.length === 0 && (
+      {!isLoading && !isError && allVehicles.length === 0 && (
         <div className="text-center py-16 text-gray-400 font-poppins text-sm">
           No vehicles available in this category yet.
         </div>
@@ -187,10 +265,9 @@ export default function RidesReadySection() {
 
       <BookingModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSearch={(state) => {
-          console.log("Booking:", selectedVehicle, state);
+        onClose={() => {
           setModalOpen(false);
+          setPendingVehicle(null);
         }}
       />
     </section>

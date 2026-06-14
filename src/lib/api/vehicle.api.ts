@@ -1,27 +1,11 @@
 import { api } from "@/lib/axios";
 
-export type VehicleCategory = "CAR" | "AUTO_RICKSHAW" | "BIKE_SCOOTER";
-
-interface ApiVehicleRaw {
+export interface VehicleCategory {
   id: string;
-  vechileName: string;
-  vechileImage: string;
-  vechileType: string;
-  vechileNumber: string;
-  vechileFuelType: string;
-  vechileGearType: string;
-  categoryId: string;
-  hasAC: boolean;
-  noOfSeats: number;
-  pricePerDay: number;
+  name: string;
+  icon?: string;
   createdAt: string;
   updatedAt: string;
-  category: {
-    id: string;
-    name: string;
-    createdAt: string;
-    updatedAt: string;
-  };
 }
 
 export interface ApiVehicle {
@@ -33,7 +17,7 @@ export interface ApiVehicle {
   vechileFuelType: string;
   vechileGearType: string;
   categoryId: string;
-  category: VehicleCategory;
+  category: VehicleCategory; // ← object, not a string union
   hasAC: boolean;
   noOfSeats: number;
   pricePerDay: number;
@@ -42,7 +26,7 @@ export interface ApiVehicle {
 }
 
 interface GetAllVehiclesResponse {
-  data: ApiVehicleRaw[];
+  data: ApiVehicle[];
   meta: {
     total: number;
     page: number;
@@ -53,41 +37,18 @@ interface GetAllVehiclesResponse {
   };
 }
 
-function normalizeCategory(name: string): VehicleCategory {
-  switch (name) {
-    case "CAR":
-      return "CAR";
-    case "AUTO_RICKSHAW":
-      return "AUTO_RICKSHAW";
-    case "BIKE_SCOOTER":
-      return "BIKE_SCOOTER";
-    default:
-      return "CAR";
-  }
-}
-
-export async function getAllVehicles(): Promise<ApiVehicle[]> {
-  const res = await api.get<GetAllVehiclesResponse>("/vechicle/get-all");
-
-  const raw = res.data.data;
-
-  return raw.map((v) => ({
-    id: v.id,
-    vechileName: v.vechileName,
-    vechileImage: v.vechileImage,
-    vechileType: v.vechileType,
-    vechileNumber: v.vechileNumber,
-    vechileFuelType: v.vechileFuelType,
-    vechileGearType: v.vechileGearType,
-    categoryId: v.categoryId,
-
-    // safe mapping
-    category: normalizeCategory(v.category.name),
-
-    hasAC: v.hasAC,
-    noOfSeats: v.noOfSeats,
-    pricePerDay: v.pricePerDay,
-    createdAt: v.createdAt,
-    updatedAt: v.updatedAt,
-  }));
+export async function getAllVehicles(params?: {
+  categoryId?: string;
+  limit?: number;
+  searchName?: string;
+  vechileGearType?: string;
+  vechileFuelType?: string;
+  hasAC?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+}): Promise<ApiVehicle[]> {
+  const res = await api.get<GetAllVehiclesResponse>("/vechicle/get-all", {
+    params,
+  });
+  return res.data.data; // no mapping needed — shape matches directly
 }

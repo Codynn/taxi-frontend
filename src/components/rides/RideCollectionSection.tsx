@@ -22,28 +22,30 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 import VehicleTabs from "../vehicles/VehicleTabs";
 import RideCollectionVehicleCard from "./RideCollectionVehicleCard";
-import RideFilterPanel from "./RideFilterPanel";
+import RideFilterPanel, { AppliedFilters } from "./RideFilterPanel";
 import BookingModal from "../Booking/Bookingmodal ";
 
-import { useVehicles } from "@/hooks/useVehicle";
-import type { ApiVehicle, VehicleCategory } from "@/hooks/useVehicle";
+import { useVehicles, ApiVehicle } from "@/hooks/useVehicle";
+import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
 import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import type { BookingFormState } from "@/types/booking.types";
 
-// ── Map API vehicle → SelectedVehicle ─────────────────────────────────────
+const PRICE_MAX = 10000;
+
 function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
   return {
-    id: v.id,                          // ← real DB id, never stale
+    id: v.id,
     name: v.vechileName,
     plateNumber: v.vechileNumber,
     imageUrl: v.vechileImage,
     rating: 0,
     totalTrips: 0,
-    startingPrice: v.pricePerDay,      // ← use real price
+    startingPrice: v.pricePerDay,
     currency: "Rs",
     features: [
       { label: v.vechileFuelType, icon: "vehicle/electric.svg" },
@@ -53,51 +55,39 @@ function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
   };
 }
 
-// ── Map BookingFormState → BookingModalData ────────────────────────────────
 function toModalData(state: BookingFormState) {
   return {
-    pickUpLocation:  state.destination.from  ?? "",
-    dropOffLocation: state.destination.to    ?? "",
-    pickUpDate:  state.dateRange.pickup  ? new Date(state.dateRange.pickup).toISOString()  : new Date().toISOString(),
-    returnDate:  state.dateRange.return  ? new Date(state.dateRange.return).toISOString()  : undefined,
-    bookingType: (state.tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY") as "ROUND_TRIP" | "ONE_WAY",
-    tripType: (
-      state.tripTab === "long"   ? "LONG_TRIP"   :
-      state.tripTab === "short"  ? "SHORT_TRIP"  : "CUSTOM_TRIP"
-    ) as "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP",
+    pickUpLocation: state.destination.from ?? "",
+    dropOffLocation: state.destination.to ?? "",
+    pickUpDate: state.dateRange.pickup
+      ? new Date(state.dateRange.pickup).toISOString()
+      : new Date().toISOString(),
+    returnDate: state.dateRange.return
+      ? new Date(state.dateRange.return).toISOString()
+      : undefined,
+    bookingType: (state.tripType === "round-trip"
+      ? "ROUND_TRIP"
+      : "ONE_WAY") as "ROUND_TRIP" | "ONE_WAY",
+    tripType: (state.tripTab === "long"
+      ? "LONG_TRIP"
+      : state.tripTab === "short"
+        ? "SHORT_TRIP"
+        : "CUSTOM_TRIP") as "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP",
     driverRequired: state.driverType === "with-driver",
   };
 }
 
-// ── Tabs config ────────────────────────────────────────────────────────────
-const VEHICLE_TABS = [
-  { value: "CAR"          as VehicleCategory, label: "Cars",          icon: "vehicle/car.svg"  },
-  { value: "AUTO_RICKSHAW"as VehicleCategory, label: "Auto Rickshaw", icon: "vehicle/auto.svg" },
-  { value: "BIKE_SCOOTER" as VehicleCategory, label: "Bike & Scooters",icon: "vehicle/bike.svg"},
-];
-
 const SORT_OPTIONS = [
-  { value: "recommended", label: "Recommended"        },
-  { value: "price-low",   label: "Price: Low to High" },
-  { value: "price-high",  label: "Price: High to Low" },
+  { value: "recommended", label: "Recommended" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "price-high", label: "Price: High to Low" },
 ];
 
 const ITEMS_PER_PAGE = 6;
 
-// ── Skeleton ───────────────────────────────────────────────────────────────
 function VehicleCardSkeleton() {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      <div className="flex flex-col lg:hidden p-4 gap-3">
-        <Skeleton className="w-full h-[200px] rounded-xl" />
-        <Skeleton className="h-5 w-40" />
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-14 w-full rounded-xl" />
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-7 w-24" />
-          <Skeleton className="h-10 w-32 rounded-full" />
-        </div>
-      </div>
       <div className="hidden lg:flex p-4 gap-4">
         <Skeleton className="w-[290px] h-[180px] rounded-xl shrink-0" />
         <div className="flex flex-col flex-1 gap-3 py-2">
@@ -116,60 +106,146 @@ function VehicleCardSkeleton() {
   );
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
+// Tab skeleton while categories load
+function TabsSkeleton() {
+  return (
+    <div className="w-full border-b border-gray-200 flex items-center justify-center gap-6 pb-3">
+      {[1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-6 w-24 rounded-lg" />
+      ))}
+    </div>
+  );
+}
+
 export default function RideCollectionSection() {
   const router = useRouter();
 
-  const [activeTab, setActiveTab]   = useState<VehicleCategory>("CAR");
-  const [sortBy, setSortBy]         = useState("recommended");
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState("recommended");
   const [currentPage, setCurrentPage] = useState(1);
-  const [modalOpen, setModalOpen]   = useState(false);
-
-  // The vehicle the user clicked "Book Now" on — held locally until modal confirms
-  const [pendingVehicle, setPendingVehicle] = useState<SelectedVehicle | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pendingVehicle, setPendingVehicle] = useState<SelectedVehicle | null>(
+    null,
+  );
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({
+    gearTypes: [],
+    fuelTypes: [],
+    priceRange: [0, PRICE_MAX],
+    hasAC: undefined,
+  });
 
   const { setSelectedVehicle, setModalData } = useBookingStore();
-  const { data: allVehicles = [], isLoading, isError } = useVehicles();
 
-  // ── Filtering + sorting ──
-  const filtered = allVehicles
-    .filter((v) => v.category === activeTab)
-    .sort((a, b) => {
-      if (sortBy === "price-low")  return a.pricePerDay - b.pricePerDay;
-      if (sortBy === "price-high") return b.pricePerDay - a.pricePerDay;
-      return 0;
-    });
+  // Load categories dynamically
+  const { data: categories = [], isLoading: catsLoading } =
+    usePublicVehicleCategories();
+
+  // Set first category as default once loaded
+  const activeCat = activeCategoryId ?? categories[0]?.id ?? null;
+
+  // Fetch vehicles filtered by category + server-side filters
+  const {
+    data: allVehicles = [],
+    isLoading,
+    isError,
+  } = useVehicles({
+    categoryId: activeCat ?? undefined,
+    ...(appliedFilters.gearTypes.length === 1
+      ? { vechileGearType: appliedFilters.gearTypes[0] }
+      : {}),
+    ...(appliedFilters.fuelTypes.length === 1
+      ? { vechileFuelType: appliedFilters.fuelTypes[0] }
+      : {}),
+    ...(appliedFilters.hasAC !== undefined
+      ? { hasAC: appliedFilters.hasAC }
+      : {}),
+    ...(appliedFilters.priceRange[0] > 0
+      ? { minPrice: appliedFilters.priceRange[0] }
+      : {}),
+    ...(appliedFilters.priceRange[1] < PRICE_MAX
+      ? { maxPrice: appliedFilters.priceRange[1] }
+      : {}),
+  });
+
+  // Client-side sort only (server handles filters)
+  const sorted = [...allVehicles].sort((a, b) => {
+    if (sortBy === "price-low") return a.pricePerDay - b.pricePerDay;
+    if (sortBy === "price-high") return b.pricePerDay - a.pricePerDay;
+    return 0;
+  });
+
+  // Client-side multi-select filter for gear/fuel (when multiple selected)
+  const filtered = sorted.filter((v) => {
+    if (
+      appliedFilters.gearTypes.length > 1 &&
+      !appliedFilters.gearTypes.includes(v.vechileGearType)
+    )
+      return false;
+    if (
+      appliedFilters.fuelTypes.length > 1 &&
+      !appliedFilters.fuelTypes.includes(v.vechileFuelType)
+    )
+      return false;
+    return true;
+  });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const paginated  = filtered.slice(
+  const paginated = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
 
   const getPageNumbers = (): (number | "...")[] => {
-    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 7)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (currentPage <= 4) return [1, 2, 3, 4, 5, "...", totalPages];
     if (currentPage >= totalPages - 3)
-      return [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+      return [
+        1,
+        "...",
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    return [
+      1,
+      "...",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "...",
+      totalPages,
+    ];
   };
 
-  // ── "Book Now" clicked on a vehicle card ──
   const handleVehicleChoose = (apiVehicle: ApiVehicle) => {
     setPendingVehicle(toSelectedVehicle(apiVehicle));
     setModalOpen(true);
   };
 
-  // ── BookingModal confirmed (Search Ride clicked) ──
   const handleSearch = (state: BookingFormState) => {
     if (!pendingVehicle) return;
-
-    // Persist both pieces to the store
     setSelectedVehicle(pendingVehicle);
     setModalData(toModalData(state));
-
     setModalOpen(false);
     router.push("/complete-booking");
+  };
+
+  const handleFilterApply = (filters: AppliedFilters) => {
+    setAppliedFilters(filters);
+    setCurrentPage(1);
+  };
+
+  const handleFilterReset = () => {
+    setAppliedFilters({
+      gearTypes: [],
+      fuelTypes: [],
+      priceRange: [0, PRICE_MAX],
+      hasAC: undefined,
+    });
+    setCurrentPage(1);
   };
 
   return (
@@ -183,14 +259,25 @@ export default function RideCollectionSection() {
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] text-black font-poppins hidden sm:block">Sort By:</span>
-              <Select value={sortBy} onValueChange={(val) => { if (val) setSortBy(val); }}>
+              <span className="text-[13px] text-black font-poppins hidden sm:block">
+                Sort By:
+              </span>
+              <Select
+                value={sortBy}
+                onValueChange={(val) => {
+                  if (val) setSortBy(val);
+                }}
+              >
                 <SelectTrigger className="h-9 text-[13px] font-poppins border-gray-200 rounded-lg min-w-[150px] focus:ring-0 focus:ring-offset-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {SORT_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value} className="text-[13px] font-poppins cursor-pointer">
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="text-[13px] font-poppins cursor-pointer"
+                    >
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -205,43 +292,94 @@ export default function RideCollectionSection() {
                   Filter
                 </button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-full w-full rounded-t-3xl p-0 flex flex-col">
+              <SheetContent
+                side="bottom"
+                className="h-full w-full rounded-t-3xl p-0 flex flex-col"
+              >
                 <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <SlidersHorizontal className="w-4 h-4 text-black" />
-                    <h3 className="text-[15px] font-semibold font-poppins text-black">Filters</h3>
+                    <h3 className="text-[15px] font-semibold font-poppins text-black">
+                      Filters
+                    </h3>
                   </div>
                   <SheetClose />
                 </div>
                 <div className="p-5 overflow-y-auto">
-                  <RideFilterPanel hideHeader />
+                  <RideFilterPanel
+                    hideHeader
+                    onApply={handleFilterApply}
+                    onReset={handleFilterReset}
+                  />
                 </div>
               </SheetContent>
             </Sheet>
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs — dynamic from API */}
         <div className="mb-8">
-          <VehicleTabs
-            tabs={VEHICLE_TABS}
-            active={activeTab}
-            onChange={(v) => { setActiveTab(v); setCurrentPage(1); }}
-          />
+          {catsLoading ? (
+            <TabsSkeleton />
+          ) : (
+            <div className="w-full border-b border-gray-200 overflow-x-auto scrollbar-none">
+              <div className="flex items-center justify-center min-w-max">
+                {categories.map((cat) => {
+                  const isActive =
+                    (activeCategoryId ?? categories[0]?.id) === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => {
+                        setActiveCategoryId(cat.id);
+                        setCurrentPage(1);
+                      }}
+                      className={[
+                        "relative flex items-center gap-2 px-6 py-3 text-sm font-semibold font-poppins transition-colors duration-200 whitespace-nowrap",
+                        isActive
+                          ? "text-gray-900"
+                          : "text-gray-400 hover:text-gray-600",
+                      ].join(" ")}
+                    >
+                      {cat.icon && (
+                        <Image
+                          src={cat.icon}
+                          alt={cat.name}
+                          width={18}
+                          height={18}
+                          className={isActive ? "opacity-100" : "opacity-40"}
+                          unoptimized
+                        />
+                      )}
+                      {cat.name}
+                      {isActive && (
+                        <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-[#FEA800] rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Body */}
         <div className="flex gap-6 items-start">
           {/* Desktop filter */}
           <div className="hidden lg:block w-[260px] shrink-0 sticky top-6">
-            <RideFilterPanel />
+            <RideFilterPanel
+              onApply={handleFilterApply}
+              onReset={handleFilterReset}
+            />
           </div>
 
           {/* Cards */}
           <div className="flex-1 min-w-0">
             {isLoading && (
               <div className="flex flex-col gap-4">
-                {Array.from({ length: 3 }).map((_, i) => <VehicleCardSkeleton key={i} />)}
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <VehicleCardSkeleton key={i} />
+                ))}
               </div>
             )}
 
@@ -256,13 +394,13 @@ export default function RideCollectionSection() {
               </div>
             )}
 
-            {!isLoading && !isError && paginated.length === 0 && (
+            {!isLoading && !isError && filtered.length === 0 && (
               <div className="text-center py-16 text-gray-400 font-poppins text-sm">
-                No vehicles available in this category yet.
+                No vehicles match the selected filters.
               </div>
             )}
 
-            {!isLoading && !isError && paginated.length > 0 && (
+            {!isLoading && !isError && filtered.length > 0 && (
               <div className="flex flex-col gap-4">
                 {paginated.map((vehicle) => (
                   <RideCollectionVehicleCard
@@ -287,7 +425,10 @@ export default function RideCollectionSection() {
 
                 {getPageNumbers().map((page, i) =>
                   page === "..." ? (
-                    <span key={`e-${i}`} className="w-8 h-8 flex items-center justify-center text-[#2E2E2E] text-sm font-poppins">
+                    <span
+                      key={`e-${i}`}
+                      className="w-8 h-8 flex items-center justify-center text-[#2E2E2E] text-sm font-poppins"
+                    >
                       ...
                     </span>
                   ) : (
@@ -307,7 +448,9 @@ export default function RideCollectionSection() {
                 )}
 
                 <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="w-10 h-10 flex items-center justify-center rounded-[8px] bg-[#f5f5f5] text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
@@ -319,7 +462,6 @@ export default function RideCollectionSection() {
         </div>
       </div>
 
-      {/* Booking Modal — opened after vehicle chosen */}
       <BookingModal
         open={modalOpen}
         onClose={() => {

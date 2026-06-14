@@ -4,13 +4,24 @@ import { useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { FILTER_OPTIONS } from "@/constants/features/vehicle.constants";
+
+export interface AppliedFilters {
+  gearTypes: string[];
+  fuelTypes: string[];
+  priceRange: [number, number];
+  hasAC?: boolean;
+}
 
 interface FilterPanelProps {
-  onApply?: (filters: unknown) => void;
+  onApply?: (filters: AppliedFilters) => void;
   onReset?: () => void;
   hideHeader?: boolean;
 }
+
+const GEAR_TYPES = ["Automatic", "Manual"];
+const FUEL_TYPES = ["Petrol", "Diesel", "Electric"];
+const PRICE_MIN = 0;
+const PRICE_MAX = 10000;
 
 const FilterGroup = ({
   title,
@@ -19,7 +30,7 @@ const FilterGroup = ({
   onToggle,
 }: {
   title: string;
-  options: { label: string; count: number }[];
+  options: string[];
   selected: string[];
   onToggle: (v: string) => void;
 }) => (
@@ -27,17 +38,19 @@ const FilterGroup = ({
     <h4 className="text-[13px] font-semibold font-poppins text-black">
       {title}
     </h4>
-    {options.map((opt) => (
-      <div key={opt.label} className="flex items-center gap-2">
+    {["All", ...options].map((opt) => (
+      <div key={opt} className="flex items-center gap-2">
         <Checkbox
-          id={`${title}-${opt.label}`}
-          checked={selected.includes(opt.label)}
-          onCheckedChange={() => onToggle(opt.label)}
+          id={`${title}-${opt}`}
+          checked={
+            opt === "All" ? selected.length === 0 : selected.includes(opt)
+          }
+          onCheckedChange={() => onToggle(opt)}
           className="w-4 h-4 rounded-sm border-gray-300
-              data-[state=checked]:bg-[#FEA800]
-              data-[state=checked]:border-[#FEA800]"
+            data-[state=checked]:bg-[#FEA800]
+            data-[state=checked]:border-[#FEA800]"
           style={
-            selected.includes(opt.label)
+            (opt === "All" ? selected.length === 0 : selected.includes(opt))
               ? {
                   backgroundColor: "#FEA800",
                   borderColor: "#FEA800",
@@ -47,10 +60,10 @@ const FilterGroup = ({
           }
         />
         <Label
-          htmlFor={`${title}-${opt.label}`}
+          htmlFor={`${title}-${opt}`}
           className="text-[13px] font-poppins text-black/80 cursor-pointer"
         >
-          {opt.label} ({opt.count})
+          {opt}
         </Label>
       </div>
     ))}
@@ -62,12 +75,12 @@ export default function RideFilterPanel({
   onReset,
   hideHeader = false,
 }: FilterPanelProps) {
-  const [vehicleTypes, setVehicleTypes] = useState<string[]>(["All"]);
-  const [gearTypes, setGearTypes] = useState<string[]>(["All"]);
-  const [fuelTypes, setFuelTypes] = useState<string[]>(["All"]);
+  const [gearTypes, setGearTypes] = useState<string[]>([]);
+  const [fuelTypes, setFuelTypes] = useState<string[]>([]);
+  const [hasAC, setHasAC] = useState<boolean | undefined>(undefined);
   const [priceRange, setPriceRange] = useState<[number, number]>([
-    FILTER_OPTIONS.priceRange.defaultMin,
-    FILTER_OPTIONS.priceRange.defaultMax,
+    PRICE_MIN,
+    PRICE_MAX,
   ]);
 
   const toggle = (
@@ -76,41 +89,35 @@ export default function RideFilterPanel({
     set: (v: string[]) => void,
   ) => {
     if (value === "All") {
-      set(["All"]);
+      set([]);
       return;
     }
-    const without = current.filter((v) => v !== "All");
-    if (without.includes(value)) {
-      const next = without.filter((v) => v !== value);
-      set(next.length === 0 ? ["All"] : next);
-    } else {
-      set([...without, value]);
-    }
+    set(
+      current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value],
+    );
   };
 
   const handleReset = () => {
-    setVehicleTypes(["All"]);
-    setGearTypes(["All"]);
-    setFuelTypes(["All"]);
-    setPriceRange([
-      FILTER_OPTIONS.priceRange.defaultMin,
-      FILTER_OPTIONS.priceRange.defaultMax,
-    ]);
+    setGearTypes([]);
+    setFuelTypes([]);
+    setHasAC(undefined);
+    setPriceRange([PRICE_MIN, PRICE_MAX]);
     onReset?.();
   };
 
   const handleApply = () => {
-    onApply?.({ vehicleTypes, gearTypes, fuelTypes, priceRange });
+    onApply?.({ gearTypes, fuelTypes, priceRange, hasAC });
   };
 
   return (
     <div
       className={[
-        "flex flex-col lg:gap-6 gap-2 bg-white w-full",
+        "flex flex-col lg:gap-6 gap-4 bg-white w-full",
         hideHeader ? "" : "p-5 rounded-2xl border border-gray-200",
       ].join(" ")}
     >
-      {/* Header — hidden when inside the Sheet (Sheet has its own header) */}
       {!hideHeader && (
         <div className="flex items-center justify-between">
           <h3 className="text-[15px] font-semibold font-poppins text-black">
@@ -126,25 +133,56 @@ export default function RideFilterPanel({
       )}
 
       <FilterGroup
-        title="Vehicle Types"
-        options={FILTER_OPTIONS.vehicleTypes}
-        selected={vehicleTypes}
-        onToggle={(v) => toggle(v, vehicleTypes, setVehicleTypes)}
-      />
-
-      <FilterGroup
         title="Gear Types"
-        options={FILTER_OPTIONS.gearTypes}
+        options={GEAR_TYPES}
         selected={gearTypes}
         onToggle={(v) => toggle(v, gearTypes, setGearTypes)}
       />
 
       <FilterGroup
         title="Fuel Types"
-        options={FILTER_OPTIONS.fuelTypes}
+        options={FUEL_TYPES}
         selected={fuelTypes}
         onToggle={(v) => toggle(v, fuelTypes, setFuelTypes)}
       />
+
+      {/* AC Filter */}
+      <div className="flex flex-col gap-2.5">
+        <h4 className="text-[13px] font-semibold font-poppins text-black">
+          Air Conditioning
+        </h4>
+        {[
+          { label: "All", value: undefined },
+          { label: "With AC", value: true },
+          { label: "Without AC", value: false },
+        ].map((opt) => (
+          <div key={opt.label} className="flex items-center gap-2">
+            <Checkbox
+              id={`ac-${opt.label}`}
+              checked={hasAC === opt.value}
+              onCheckedChange={() => setHasAC(opt.value)}
+              className="w-4 h-4 rounded-sm border-gray-300
+                data-[state=checked]:bg-[#FEA800]
+                data-[state=checked]:border-[#FEA800]"
+              style={
+                hasAC === opt.value
+                  ? {
+                      backgroundColor: "#FEA800",
+                      borderColor: "#FEA800",
+                      color: "white",
+                    }
+                  : {}
+              }
+            />
+            <Label
+              htmlFor={`ac-${opt.label}`}
+              className="text-[13px] font-poppins text-black/80 cursor-pointer"
+            >
+              {opt.label}
+            </Label>
+          </div>
+        ))}
+      </div>
 
       {/* Price Range */}
       <div className="flex flex-col gap-3">
@@ -152,9 +190,9 @@ export default function RideFilterPanel({
           Price Range
         </h4>
         <Slider
-          min={FILTER_OPTIONS.priceRange.min}
-          max={FILTER_OPTIONS.priceRange.max}
-          step={10}
+          min={PRICE_MIN}
+          max={PRICE_MAX}
+          step={50}
           value={priceRange}
           onValueChange={(v) => setPriceRange(v as [number, number])}
           className="
@@ -181,7 +219,6 @@ export default function RideFilterPanel({
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex gap-3 pt-1">
         <button
           onClick={handleReset}

@@ -1,5 +1,4 @@
-export type VehicleCategory = "CAR" | "AUTO_RICKSHAW" | "BIKE_SCOOTER";
-
+export type VehicleCategory = string;
 export interface VehicleFeature {
   icon: string;
   label: string;
@@ -19,9 +18,10 @@ export interface Vehicle {
 }
 
 export interface VehicleTab {
-  value: VehicleCategory;
+  value: string;
   label: string;
-  icon: string;
+  icon?: string;
+  categoryId: string;
 }
 
 export interface FilterState {
