@@ -9,7 +9,8 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import VehicleCard from "../vehicles/VehicleCard";
-import { ApiVehicle, useVehicles } from "@/hooks/useVehicle";
+import { useVehicles } from "@/hooks/useVehicle";
+import type { ApiVehicle } from "@/lib/api/vehicle.api";
 import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
 import { RIDES_READY_CONTENT } from "@/constants/features/vehicle.constants";
 import BookingModal from "../Booking/Bookingmodal ";
@@ -23,6 +24,8 @@ const SWIPER_BREAKPOINTS = {
   1024: { slidesPerView: 3.2, spaceBetween: 24 },
   1280: { slidesPerView: 4, spaceBetween: 24 },
 };
+
+// ── Skeletons ─────────────────────────────────────────────────────────────────
 
 function CardSkeleton() {
   return (
@@ -49,6 +52,8 @@ function TabsSkeleton() {
   );
 }
 
+// ── Conversion (only used for BookingStore) ───────────────────────────────────
+
 function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
   return {
     id: v.id,
@@ -60,12 +65,15 @@ function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
     startingPrice: v.pricePerDay,
     currency: "Rs",
     features: [
-      { label: v.vechileFuelType, icon: "vehicle/electric.svg" },
+      { label: v.vechileFuelType, icon: "vehicle/fuel.svg" },
+      { label: v.vechileGearType, icon: "vehicle/battery.svg" },
       { label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" },
-      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/ac.svg" }] : []),
+      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/wind.svg" }] : []),
     ],
   };
 }
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function RidesReadySection() {
   const swiperRef = useRef<SwiperType | null>(null);
@@ -89,35 +97,15 @@ export default function RidesReadySection() {
   const [pendingVehicle, setPendingVehicle] = useState<ApiVehicle | null>(null);
   const { setSelectedVehicle } = useBookingStore();
 
+  // Convert to SelectedVehicle only when navigating to booking page
   const handleBeforeNavigate = () => {
-    if (pendingVehicle) {
-      setSelectedVehicle({
-        id: pendingVehicle.id,
-        name: pendingVehicle.vechileName,
-        plateNumber: pendingVehicle.vechileNumber,
-        imageUrl: pendingVehicle.vechileImage,
-        rating: 0,
-        totalTrips: 0,
-        startingPrice: pendingVehicle.pricePerDay,
-        currency: "Rs",
-        features: [
-          { label: pendingVehicle.vechileFuelType, icon: "vehicle/fuel.svg" },
-          {
-            label: `${pendingVehicle.noOfSeats} Seats`,
-            icon: "vehicle/seat.svg",
-          },
-          ...(pendingVehicle.hasAC
-            ? [{ label: "AC", icon: "vehicle/wind.svg" }]
-            : []),
-        ],
-      });
-    }
+    if (pendingVehicle) setSelectedVehicle(toSelectedVehicle(pendingVehicle));
   };
 
   return (
     <section className="bg-white py-16 md:py-24 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ── Heading ── */}
+        {/* Heading */}
         <div className="relative text-center pt-10">
           <Image
             src="/about/rectangle.svg"
@@ -153,7 +141,7 @@ export default function RidesReadySection() {
           {description}
         </p>
 
-        {/* ── Category Tabs from API ── */}
+        {/* Category Tabs */}
         <div className="mb-8">
           {catsLoading ? (
             <TabsSkeleton />
@@ -200,7 +188,7 @@ export default function RidesReadySection() {
         </div>
       </div>
 
-      {/* ── Loading skeletons ── */}
+      {/* Loading */}
       {isLoading && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -211,14 +199,14 @@ export default function RidesReadySection() {
         </div>
       )}
 
-      {/* ── Error ── */}
+      {/* Error */}
       {isError && (
         <div className="text-center py-16 text-gray-400 font-poppins text-sm">
           Failed to load vehicles. Please try again.
         </div>
       )}
 
-      {/* ── Swiper ── */}
+      {/* Swiper — vehicle passed as ApiVehicle, no cast needed */}
       {!isLoading && !isError && allVehicles.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Swiper
@@ -227,7 +215,7 @@ export default function RidesReadySection() {
             mousewheel={{ forceToAxis: true }}
             grabCursor
             breakpoints={SWIPER_BREAKPOINTS}
-            onSwiper={(swiper) => (swiperRef.current = swiper)}
+            onSwiper={(s) => (swiperRef.current = s)}
           >
             {allVehicles.map((vehicle) => (
               <SwiperSlide
@@ -235,7 +223,7 @@ export default function RidesReadySection() {
                 className="!h-auto flex items-stretch"
               >
                 <VehicleCard
-                  vehicle={vehicle as any}
+                  vehicle={vehicle}
                   onChoose={(v) => {
                     setPendingVehicle(v);
                     setModalOpen(true);
@@ -247,14 +235,14 @@ export default function RidesReadySection() {
         </div>
       )}
 
-      {/* ── Empty ── */}
+      {/* Empty */}
       {!isLoading && !isError && allVehicles.length === 0 && (
         <div className="text-center py-16 text-gray-400 font-poppins text-sm">
           No vehicles available in this category yet.
         </div>
       )}
 
-      {/* ── Browse all ── */}
+      {/* Browse all */}
       <div className="flex justify-center mt-10">
         <Link href="/rides">
           <button className="border border-[#FEA800] text-[#FEA800] text-[16px] font-semibold font-poppins px-8 py-2.5 rounded-full hover:bg-[#FEA800]/10 transition-colors">
@@ -269,6 +257,7 @@ export default function RidesReadySection() {
           setModalOpen(false);
           setPendingVehicle(null);
         }}
+        onBeforeNavigate={handleBeforeNavigate}
       />
     </section>
   );

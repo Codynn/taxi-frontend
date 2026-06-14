@@ -31,6 +31,7 @@ interface BookingModalProps {
   open: boolean;
   onClose: () => void;
   onSearch?: (state: BookingFormState) => void;
+  onBeforeNavigate?: () => void; // ← added
 }
 
 function CustomRadioGroup<T extends string>({
@@ -84,7 +85,11 @@ function CustomRadioGroup<T extends string>({
 
 const toISO = (value: string) => new Date(value).toISOString();
 
-export default function BookingModal({ open, onClose }: BookingModalProps) {
+export default function BookingModal({
+  open,
+  onClose,
+  onBeforeNavigate, // ← destructured
+}: BookingModalProps) {
   const router = useRouter();
   const { setModalData, setBookingState } = useBookingStore();
 
@@ -95,10 +100,9 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
-  const [errors, setErrors] = useState<{
-    destination?: string;
-    date?: string;
-  }>({});
+  const [errors, setErrors] = useState<{ destination?: string; date?: string }>(
+    {},
+  );
 
   const totalPassengers =
     formState.passengers.adults + formState.passengers.children;
@@ -157,6 +161,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
       driverRequired,
     });
     setBookingState(formState);
+    onBeforeNavigate?.(); // ← call before navigating
     router.push("/complete-booking");
   };
 
@@ -365,6 +370,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
           </div>
         </div>
       )}
+
       {activePopup === "date" && (
         <div
           className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0 bg-black/30"
@@ -390,6 +396,7 @@ export default function BookingModal({ open, onClose }: BookingModalProps) {
           </div>
         </div>
       )}
+
       {activePopup === "pass" && (
         <div
           className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0 bg-black/30"

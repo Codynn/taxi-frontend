@@ -39,9 +39,10 @@ function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
     startingPrice: v.pricePerDay,
     currency: "Rs",
     features: [
-      { label: v.vechileFuelType, icon: "vehicle/electric.svg" },
+      { label: v.vechileFuelType, icon: "vehicle/fuel.svg" },
+      { label: v.vechileGearType, icon: "vehicle/battery.svg" },
       { label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" },
-      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/ac.svg" }] : []),
+      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/wind.svg" }] : []),
     ],
   };
 }

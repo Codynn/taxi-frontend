@@ -1,26 +1,8 @@
 import { api } from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
+import type { ApiVehicle } from "@/lib/api/vehicle.api";
 
-export interface ApiVehicle {
-  id: string;
-  vechileName: string;
-  vechileImage: string;
-  vechileType: string;
-  vechileNumber: string;
-  vechileFuelType: string;
-  vechileGearType: string;
-  categoryId: string;
-  hasAC: boolean;
-  noOfSeats: number;
-  pricePerDay: number;
-  category: {
-    id: string;
-    name: string;
-    icon?: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
+export type { ApiVehicle };
 
 export interface VehicleFilters {
   categoryId?: string;
