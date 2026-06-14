@@ -17,7 +17,7 @@ export interface ApiVehicle {
   vechileFuelType: string;
   vechileGearType: string;
   categoryId: string;
-  category: VehicleCategory; // ← object, not a string union
+  category: VehicleCategory;
   hasAC: boolean;
   noOfSeats: number;
   pricePerDay: number;
@@ -46,9 +46,11 @@ export async function getAllVehicles(params?: {
   hasAC?: boolean;
   minPrice?: number;
   maxPrice?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }): Promise<ApiVehicle[]> {
   const res = await api.get<GetAllVehiclesResponse>("/vechicle/get-all", {
     params,
   });
-  return res.data.data; // no mapping needed — shape matches directly
+  return res.data.data;
 }

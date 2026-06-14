@@ -13,6 +13,16 @@ export interface VehicleFilters {
   minPrice?: number;
   maxPrice?: number;
   searchName?: string;
+  sortBy?:
+    | "vechileName"
+    | "pricePerDay"
+    | "noOfSeats"
+    | "createdAt"
+    | "updatedAt"
+    | "vechileType"
+    | "vechileFuelType"
+    | "vechileGearType";
+  sortOrder?: "asc" | "desc";
 }
 
 export function useVehicles(filters: VehicleFilters = {}) {
@@ -30,6 +40,8 @@ export function useVehicles(filters: VehicleFilters = {}) {
       if (filters.minPrice !== undefined) params.minPrice = filters.minPrice;
       if (filters.maxPrice !== undefined) params.maxPrice = filters.maxPrice;
       if (filters.searchName) params.searchName = filters.searchName;
+      if (filters.sortBy) params.sortBy = filters.sortBy;
+      if (filters.sortOrder) params.sortOrder = filters.sortOrder;
 
       const res = await api.get<{
         data: ApiVehicle[];

@@ -23,6 +23,44 @@ const FUEL_TYPES = ["Petrol", "Diesel", "Electric"];
 const PRICE_MIN = 0;
 const PRICE_MAX = 10000;
 
+const CheckItem = ({
+  id,
+  label,
+  checked,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}) => (
+  <div className="flex items-center gap-2">
+    <Checkbox
+      id={id}
+      checked={checked}
+      onCheckedChange={onChange}
+      className="w-4 h-4 rounded-sm border-gray-300
+        data-[state=checked]:bg-[#FEA800]
+        data-[state=checked]:border-[#FEA800]"
+      style={
+        checked
+          ? {
+              backgroundColor: "#FEA800",
+              borderColor: "#FEA800",
+              color: "white",
+            }
+          : {}
+      }
+    />
+    <Label
+      htmlFor={id}
+      className="text-[13px] font-poppins text-black/80 cursor-pointer"
+    >
+      {label}
+    </Label>
+  </div>
+);
+
 const FilterGroup = ({
   title,
   options,
@@ -38,34 +76,14 @@ const FilterGroup = ({
     <h4 className="text-[13px] font-semibold font-poppins text-black">
       {title}
     </h4>
-    {["All", ...options].map((opt) => (
-      <div key={opt} className="flex items-center gap-2">
-        <Checkbox
-          id={`${title}-${opt}`}
-          checked={
-            opt === "All" ? selected.length === 0 : selected.includes(opt)
-          }
-          onCheckedChange={() => onToggle(opt)}
-          className="w-4 h-4 rounded-sm border-gray-300
-            data-[state=checked]:bg-[#FEA800]
-            data-[state=checked]:border-[#FEA800]"
-          style={
-            (opt === "All" ? selected.length === 0 : selected.includes(opt))
-              ? {
-                  backgroundColor: "#FEA800",
-                  borderColor: "#FEA800",
-                  color: "white",
-                }
-              : {}
-          }
-        />
-        <Label
-          htmlFor={`${title}-${opt}`}
-          className="text-[13px] font-poppins text-black/80 cursor-pointer"
-        >
-          {opt}
-        </Label>
-      </div>
+    {options.map((opt) => (
+      <CheckItem
+        key={opt}
+        id={`${title}-${opt}`}
+        label={opt}
+        checked={selected.includes(opt)}
+        onChange={() => onToggle(opt)}
+      />
     ))}
   </div>
 );
@@ -88,10 +106,6 @@ export default function RideFilterPanel({
     current: string[],
     set: (v: string[]) => void,
   ) => {
-    if (value === "All") {
-      set([]);
-      return;
-    }
     set(
       current.includes(value)
         ? current.filter((v) => v !== value)
@@ -151,37 +165,18 @@ export default function RideFilterPanel({
         <h4 className="text-[13px] font-semibold font-poppins text-black">
           Air Conditioning
         </h4>
-        {[
-          { label: "All", value: undefined },
-          { label: "With AC", value: true },
-          { label: "Without AC", value: false },
-        ].map((opt) => (
-          <div key={opt.label} className="flex items-center gap-2">
-            <Checkbox
-              id={`ac-${opt.label}`}
-              checked={hasAC === opt.value}
-              onCheckedChange={() => setHasAC(opt.value)}
-              className="w-4 h-4 rounded-sm border-gray-300
-                data-[state=checked]:bg-[#FEA800]
-                data-[state=checked]:border-[#FEA800]"
-              style={
-                hasAC === opt.value
-                  ? {
-                      backgroundColor: "#FEA800",
-                      borderColor: "#FEA800",
-                      color: "white",
-                    }
-                  : {}
-              }
-            />
-            <Label
-              htmlFor={`ac-${opt.label}`}
-              className="text-[13px] font-poppins text-black/80 cursor-pointer"
-            >
-              {opt.label}
-            </Label>
-          </div>
-        ))}
+        <CheckItem
+          id="ac-with"
+          label="With AC"
+          checked={hasAC === true}
+          onChange={() => setHasAC(hasAC === true ? undefined : true)}
+        />
+        <CheckItem
+          id="ac-without"
+          label="Without AC"
+          checked={hasAC === false}
+          onChange={() => setHasAC(hasAC === false ? undefined : false)}
+        />
       </div>
 
       {/* Price Range */}

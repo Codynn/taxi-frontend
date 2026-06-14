@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -34,6 +34,7 @@ import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
 import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import type { BookingFormState } from "@/types/booking.types";
+import { api } from "@/lib/axios";
 
 const PRICE_MAX = 10000;
 
@@ -78,10 +79,31 @@ function toModalData(state: BookingFormState) {
 }
 
 const SORT_OPTIONS = [
-  { value: "recommended", label: "Recommended" },
-  { value: "price-low", label: "Price: Low to High" },
-  { value: "price-high", label: "Price: High to Low" },
-];
+  {
+    value: "recommended",
+    label: "Recommended",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  },
+  {
+    value: "price-low",
+    label: "Price: Low to High",
+    sortBy: "pricePerDay",
+    sortOrder: "asc",
+  }, // asc = low to high ✓
+  {
+    value: "price-high",
+    label: "Price: High to Low",
+    sortBy: "pricePerDay",
+    sortOrder: "desc",
+  }, // desc = high to low ✓
+  {
+    value: "name-asc",
+    label: "Name: A to Z",
+    sortBy: "vechileName",
+    sortOrder: "asc",
+  }, // asc = A to Z ✓
+] as const;
 
 const ITEMS_PER_PAGE = 6;
 
@@ -136,20 +158,45 @@ export default function RideCollectionSection() {
 
   const { setSelectedVehicle, setModalData } = useBookingStore();
 
-  // Load categories dynamically
   const { data: categories = [], isLoading: catsLoading } =
     usePublicVehicleCategories();
 
-  // Set first category as default once loaded
   const activeCat = activeCategoryId ?? categories[0]?.id ?? null;
 
-  // Fetch vehicles filtered by category + server-side filters
+  const activeSortOption =
+    SORT_OPTIONS.find((o) => o.value === sortBy) ?? SORT_OPTIONS[0];
+
+  useEffect(() => {
+    if (catsLoading || categories.length === 0 || activeCategoryId) return;
+
+    const findFirstActiveCategory = async () => {
+      for (const cat of categories) {
+        try {
+          const res = await api.get<{ meta: { total: number } }>(
+            "/vechicle/get-all",
+            { params: { categoryId: cat.id, limit: 1 } },
+          );
+          if (res.data.meta.total > 0) {
+            setActiveCategoryId(cat.id);
+            break;
+          }
+        } catch {
+          // skip
+        }
+      }
+    };
+
+    findFirstActiveCategory();
+  }, [catsLoading, categories]);
+
   const {
     data: allVehicles = [],
     isLoading,
     isError,
   } = useVehicles({
     categoryId: activeCat ?? undefined,
+    sortBy: activeSortOption.sortBy,
+    sortOrder: activeSortOption.sortOrder,
     ...(appliedFilters.gearTypes.length === 1
       ? { vechileGearType: appliedFilters.gearTypes[0] }
       : {}),
@@ -167,15 +214,7 @@ export default function RideCollectionSection() {
       : {}),
   });
 
-  // Client-side sort only (server handles filters)
-  const sorted = [...allVehicles].sort((a, b) => {
-    if (sortBy === "price-low") return a.pricePerDay - b.pricePerDay;
-    if (sortBy === "price-high") return b.pricePerDay - a.pricePerDay;
-    return 0;
-  });
-
-  // Client-side multi-select filter for gear/fuel (when multiple selected)
-  const filtered = sorted.filter((v) => {
+  const filtered = allVehicles.filter((v) => {
     if (
       appliedFilters.gearTypes.length > 1 &&
       !appliedFilters.gearTypes.includes(v.vechileGearType)
@@ -233,9 +272,41 @@ export default function RideCollectionSection() {
     router.push("/complete-booking");
   };
 
-  const handleFilterApply = (filters: AppliedFilters) => {
+  const handleFilterApply = async (filters: AppliedFilters) => {
     setAppliedFilters(filters);
     setCurrentPage(1);
+
+    const filterParams: Record<string, unknown> = { limit: 1 };
+    if (filters.gearTypes.length === 1)
+      filterParams.vechileGearType = filters.gearTypes[0];
+    if (filters.gearTypes.length > 1)
+      filterParams.gearTypes = filters.gearTypes.join(",");
+    if (filters.fuelTypes.length === 1)
+      filterParams.vechileFuelType = filters.fuelTypes[0];
+    if (filters.fuelTypes.length > 1)
+      filterParams.fuelTypes = filters.fuelTypes.join(",");
+    if (filters.hasAC !== undefined) filterParams.hasAC = filters.hasAC;
+    if (filters.priceRange[0] > 0)
+      filterParams.minPrice = filters.priceRange[0];
+    if (filters.priceRange[1] < PRICE_MAX)
+      filterParams.maxPrice = filters.priceRange[1];
+
+    for (const cat of categories) {
+      try {
+        const res = await api.get<{
+          data: ApiVehicle[];
+          meta: { total: number };
+        }>("/vechicle/get-all", {
+          params: { ...filterParams, categoryId: cat.id },
+        });
+        if (res.data.meta.total > 0) {
+          setActiveCategoryId(cat.id);
+          break;
+        }
+      } catch {
+        // skip this category on error
+      }
+    }
   };
 
   const handleFilterReset = () => {
@@ -246,6 +317,7 @@ export default function RideCollectionSection() {
       hasAC: undefined,
     });
     setCurrentPage(1);
+    setActiveCategoryId(categories[0]?.id ?? null);
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, SlidersHorizontal, X, Car } from "lucide-react";
 import {
@@ -9,6 +9,13 @@ import {
   SheetClose,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 
@@ -24,9 +31,37 @@ import type { ApiVehicle } from "@/hooks/useVehicle";
 import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
 import type { SelectedVehicle } from "@/components/vehicles/Vehicleselectedcard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { api } from "@/lib/axios";
 
 const PRICE_MAX = 10000;
 const ITEMS_PER_PAGE = 6;
+
+const SORT_OPTIONS = [
+  {
+    value: "recommended",
+    label: "Recommended",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  },
+  {
+    value: "price-low",
+    label: "Price: Low to High",
+    sortBy: "pricePerDay",
+    sortOrder: "asc",
+  },
+  {
+    value: "price-high",
+    label: "Price: High to Low",
+    sortBy: "pricePerDay",
+    sortOrder: "desc",
+  },
+  {
+    value: "name-asc",
+    label: "Name: A to Z",
+    sortBy: "vechileName",
+    sortOrder: "asc",
+  },
+] as const;
 
 function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
   return {
@@ -94,6 +129,9 @@ export default function ChooseRideClient() {
 
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<
+    "recommended" | "price-low" | "price-high" | "name-asc"
+  >("recommended");
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({
     gearTypes: [],
     fuelTypes: [],
@@ -105,12 +143,40 @@ export default function ChooseRideClient() {
     usePublicVehicleCategories();
   const activeCat = activeCategoryId ?? categories[0]?.id ?? null;
 
+  useEffect(() => {
+    if (catsLoading || categories.length === 0 || activeCategoryId) return;
+
+    const findFirstActiveCategory = async () => {
+      for (const cat of categories) {
+        try {
+          const res = await api.get<{ meta: { total: number } }>(
+            "/vechicle/get-all",
+            { params: { categoryId: cat.id, limit: 1 } },
+          );
+          if (res.data.meta.total > 0) {
+            setActiveCategoryId(cat.id);
+            break;
+          }
+        } catch {
+          // skip
+        }
+      }
+    };
+
+    findFirstActiveCategory();
+  }, [catsLoading, categories]);
+
+  const activeSortOption =
+    SORT_OPTIONS.find((o) => o.value === sortBy) ?? SORT_OPTIONS[0];
+
   const {
     data: allVehicles = [],
     isLoading,
     isError,
   } = useVehicles({
     categoryId: activeCat ?? undefined,
+    sortBy: activeSortOption.sortBy,
+    sortOrder: activeSortOption.sortOrder,
     ...(appliedFilters.gearTypes.length === 1
       ? { vechileGearType: appliedFilters.gearTypes[0] }
       : {}),
@@ -173,9 +239,41 @@ export default function ChooseRideClient() {
     ];
   };
 
-  const handleFilterApply = (filters: AppliedFilters) => {
+  const handleFilterApply = async (filters: AppliedFilters) => {
     setAppliedFilters(filters);
     setCurrentPage(1);
+
+    const filterParams: Record<string, unknown> = { limit: 1 };
+    if (filters.gearTypes.length === 1)
+      filterParams.vechileGearType = filters.gearTypes[0];
+    if (filters.gearTypes.length > 1)
+      filterParams.gearTypes = filters.gearTypes.join(",");
+    if (filters.fuelTypes.length === 1)
+      filterParams.vechileFuelType = filters.fuelTypes[0];
+    if (filters.fuelTypes.length > 1)
+      filterParams.fuelTypes = filters.fuelTypes.join(",");
+    if (filters.hasAC !== undefined) filterParams.hasAC = filters.hasAC;
+    if (filters.priceRange[0] > 0)
+      filterParams.minPrice = filters.priceRange[0];
+    if (filters.priceRange[1] < PRICE_MAX)
+      filterParams.maxPrice = filters.priceRange[1];
+
+    for (const cat of categories) {
+      try {
+        const res = await api.get<{
+          data: ApiVehicle[];
+          meta: { total: number };
+        }>("/vechicle/get-all", {
+          params: { ...filterParams, categoryId: cat.id },
+        });
+        if (res.data.meta.total > 0) {
+          setActiveCategoryId(cat.id);
+          break;
+        }
+      } catch {
+        // skip
+      }
+    }
   };
 
   const handleFilterReset = () => {
@@ -186,6 +284,7 @@ export default function ChooseRideClient() {
       hasAC: undefined,
     });
     setCurrentPage(1);
+    setActiveCategoryId(categories[0]?.id ?? null);
   };
 
   return (
@@ -208,7 +307,7 @@ export default function ChooseRideClient() {
           Available Rides for Your Trip
         </h2>
 
-        {/* Mobile filter trigger */}
+        {/* Sort + Mobile filter trigger */}
         <div className="flex items-center justify-between gap-4">
           <Sheet>
             <SheetTrigger>
@@ -241,6 +340,34 @@ export default function ChooseRideClient() {
               </div>
             </SheetContent>
           </Sheet>
+
+          {/* Sort By */}
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-[13px] text-black font-poppins hidden sm:block">
+              Sort By:
+            </span>
+            <Select
+              value={sortBy}
+              onValueChange={(val) => {
+                if (val) setSortBy(val as typeof sortBy);
+              }}
+            >
+              <SelectTrigger className="h-9 text-[13px] font-poppins border-gray-200 rounded-lg min-w-[150px] focus:ring-0 focus:ring-offset-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    className="text-[13px] font-poppins cursor-pointer"
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Dynamic category tabs */}
