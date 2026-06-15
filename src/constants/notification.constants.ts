@@ -1,0 +1,52 @@
+export const NOTIFICATION_TYPES = {
+  BOOKING_CONFIRMED: "BOOKING_CONFIRMED",
+  DRIVER_ASSIGNED: "DRIVER_ASSIGNED",
+  TRIP_STARTED: "TRIP_STARTED",
+  TRIP_COMPLETED: "TRIP_COMPLETED",
+  BOOKING_CANCELLED: "BOOKING_CANCELLED",
+  PAYMENT_SUCCESS: "PAYMENT_SUCCESS",
+
+  NEW_BOOKING: "NEW_BOOKING",
+  PAYMENT_RECEIVED: "PAYMENT_RECEIVED",
+
+  DEFAULT: "DEFAULT",
+} as const;
+
+export type NotificationType =
+  (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES];
+
+export const NOTIFICATION_URLS: Record<NotificationType, string> = {
+  [NOTIFICATION_TYPES.BOOKING_CONFIRMED]: "/bookings",
+  [NOTIFICATION_TYPES.DRIVER_ASSIGNED]: "/bookings",
+  [NOTIFICATION_TYPES.TRIP_STARTED]: "/bookings",
+  [NOTIFICATION_TYPES.TRIP_COMPLETED]: "/bookings",
+  [NOTIFICATION_TYPES.BOOKING_CANCELLED]: "/bookings",
+  [NOTIFICATION_TYPES.PAYMENT_SUCCESS]: "/bookings",
+  [NOTIFICATION_TYPES.NEW_BOOKING]: "/bookings",
+  [NOTIFICATION_TYPES.PAYMENT_RECEIVED]: "/bookings",
+  [NOTIFICATION_TYPES.DEFAULT]: "/",
+};
+
+export const NOTIFICATION_SOUNDS: Record<NotificationType, string> = {
+  [NOTIFICATION_TYPES.BOOKING_CONFIRMED]: "/sound/notification-big.mp3",
+  [NOTIFICATION_TYPES.DRIVER_ASSIGNED]: "/sound/notification-big.mp3",
+  [NOTIFICATION_TYPES.TRIP_STARTED]: "/sound/notification.mp3",
+  [NOTIFICATION_TYPES.TRIP_COMPLETED]: "/sound/notification.mp3",
+  [NOTIFICATION_TYPES.BOOKING_CANCELLED]: "/sound/notification.mp3",
+  [NOTIFICATION_TYPES.PAYMENT_SUCCESS]: "/sound/notification.mp3",
+  [NOTIFICATION_TYPES.NEW_BOOKING]: "/sound/notification-big.mp3",
+  [NOTIFICATION_TYPES.PAYMENT_RECEIVED]: "/sound/notification-big.mp3",
+  [NOTIFICATION_TYPES.DEFAULT]: "/sound/notification.mp3",
+};
+
+export const NOTIFICATION_TITLES: Record<NotificationType, string> = {
+  [NOTIFICATION_TYPES.BOOKING_CONFIRMED]: "Booking Confirmed! 🎉",
+  [NOTIFICATION_TYPES.DRIVER_ASSIGNED]: "Driver is on the way 🚗",
+  [NOTIFICATION_TYPES.TRIP_STARTED]: "Your trip has started 🛣️",
+  [NOTIFICATION_TYPES.TRIP_COMPLETED]: "Trip Completed ✅",
+  [NOTIFICATION_TYPES.BOOKING_CANCELLED]: "Booking Cancelled ❌",
+  [NOTIFICATION_TYPES.PAYMENT_SUCCESS]: "Payment Successful 💳",
+  [NOTIFICATION_TYPES.NEW_BOOKING]: "New Booking! 🚖",
+  [NOTIFICATION_TYPES.PAYMENT_RECEIVED]: "Payment Received 💰",
+  [NOTIFICATION_TYPES.DEFAULT]: "Popular Ride",
+};
