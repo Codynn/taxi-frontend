@@ -14,6 +14,7 @@ import AuthInitProvider from "@/providers/AuthInitProviders";
 import { AuthModalProvider } from "@/context/Authmodalcontext";
 import AuthModal from "@/components/auth/authModal";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -42,39 +43,102 @@ const luckiestGuy = Luckiest_Guy({
 });
 
 export const metadata: Metadata = {
-  title: "Popular Rides | Book the Right Car for Every Journey",
+  title: {
+    default: "Popular Ride | Lokpriya Taxi",
+    template: "%s | Popular Ride",
+  },
+
   description:
-    "Plan your trip effortlessly with Popular Rides. Select your pickup location, destination, travel date, and preferred vehicle. Book reliable cars across Nepal.",
+    "Book the right car for every journey across Nepal. Popular Ride by Lokpriya Taxi Pvt. Ltd. offers reliable vehicles, seamless booking, and comfortable travel — anytime you need it.",
+
   keywords: [
+    "Popular Ride",
+    "Lokpriya Taxi",
     "car rental Nepal",
+    "taxi Nepal",
     "book a ride Nepal",
-    "taxi Kathmandu",
+    "cab booking Nepal",
     "long trip Nepal",
-    "Popular Rides",
-    "ride booking",
+    "vehicle rental Dang",
+    "taxi Tulsipur",
+    "taxi Kathmandu",
+    "ride booking Nepal",
+    "Nepal taxi service",
+    "airport pickup Nepal",
+    "outstation cab Nepal",
   ],
-  authors: [{ name: "Popular Rides" }],
-  creator: "Popular Rides",
-  metadataBase: new URL("https://popularrides.com.np"),
+
+  authors: [{ name: "Lokpriya Taxi Pvt. Ltd." }],
+  creator: "Lokpriya Taxi Pvt. Ltd.",
+  publisher: "Lokpriya Taxi Pvt. Ltd.",
+
+  metadataBase: new URL("https://lokpriyataxi.com.np"),
+
+  alternates: {
+    canonical: "https://lokpriyataxi.com.np",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+
   openGraph: {
-    title: "Popular Rides | Book the Right Car for Every Journey",
+    title: "Popular Ride | Lokpriya Taxi",
     description:
-      "Discover available cars instantly and start your journey with confidence across Nepal.",
-    url: "https://popularrides.com.np",
-    siteName: "Popular Rides",
+      "Book reliable cars, auto rickshaws, and bikes across Nepal. Seamless booking experience with Popular Ride by Lokpriya Taxi.",
+    url: "https://lokpriyataxi.com.np",
+    siteName: "Popular Ride",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Popular Ride — Book the Right Car for Every Journey",
+      },
+    ],
     locale: "en_NP",
     type: "website",
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "Popular Rides | Book the Right Car for Every Journey",
+    title: "Popular Ride | Lokpriya Taxi",
     description:
-      "Book reliable cars across Nepal. Kathmandu, Pokhara, Chitwan and more.",
+      "Reliable taxi and vehicle booking across Nepal. Cars, auto rickshaws, and bikes — anytime you need.",
+    images: ["/og-image.png"],
   },
+
   icons: {
     icon: "/logo/logo.svg",
     apple: "/logo/logo.svg",
   },
+
+  other: {
+    "geo.region": "NP-P5",
+    "geo.placename": "Dang, Nepal",
+    "geo.position": "28.0069;82.4737",
+    ICBM: "28.0069, 82.4737",
+    "application-name": "Popular Ride",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "Popular Ride",
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#FEA800",
+    "msapplication-TileColor": "#FEA800",
+    "msapplication-tap-highlight": "no",
+  },
+
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -95,6 +159,16 @@ export default function RootLayout({
         luckiestGuy.variable,
       )}
     >
+      <head>
+        <meta name="application-name" content="Popular Ride" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Popular Ride" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#FEA800" />
+        <meta name="msapplication-TileColor" content="#FEA800" />
+        <meta name="msapplication-tap-highlight" content="no" />
+      </head>
       <body className="min-h-full flex flex-col">
         <Providers>
           <AuthInitProvider>

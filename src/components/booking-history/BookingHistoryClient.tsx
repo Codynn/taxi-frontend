@@ -139,7 +139,6 @@ export default function BookingHistoryClient() {
     (data?.data ?? []) as unknown as ApiBookingRaw[]
   ).map(toBookingRecord);
 
-  // Search is client-side only (backend doesn't support text search)
   const filtered = searchQuery
     ? allBookings.filter(
         (b) =>

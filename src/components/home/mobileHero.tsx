@@ -20,11 +20,10 @@ function MobileHighlightedLine({ text }: { text: string }) {
           const word = part.slice(2, -2);
           return (
             <span key={i} className="relative inline-block px-3 py-1 z-10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/about/rectangle.svg"
                 alt=""
-                aria-hidden="true"
+                fill
                 className="absolute inset-0 -z-10 w-full h-full object-fill scale-y-110"
               />
               {word}

@@ -1,6 +1,14 @@
 import Image from "next/image";
 import { TERMS_AND_CONDITIONS_CONTENT } from "@/constants/features/termsAndConditions.constants";
 import Navbar from "@/components/layout/navbar";
+import { createMetadata } from "@/lib/utils/metadata";
+
+export const metadata = createMetadata({
+  title: "Terms & Conditions",
+  description:
+    "Read the terms and conditions for using Popular Ride services. Understand your rights and responsibilities when booking vehicles with Lokpriya Taxi Pvt. Ltd.",
+  path: "/terms-and-conditions",
+});
 
 export default function TermsAndConditionsPage() {
   return (
@@ -9,7 +17,6 @@ export default function TermsAndConditionsPage() {
 
       <section className="py-12 md:py-16 lg:py-20 px-4">
         <div className="max-w-7xl mx-auto w-full px-2 sm:px-4 md:px-6 py-10">
-          {/* Title with rectangle.svg highlight on "Terms" */}
           <div className="relative mb-8 md:mb-10">
             <Image
               src="/about/rectangle.svg"
@@ -32,7 +39,6 @@ export default function TermsAndConditionsPage() {
               height={150}
               className="mt-8 absolute -top-8 -left-25 z-0 hidden md:block lg:hidden"
             />
-
             <h1 className="relative z-10 text-[38px] lg:text-[48px] font-semibold font-sora leading-tight">
               {TERMS_AND_CONDITIONS_CONTENT.title}
             </h1>
