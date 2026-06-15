@@ -15,7 +15,6 @@ import { AuthModalProvider } from "@/context/Authmodalcontext";
 import AuthModal from "@/components/auth/authModal";
 import { Toaster } from "sonner";
 import Script from "next/script";
-import FCMProvider from "@/providers/FCMProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -174,18 +173,16 @@ export default function RootLayout({
         <Providers>
           <AuthInitProvider>
             <AuthModalProvider>
-              <FCMProvider>
-                <main className="pb-16 lg:pb-0">{children}</main>
-                <Footer />
-                <Toaster
-                  position="top-right"
-                  richColors
-                  toastOptions={{
-                    style: { zIndex: 99999 },
-                  }}
-                />
-                <AuthModal />
-              </FCMProvider>
+              <main className="pb-16 lg:pb-0">{children}</main>
+              <Footer />
+              <Toaster
+                position="top-right"
+                richColors
+                toastOptions={{
+                  style: { zIndex: 99999 },
+                }}
+              />
+              <AuthModal />
             </AuthModalProvider>
           </AuthInitProvider>
         </Providers>
