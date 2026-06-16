@@ -413,6 +413,7 @@ export default function BookingModal({
                 setErrors((e) => ({ ...e, destination: undefined }));
                 setActivePopup(null);
               }}
+              tripType={formState.tripType} // <-- add this
               inline
             />
           </div>
