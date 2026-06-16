@@ -14,6 +14,7 @@ export interface SelectedVehicle {
   startingPrice: number;
   currency?: string;
   features: VehicleFeature[];
+  priceIncreasePercentage: number;
 }
 
 interface VehicleSelectedCardProps {

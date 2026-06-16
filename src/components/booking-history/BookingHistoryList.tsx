@@ -53,12 +53,14 @@ function BookingCardDesktop({ booking }: { booking: BookingRecord }) {
       <div className="w-px h-35 bg-[#808080]/50 my-auto shrink-0" />
 
       <div className="flex flex-1 items-center gap-4 p-5  min-w-0">
-        <div className="relative w-[180px] h-[110px] shrink-0 rounded-xl overflow-hidden">
-          <Image
+        <div className="w-[180px] h-[110px] shrink-0 rounded-xl overflow-hidden">
+          <img
             src={booking?.vehicle?.image}
             alt={booking.vehicle.name}
-            fill
-            className="object-cover"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
           />
         </div>
         <div className="flex flex-col gap-2 flex-1 min-w-0">

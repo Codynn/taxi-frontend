@@ -32,7 +32,7 @@ import BookingModal from "../Booking/Bookingmodal ";
 import { useVehicles, ApiVehicle } from "@/hooks/useVehicle";
 import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
 import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
-import { useBookingStore } from "@/hooks/useBookingStore";
+import { BookingModalData, useBookingStore } from "@/hooks/useBookingStore";
 import type { BookingFormState } from "@/types/booking.types";
 import { api } from "@/lib/axios";
 
@@ -46,8 +46,9 @@ function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
     imageUrl: v.vechileImage,
     rating: 0,
     totalTrips: 0,
-    startingPrice: v.pricePerDay,
+    startingPrice: 0,
     currency: "Rs",
+    priceIncreasePercentage: v.priceIncreasePercentage,
     features: [
       { label: v.vechileFuelType, icon: "vehicle/electric.svg" },
       { label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" },
@@ -75,6 +76,9 @@ function toModalData(state: BookingFormState) {
         ? "SHORT_TRIP"
         : "CUSTOM_TRIP") as "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP",
     driverRequired: state.driverType === "with-driver",
+    locationId: state.destination.locationId,
+    oneWayFare: state.destination.oneWayFare,
+    roundTripFare: state.destination.roundTripFare,
   };
 }
 
@@ -86,23 +90,11 @@ const SORT_OPTIONS = [
     sortOrder: "desc",
   },
   {
-    value: "price-low",
-    label: "Price: Low to High",
-    sortBy: "pricePerDay",
-    sortOrder: "asc",
-  }, // asc = low to high ✓
-  {
-    value: "price-high",
-    label: "Price: High to Low",
-    sortBy: "pricePerDay",
-    sortOrder: "desc",
-  }, // desc = high to low ✓
-  {
     value: "name-asc",
     label: "Name: A to Z",
     sortBy: "vechileName",
     sortOrder: "asc",
-  }, // asc = A to Z ✓
+  },
 ] as const;
 
 const ITEMS_PER_PAGE = 6;
@@ -139,6 +131,17 @@ function TabsSkeleton() {
   );
 }
 
+function calculatePrice(
+  vehicle: ApiVehicle,
+  modalData: BookingModalData,
+): number {
+  const baseFare =
+    modalData.bookingType === "ROUND_TRIP"
+      ? (modalData.roundTripFare ?? 0)
+      : (modalData.oneWayFare ?? 0);
+  return baseFare + (vehicle.priceIncreasePercentage / 100) * baseFare;
+}
+
 export default function RideCollectionSection() {
   const router = useRouter();
 
@@ -149,6 +152,10 @@ export default function RideCollectionSection() {
   const [pendingVehicle, setPendingVehicle] = useState<SelectedVehicle | null>(
     null,
   );
+  const [localModalData, setLocalModalData] = useState<BookingModalData | null>(
+    null,
+  );
+
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({
     gearTypes: [],
     fuelTypes: [],
@@ -156,7 +163,8 @@ export default function RideCollectionSection() {
     hasAC: undefined,
   });
 
-  const { setSelectedVehicle, setModalData } = useBookingStore();
+  const { setSelectedVehicle, setModalData, setBookingState, modalData } =
+    useBookingStore();
 
   const { data: categories = [], isLoading: catsLoading } =
     usePublicVehicleCategories();
@@ -266,8 +274,18 @@ export default function RideCollectionSection() {
 
   const handleSearch = (state: BookingFormState) => {
     if (!pendingVehicle) return;
-    setSelectedVehicle(pendingVehicle);
-    setModalData(toModalData(state));
+
+    const modalData = toModalData(state);
+    const baseFare =
+      modalData.bookingType === "ROUND_TRIP"
+        ? (modalData.roundTripFare ?? 0)
+        : (modalData.oneWayFare ?? 0);
+    const calculatedPrice =
+      baseFare + (pendingVehicle.priceIncreasePercentage / 100) * baseFare;
+
+    setSelectedVehicle({ ...pendingVehicle, startingPrice: calculatedPrice });
+    setModalData(modalData);
+    setBookingState(state);
     setModalOpen(false);
     router.push("/complete-booking");
   };
@@ -478,6 +496,11 @@ export default function RideCollectionSection() {
                   <RideCollectionVehicleCard
                     key={vehicle.id}
                     vehicle={vehicle}
+                    calculatedPrice={
+                      localModalData
+                        ? calculatePrice(vehicle, localModalData)
+                        : undefined
+                    }
                     onChoose={() => handleVehicleChoose(vehicle)}
                   />
                 ))}
@@ -540,7 +563,7 @@ export default function RideCollectionSection() {
           setModalOpen(false);
           setPendingVehicle(null);
         }}
-        onSearch={handleSearch}
+        onSearch={handleSearch} // ← this triggers price calc path
       />
     </section>
   );

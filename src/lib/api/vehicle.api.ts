@@ -20,7 +20,7 @@ export interface ApiVehicle {
   category: VehicleCategory;
   hasAC: boolean;
   noOfSeats: number;
-  pricePerDay: number;
+  priceIncreasePercentage: number;
   createdAt: string;
   updatedAt: string;
 }

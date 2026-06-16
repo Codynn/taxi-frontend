@@ -25,6 +25,7 @@ export interface CreateBookingDto {
   bookingType: BookingType;
   tripType: TripType;
   driverRequired: boolean;
+  locationId?: string;
   vechicleId: string;
 }
 

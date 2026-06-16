@@ -25,7 +25,7 @@ import RideFilterPanel, {
   AppliedFilters,
 } from "@/components/rides/RideFilterPanel";
 import BookingSummaryBar from "@/components/Booking/BookingSummaryBar";
-import { useBookingStore } from "@/hooks/useBookingStore";
+import { BookingModalData, useBookingStore } from "@/hooks/useBookingStore";
 import { useVehicles } from "@/hooks/useVehicle";
 import type { ApiVehicle } from "@/hooks/useVehicle";
 import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
@@ -44,18 +44,6 @@ const SORT_OPTIONS = [
     sortOrder: "desc",
   },
   {
-    value: "price-low",
-    label: "Price: Low to High",
-    sortBy: "pricePerDay",
-    sortOrder: "asc",
-  },
-  {
-    value: "price-high",
-    label: "Price: High to Low",
-    sortBy: "pricePerDay",
-    sortOrder: "desc",
-  },
-  {
     value: "name-asc",
     label: "Name: A to Z",
     sortBy: "vechileName",
@@ -63,7 +51,11 @@ const SORT_OPTIONS = [
   },
 ] as const;
 
-function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
+function toSelectedVehicle(
+  v: ApiVehicle,
+  modalData: BookingModalData,
+): SelectedVehicle {
+  const price = calculatePrice(v, modalData);
   return {
     id: v.id,
     name: v.vechileName,
@@ -71,8 +63,9 @@ function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
     imageUrl: v.vechileImage,
     rating: 0,
     totalTrips: 0,
-    startingPrice: v.pricePerDay,
+    startingPrice: price,
     currency: "Rs",
+    priceIncreasePercentage: v.priceIncreasePercentage,
     features: [
       { label: v.vechileFuelType, icon: "vehicle/fuel.svg" },
       { label: v.vechileGearType, icon: "vehicle/battery.svg" },
@@ -122,9 +115,20 @@ function TabsSkeleton() {
   );
 }
 
+function calculatePrice(
+  vehicle: ApiVehicle,
+  modalData: BookingModalData,
+): number {
+  const baseFare =
+    modalData.bookingType === "ROUND_TRIP"
+      ? (modalData.roundTripFare ?? 0)
+      : (modalData.oneWayFare ?? 0);
+  return baseFare + (vehicle.priceIncreasePercentage / 100) * baseFare;
+}
+
 export default function ChooseRideClient() {
   const router = useRouter();
-  const { bookingState, setBookingState, setSelectedVehicle } =
+  const { bookingState, setBookingState, setSelectedVehicle, modalData } =
     useBookingStore();
 
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
@@ -194,6 +198,12 @@ export default function ChooseRideClient() {
       : {}),
   });
 
+  useEffect(() => {
+    if (!modalData) router.replace("/");
+  }, [modalData, router]);
+
+  if (!modalData) return null;
+
   const filtered = allVehicles.filter((v) => {
     if (
       appliedFilters.gearTypes.length > 1 &&
@@ -253,10 +263,6 @@ export default function ChooseRideClient() {
     if (filters.fuelTypes.length > 1)
       filterParams.fuelTypes = filters.fuelTypes.join(",");
     if (filters.hasAC !== undefined) filterParams.hasAC = filters.hasAC;
-    if (filters.priceRange[0] > 0)
-      filterParams.minPrice = filters.priceRange[0];
-    if (filters.priceRange[1] < PRICE_MAX)
-      filterParams.maxPrice = filters.priceRange[1];
 
     for (const cat of categories) {
       try {
@@ -456,8 +462,9 @@ export default function ChooseRideClient() {
                 <RideCollectionVehicleCard
                   key={vehicle.id}
                   vehicle={vehicle}
+                  calculatedPrice={calculatePrice(vehicle, modalData)}
                   onChoose={() => {
-                    setSelectedVehicle(toSelectedVehicle(vehicle));
+                    setSelectedVehicle(toSelectedVehicle(vehicle, modalData));
                     router.push("/complete-booking");
                   }}
                 />

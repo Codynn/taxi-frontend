@@ -204,7 +204,7 @@ export default function BookingForm({
   const showDriverRadio = isCustom; // custom tab only
 
   // Within City & City-to-City hide the return date field
-  const showReturnDate = isCustom || state.tripType === "round-trip";
+  const showReturnDate = isCustom && state.tripType === "round-trip";
 
   const handleSubmit = () => {
     const newErrors: typeof errors = {};
@@ -257,6 +257,9 @@ export default function BookingForm({
       bookingType,
       tripType: apiTripType,
       driverRequired,
+      locationId: state.destination.locationId,
+      oneWayFare: state.destination.oneWayFare,
+      roundTripFare: state.destination.roundTripFare,
     });
 
     setBookingState(state);
@@ -568,6 +571,7 @@ export default function BookingForm({
             onChange({ ...state, destination: dest });
             setErrors((e) => ({ ...e, destination: undefined }));
           }}
+          tripType={state.tripType}
           inline
         />
       </PortalDropdown>

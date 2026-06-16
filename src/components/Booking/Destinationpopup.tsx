@@ -4,6 +4,7 @@ import type { Destination } from "@/types/booking.types";
 import { Clock, ArrowDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
+import { useState } from "react";
 
 interface LocationRoute {
   id: string;
@@ -35,23 +36,52 @@ interface DestinationPopupProps {
   onClose: () => void;
   onSelect: (dest: Destination) => void;
   inline?: boolean;
+  tripType?: "one-way" | "round-trip"; // <-- pass in from BookingForm
 }
 
 function DestinationContent({
   onClose,
   onSelect,
+  tripType: externalTripType,
 }: {
   onClose: () => void;
   onSelect: (dest: Destination) => void;
+  tripType?: "one-way" | "round-trip";
 }) {
   const { data: routes, isLoading } = useLocations();
 
+  // Use internal state so the toggle works even without an external prop
+  const [localTripType, setLocalTripType] = useState<"one-way" | "round-trip">(
+    externalTripType ?? "one-way"
+  );
+
+  // Sync when the parent prop changes
+  const activeTripType = externalTripType ?? localTripType;
+
   return (
     <>
-      <div className="px-8 py-5 border-b border-gray-200">
-        <h3 className="text-base font-semibold font-sora text-gray-900 text-center">
-          All Destination
+      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3">
+        <h3 className="text-base font-semibold font-sora text-gray-900">
+          All Destinations
         </h3>
+
+        {/* Toggle pill */}
+        <div className="flex items-center bg-gray-100 rounded-full p-1 gap-1">
+          {(["one-way", "round-trip"] as const).map((type) => (
+            <button
+              key={type}
+              onClick={() => setLocalTripType(type)}
+              className={[
+                "px-4 py-1.5 rounded-full text-xs font-semibold font-poppins transition-all duration-200",
+                activeTripType === type
+                  ? "bg-[#FEA800] text-black shadow-sm"
+                  : "text-gray-500 hover:text-gray-700",
+              ].join(" ")}
+            >
+              {type === "one-way" ? "One Way" : "Round Trip"}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col max-h-[60vh] overflow-y-auto">
@@ -60,45 +90,61 @@ function DestinationContent({
             Loading destinations...
           </div>
         ) : (
-          (routes ?? []).map((route) => (
-            <button
-              key={route.id}
-              onClick={() => {
-                onSelect({ from: route.fromLocation, to: route.toLocation });
-                onClose();
-              }}
-              className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
-            >
-              {/* From → To */}
-              <div className="flex flex-col items-start gap-1 w-1/3">
-                <span className="text-sm font-medium text-gray-800 font-poppins">
-                  {route.fromLocation}
-                </span>
-                <ArrowDown size={14} className="text-gray-400 mx-1" />
-                <span className="text-sm font-medium text-gray-800 font-poppins">
-                  {route.toLocation}
-                </span>
-              </div>
+          (routes ?? []).map((route) => {
+            const fare =
+              activeTripType === "round-trip"
+                ? route.roundTripFare
+                : route.oneWayFare;
 
-              {/* Total Days */}
-              <div className="flex flex-col items-center gap-1">
-                <Clock size={16} className="text-gray-400" />
-                <span className="text-xs text-gray-500 font-poppins">
-                  {route.totalDays} {route.totalDays === 1 ? "Day" : "Days"}
-                </span>
-              </div>
+            return (
+              <button
+                key={route.id}
+                onClick={() => {
+                  onSelect({
+                    from: route.fromLocation,
+                    to: route.toLocation,
+                    locationId: route.id,
+                    oneWayFare: route.oneWayFare,
+                    roundTripFare: route.roundTripFare,
+                  });
+                  onClose();
+                }}
+                className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
+              >
+                {/* From → To */}
+                <div className="flex flex-col items-start gap-1 w-1/3">
+                  <span className="text-sm font-medium text-gray-800 font-poppins">
+                    {route.fromLocation}
+                  </span>
+                  <ArrowDown size={14} className="text-gray-400 mx-1" />
+                  <span className="text-sm font-medium text-gray-800 font-poppins">
+                    {route.toLocation}
+                  </span>
+                </div>
 
-              {/* Starting from price */}
-              <div className="flex flex-col items-end gap-0.5 w-1/3">
-                <span className="text-[11px] text-gray-400 font-poppins">
-                  Starting from
-                </span>
-                <span className="text-base font-bold text-gray-900 font-poppins">
-                  Rs {route.oneWayFare.toLocaleString()}
-                </span>
-              </div>
-            </button>
-          ))
+                {/* Total Days */}
+                <div className="flex flex-col items-center gap-1">
+                  <Clock size={16} className="text-gray-400" />
+                  <span className="text-xs text-gray-500 font-poppins">
+                    {route.totalDays}{" "}
+                    {route.totalDays === 1 ? "Day" : "Days"}
+                  </span>
+                </div>
+
+                {/* Fare */}
+                <div className="flex flex-col items-end gap-0.5 w-1/3">
+                  <span className="text-[11px] text-gray-400 font-poppins">
+                    {activeTripType === "round-trip"
+                      ? "Round trip fare"
+                      : "One way fare"}
+                  </span>
+                  <span className="text-base font-bold text-gray-900 font-poppins">
+                    Rs {fare.toLocaleString()}
+                  </span>
+                </div>
+              </button>
+            );
+          })
         )}
       </div>
 
@@ -128,18 +174,29 @@ export default function DestinationPopup({
   onClose,
   onSelect,
   inline = false,
+  tripType,
 }: DestinationPopupProps) {
   if (!open) return null;
 
   if (inline) {
-    return <DestinationContent onClose={onClose} onSelect={onSelect} />;
+    return (
+      <DestinationContent
+        onClose={onClose}
+        onSelect={onSelect}
+        tripType={tripType}
+      />
+    );
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 z-10 overflow-hidden">
-        <DestinationContent onClose={onClose} onSelect={onSelect} />
+        <DestinationContent
+          onClose={onClose}
+          onSelect={onSelect}
+          tripType={tripType}
+        />
       </div>
     </div>
   );

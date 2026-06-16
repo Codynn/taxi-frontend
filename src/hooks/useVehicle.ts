@@ -10,12 +10,9 @@ export interface VehicleFilters {
   vechileFuelType?: string;
   vechileGearType?: string;
   hasAC?: boolean;
-  minPrice?: number;
-  maxPrice?: number;
   searchName?: string;
   sortBy?:
     | "vechileName"
-    | "pricePerDay"
     | "noOfSeats"
     | "createdAt"
     | "updatedAt"
@@ -37,8 +34,6 @@ export function useVehicles(filters: VehicleFilters = {}) {
       if (filters.vechileGearType)
         params.vechileGearType = filters.vechileGearType;
       if (filters.hasAC !== undefined) params.hasAC = filters.hasAC;
-      if (filters.minPrice !== undefined) params.minPrice = filters.minPrice;
-      if (filters.maxPrice !== undefined) params.maxPrice = filters.maxPrice;
       if (filters.searchName) params.searchName = filters.searchName;
       if (filters.sortBy) params.sortBy = filters.sortBy;
       if (filters.sortOrder) params.sortOrder = filters.sortOrder;

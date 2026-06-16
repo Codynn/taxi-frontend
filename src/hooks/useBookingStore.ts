@@ -17,6 +17,9 @@ export interface BookingModalData {
   bookingType: BookingType;
   tripType: ApiTripType;
   driverRequired: boolean;
+  locationId?: string;
+  oneWayFare?: number;
+  roundTripFare?: number;
 }
 
 // Fields collected in CompleteBookingForm (step 2)

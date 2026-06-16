@@ -88,6 +88,7 @@ const toISO = (value: string) => new Date(value).toISOString();
 export default function BookingModal({
   open,
   onClose,
+  onSearch,
   onBeforeNavigate, // ← destructured
 }: BookingModalProps) {
   const router = useRouter();
@@ -164,6 +165,14 @@ export default function BookingModal({
       return;
     }
     setErrors({});
+
+    if (onSearch) {
+      // RideCollectionSection path — let parent handle price calc + store + navigation
+      onSearch(formState);
+      return;
+    }
+
+    // Default path (standalone modal without vehicle context)
     setModalData({
       pickUpLocation: formState.destination.from,
       dropOffLocation: formState.destination.to,
@@ -176,7 +185,7 @@ export default function BookingModal({
       driverRequired,
     });
     setBookingState(formState);
-    onBeforeNavigate?.(); // ← call before navigating
+    onBeforeNavigate?.();
     router.push("/complete-booking");
   };
 

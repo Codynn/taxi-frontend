@@ -62,8 +62,9 @@ function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
     imageUrl: v.vechileImage,
     rating: 0,
     totalTrips: 0,
-    startingPrice: v.pricePerDay,
+    startingPrice: 0,
     currency: "Rs",
+    priceIncreasePercentage: v.priceIncreasePercentage,
     features: [
       { label: v.vechileFuelType, icon: "vehicle/fuel.svg" },
       { label: v.vechileGearType, icon: "vehicle/battery.svg" },

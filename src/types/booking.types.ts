@@ -5,6 +5,9 @@ export type DriverType = "with-driver" | "self-drive";
 export interface Destination {
   from: string;
   to: string;
+  locationId?: string;
+  oneWayFare?: number;
+  roundTripFare?: number;
 }
 
 export interface DateRange {

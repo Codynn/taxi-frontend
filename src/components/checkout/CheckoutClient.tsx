@@ -165,19 +165,18 @@ export default function CheckoutClient() {
       )
     : 1;
 
-  const baseFare = pricePerDay * days;
-  const serviceFee = Math.round(baseFare * 0.05);
+  const baseFare = selectedVehicle.startingPrice;
+  // const serviceFee = Math.round(baseFare * 0.05);
   const driverCharge = modalData.driverRequired
-    ? Math.round(pricePerDay * days * 0.2)
+    ? Math.round(baseFare * days * 0.2)
     : 0;
-  const total = baseFare + serviceFee + driverCharge;
+  const total = baseFare + driverCharge;
 
   const fareDetails = [
     { label: "Base Fare:", amount: baseFare },
     ...(driverCharge > 0
       ? [{ label: "Driver Charge:", amount: driverCharge }]
       : []),
-    { label: "Service Fee:", amount: serviceFee },
   ];
 
   const handleContinueToPayment = () => {
@@ -200,6 +199,7 @@ export default function CheckoutClient() {
         contactNumber: contactData.contactNumber,
         email: contactData.email,
         message: contactData.message,
+        locationId: modalData.locationId,
         pickUpTime: toISO(contactData.pickUpTime),
         vechicleId: selectedVehicle.id,
       },
