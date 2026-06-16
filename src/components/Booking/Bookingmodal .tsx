@@ -100,9 +100,13 @@ export default function BookingModal({
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
-  const [errors, setErrors] = useState<{ destination?: string; date?: string }>(
-    {},
-  );
+
+  const [errors, setErrors] = useState<{
+    destination?: string;
+    date?: string;
+    returnDate?: string;
+    driverType?: string;
+  }>({});
 
   const totalPassengers =
     formState.passengers.adults + formState.passengers.children;
@@ -136,6 +140,11 @@ export default function BookingModal({
 
   const driverRequired = formState.driverType === "with-driver";
 
+  const isCustom = activeTab === "custom";
+  const showTripTypeRadio = true; // all tabs
+  const showDriverRadio = isCustom; // custom only
+  const showReturnDate = isCustom || formState.tripType === "round-trip";
+
   const handleSubmit = () => {
     const newErrors: typeof errors = {};
     if (!formState.destination.from || !formState.destination.to) {
@@ -143,6 +152,12 @@ export default function BookingModal({
     }
     if (!formState.dateRange.pickup) {
       newErrors.date = "Please select pickup date";
+    }
+    if (formState.tripType === "round-trip" && !formState.dateRange.return) {
+      newErrors.returnDate = "Please select a return date";
+    }
+    if (isCustom && !formState.driverType) {
+      newErrors.driverType = "Please select a driver option";
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -167,18 +182,35 @@ export default function BookingModal({
 
   const FormContent = () => (
     <>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 gap-3">
-        <CustomRadioGroup<TripType>
-          options={TRIP_TYPES}
-          value={formState.tripType}
-          onChange={(v) => setFormState((s) => ({ ...s, tripType: v }))}
-        />
-        <div className="sm:w-px sm:h-5 sm:bg-gray-300 w-full h-px bg-gray-100" />
-        <CustomRadioGroup<DriverType>
-          options={DRIVER_TYPES}
-          value={formState.driverType}
-          onChange={(v) => setFormState((s) => ({ ...s, driverType: v }))}
-        />
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap sm:flex-row sm:items-center gap-y-2 sm:gap-y-0">
+          {showTripTypeRadio && (
+            <CustomRadioGroup<TripType>
+              options={TRIP_TYPES}
+              value={formState.tripType}
+              onChange={(v) => {
+                setFormState((s) => ({ ...s, tripType: v }));
+                setErrors((e) => ({ ...e, returnDate: undefined }));
+              }}
+            />
+          )}
+          {isCustom && <div className="w-px h-5 bg-gray-300 mx-5" />}
+          {showDriverRadio && (
+            <CustomRadioGroup<DriverType>
+              options={DRIVER_TYPES}
+              value={formState.driverType}
+              onChange={(v) => {
+                setFormState((s) => ({ ...s, driverType: v }));
+                setErrors((e) => ({ ...e, driverType: undefined }));
+              }}
+            />
+          )}
+        </div>
+        {isCustom && errors.driverType && (
+          <p className="text-red-500 text-xs font-poppins mt-1 ml-1">
+            {errors.driverType}
+          </p>
+        )}
       </div>
 
       {/* From / To */}
@@ -225,34 +257,41 @@ export default function BookingModal({
       </div>
 
       {/* Pickup + Return */}
-      <div>
-        <div
-          className={`border rounded-2xl overflow-hidden grid grid-cols-2 divide-x divide-gray-200 ${errors.date ? "border-red-400 divide-red-200" : "border-gray-200"}`}
+      <div
+        className={`border rounded-2xl overflow-hidden ${showReturnDate ? "grid grid-cols-2 divide-x divide-gray-200" : ""} ${errors.date || errors.returnDate ? "border-red-400 divide-red-200" : "border-gray-200"}`}
+      >
+        <button
+          onClick={() => setActivePopup("date")}
+          className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
         >
-          <button
-            onClick={() => setActivePopup("date")}
-            className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
-          >
-            <p className="text-xs text-gray-400 font-poppins mb-0.5">Pickup</p>
-            <p className="text-sm font-medium text-gray-800 font-poppins">
-              {formState.dateRange.pickup || "Enter a pickup date"}
+          <p className="text-xs text-gray-400 font-poppins mb-0.5">Pickup</p>
+          <p className="text-sm font-medium text-gray-800 font-poppins">
+            {formState.dateRange.pickup || "Enter a pickup date"}
+          </p>
+          {errors.date && (
+            <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+              Please select a pickup date
             </p>
-            {errors.date && (
-              <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                Please select a pickup date
-              </p>
-            )}
-          </button>
+          )}
+        </button>
+        {showReturnDate && (
           <button
             onClick={() => setActivePopup("date")}
             className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
           >
             <p className="text-xs text-gray-400 font-poppins mb-0.5">Return</p>
-            <p className="text-sm font-medium text-gray-800 font-poppins">
+            <p
+              className={`text-sm font-medium font-poppins ${errors.returnDate && !formState.dateRange.return ? "text-red-400" : "text-gray-800"}`}
+            >
               {formState.dateRange.return || "Enter a return date"}
             </p>
+            {errors.returnDate && !formState.dateRange.return && (
+              <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+                Please select a return date
+              </p>
+            )}
           </button>
-        </div>
+        )}
       </div>
 
       {/* Passengers */}

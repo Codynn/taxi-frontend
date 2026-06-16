@@ -183,6 +183,8 @@ export default function BookingForm({
   const [errors, setErrors] = useState<{
     destination?: string;
     date?: string;
+    returnDate?: string;
+    driverType?: string;
     passengers?: string;
   }>({});
 
@@ -197,6 +199,13 @@ export default function BookingForm({
   const totalPassengers = state.passengers.adults + state.passengers.children;
   const passengerLabel = `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`;
 
+  const isCustom = tripTab === "custom";
+  const showTripTypeRadio = true; // short & long tabs
+  const showDriverRadio = isCustom; // custom tab only
+
+  // Within City & City-to-City hide the return date field
+  const showReturnDate = isCustom || state.tripType === "round-trip";
+
   const handleSubmit = () => {
     const newErrors: typeof errors = {};
 
@@ -206,6 +215,16 @@ export default function BookingForm({
 
     if (!state.dateRange.pickup) {
       newErrors.date = "Please select pickup date";
+    }
+
+    // Return date required only for round-trip on short/long tabs
+    if (state.tripType === "round-trip" && !state.dateRange.return) {
+      newErrors.returnDate = "Please select a return date";
+    }
+
+    // Custom tab: driverType must be selected (not empty)
+    if (isCustom && !state.driverType) {
+      newErrors.driverType = "Please select a driver option";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -225,7 +244,10 @@ export default function BookingForm({
           ? "SHORT_TRIP"
           : "CUSTOM_TRIP";
 
-    const driverRequired = state.driverType === "with-driver";
+    // For within-city and city-to-city, driver is always not required
+    const driverRequired = isCustom
+      ? state.driverType === "with-driver"
+      : false;
 
     setModalData({
       pickUpLocation: state.destination.from,
@@ -241,318 +263,37 @@ export default function BookingForm({
     router.push("/choose-ride");
   };
 
-  if (tripTab === "custom") {
-    return (
-      <>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
-            <CustomRadioGroup<TripType>
-              options={TRIP_TYPES}
-              value={state.tripType}
-              onChange={(v) => onChange({ ...state, tripType: v })}
-            />
-            <div className="hidden sm:block w-px h-5 bg-gray-200 mx-5" />
-            <CustomRadioGroup<DriverType>
-              options={DRIVER_TYPES}
-              value={state.driverType}
-              onChange={(v) => onChange({ ...state, driverType: v })}
-            />
-          </div>
-
-          {/* ── Mobile ── */}
-          <div className="flex flex-col gap-3 lg:hidden">
-            <div>
-              <div
-                ref={destRef}
-                className={`border rounded-2xl overflow-hidden bg-white ${errors.destination ? "border-red-400" : "border-gray-200"}`}
-              >
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                    From
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.destination.from || "Enter pickup location"}
-                  </p>
-                </button>
-                <div className="relative flex items-center px-4">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <div className="mx-3 w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
-                    <ArrowUpDown size={13} className="text-[#FEA800]" />
-                  </div>
-                  <div className="flex-1 h-px bg-gray-200" />
-                </div>
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                    To
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.destination.to || "Enter drop location"}
-                  </p>
-                </button>
-              </div>
-              <FieldErrorMsg message={errors.destination} />
-            </div>
-
-            <div>
-              <div
-                className={`grid border rounded-2xl gap-3 grid-cols-2 ${errors.date ? "border-red-400" : "border-gray-200"}`}
-              >
-                <div className="rounded-2xl bg-white overflow-hidden">
-                  <button
-                    ref={dateRef}
-                    onClick={() => setDateOpen(!dateOpen)}
-                    className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                      Pickup
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 font-poppins">
-                      {state.dateRange.pickup || "Enter a pickup date"}
-                    </p>
-                  </button>
-                </div>
-                <div className="rounded-2xl bg-white overflow-hidden">
-                  <button
-                    onClick={() => setDateOpen(true)}
-                    className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                      Return
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 font-poppins">
-                      {state.dateRange.return || "Enter a return date"}
-                    </p>
-                  </button>
-                </div>
-              </div>
-              <FieldErrorMsg message={errors.date} />
-            </div>
-
-            <div>
-              <div
-                className={`border rounded-2xl bg-white overflow-hidden ${errors.passengers ? "border-red-400" : "border-gray-200"}`}
-              >
-                <button
-                  ref={passRef}
-                  onClick={() => setPassOpen(!passOpen)}
-                  className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                      Total Passengers
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 font-poppins">
-                      {passengerLabel}
-                    </p>
-                  </div>
-                  <ChevronDown
-                    size={16}
-                    className={`text-gray-400 shrink-0 transition-transform duration-200 ${passOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-              </div>
-              <FieldErrorMsg message={errors.passengers} />
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
-            >
-              Search Ride
-            </button>
-          </div>
-
-          {/* ── Desktop ── */}
-          <div className="hidden lg:flex flex-col gap-2">
-            <div
-              className={`flex items-stretch border rounded-xl overflow-hidden ${errors.destination || errors.date ? "border-red-400" : "border-gray-200"}`}
-            >
-              <div
-                ref={destRef}
-                className="flex items-stretch"
-                style={{ flex: "2 1 0%" }}
-              >
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
-                >
-                  <p className="text-xs text-gray-400 font-poppins">From</p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                    {state.destination.from || "Enter pickup location"}
-                  </p>
-                  {errors.destination && !state.destination.from && (
-                    <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                      Please select a pickup location
-                    </p>
-                  )}
-                </button>
-                <div className="flex items-center justify-center px-3 bg-white shrink-0">
-                  <ArrowRight size={16} className="text-[#FEA800]" />
-                </div>
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
-                >
-                  <p className="text-xs text-gray-400 font-poppins">To</p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                    {state.destination.to || "Enter drop location"}
-                  </p>
-                  {errors.destination && !state.destination.to && (
-                    <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                      Please select a drop location
-                    </p>
-                  )}
-                </button>
-              </div>
-
-              <div className="w-px bg-gray-200 shrink-0" />
-
-              <button
-                ref={dateRef}
-                onClick={() => setDateOpen(!dateOpen)}
-                className="px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
-                style={{ flex: "1 1 0%" }}
-              >
-                <p className="text-xs text-gray-400 font-poppins">Pickup</p>
-                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                  {state.dateRange.pickup || "Enter a pickup date"}
-                </p>
-                {errors.date && (
-                  <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                    Please select a pickup date
-                  </p>
-                )}
-              </button>
-
-              <div className="w-px bg-gray-200 shrink-0" />
-
-              <button
-                onClick={() => setDateOpen(true)}
-                className="px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
-                style={{ flex: "1 1 0%" }}
-              >
-                <p className="text-xs text-gray-400 font-poppins">Return</p>
-                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                  {state.dateRange.return || "Enter a return date"}
-                </p>
-              </button>
-
-              <div className="w-px bg-gray-200 shrink-0" />
-
-              <button
-                ref={passRef}
-                onClick={() => setPassOpen(!passOpen)}
-                className="flex items-center justify-between gap-2 px-5 py-3 hover:bg-gray-50 transition-colors text-left shrink-0"
-                style={{ minWidth: "160px" }}
-              >
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400 font-poppins">
-                    Total Passengers
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                    {passengerLabel}
-                  </p>
-                </div>
-                <ChevronDown
-                  size={16}
-                  className={`text-gray-400 shrink-0 transition-transform ${passOpen ? "rotate-180" : ""}`}
-                />
-              </button>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={handleSubmit}
-                className="bg-[#FEA800] text-black font-semibold text-sm font-poppins px-12 py-3.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shadow-sm"
-              >
-                Search Ride
-              </button>
-            </div>
-          </div>
-
-          <p className="text-sm text-gray-500 font-poppins leading-relaxed mt-2">
-            {CUSTOM_TRIP_NOTE}
-          </p>
-        </div>
-
-        <PortalDropdown
-          anchorRef={destRef as React.RefObject<HTMLElement>}
-          open={destOpen}
-          onClose={() => setDestOpen(false)}
-          align="left"
-          minWidth={460}
-        >
-          <DestinationPopup
-            open={destOpen}
-            onClose={() => setDestOpen(false)}
-            onSelect={(dest) => {
-              onChange({ ...state, destination: dest });
-              setErrors((e) => ({ ...e, destination: undefined }));
-            }}
-            inline
-          />
-        </PortalDropdown>
-        <PortalDropdown
-          anchorRef={dateRef as React.RefObject<HTMLElement>}
-          open={dateOpen}
-          onClose={() => setDateOpen(false)}
-          align="left"
-          minWidth={600}
-        >
-          <DatePickerPopup
-            open={dateOpen}
-            onClose={() => setDateOpen(false)}
-            dateRange={state.dateRange}
-            onConfirm={(range) => {
-              onChange({ ...state, dateRange: range });
-              setErrors((e) => ({ ...e, date: undefined }));
-            }}
-            inline
-          />
-        </PortalDropdown>
-        <PortalDropdown
-          anchorRef={passRef as React.RefObject<HTMLElement>}
-          open={passOpen}
-          onClose={() => setPassOpen(false)}
-          align="right"
-          minWidth={320}
-        >
-          <PassengersPopup
-            open={passOpen}
-            onClose={() => setPassOpen(false)}
-            passengers={state.passengers}
-            onConfirm={(p) => {
-              onChange({ ...state, passengers: p });
-              setErrors((e) => ({ ...e, passengers: undefined }));
-            }}
-            inline
-          />
-        </PortalDropdown>
-      </>
-    );
-  }
-
   return (
     <>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
-          <CustomRadioGroup<TripType>
-            options={TRIP_TYPES}
-            value={state.tripType}
-            onChange={(v) => onChange({ ...state, tripType: v })}
-          />
-          <div className="hidden sm:block w-px h-5 bg-gray-200 mx-5" />
-          <CustomRadioGroup<DriverType>
-            options={DRIVER_TYPES}
-            value={state.driverType}
-            onChange={(v) => onChange({ ...state, driverType: v })}
-          />
+        {/* Radio group row — only show what's relevant per tab */}
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
+            {showTripTypeRadio && (
+              <CustomRadioGroup<TripType>
+                options={TRIP_TYPES}
+                value={state.tripType}
+                onChange={(v) => {
+                  onChange({ ...state, tripType: v });
+                  setErrors((e) => ({ ...e, returnDate: undefined }));
+                }}
+              />
+            )}
+
+            {isCustom && <div className="w-px h-5 bg-gray-200 mx-5" />}
+
+            {showDriverRadio && (
+              <CustomRadioGroup<DriverType>
+                options={DRIVER_TYPES}
+                value={state.driverType}
+                onChange={(v) => {
+                  onChange({ ...state, driverType: v });
+                  setErrors((e) => ({ ...e, driverType: undefined }));
+                }}
+              />
+            )}
+          </div>
+          {isCustom && <FieldErrorMsg message={errors.driverType} />}
         </div>
 
         {/* ── Mobile ── */}
@@ -594,10 +335,48 @@ export default function BookingForm({
           </div>
 
           <div>
-            <div
-              className={`grid border rounded-2xl gap-3 grid-cols-2 ${errors.date ? "border-red-400" : "border-gray-200"}`}
-            >
-              <div className="rounded-2xl bg-white overflow-hidden">
+            {showReturnDate ? (
+              // Show both pickup + return date grid
+              <div
+                className={`grid border rounded-2xl gap-0 grid-cols-2 ${errors.date || errors.returnDate ? "border-red-400" : "border-gray-200"}`}
+              >
+                <div className="rounded-l-2xl bg-white overflow-hidden border-r border-gray-200">
+                  <button
+                    ref={dateRef}
+                    onClick={() => setDateOpen(!dateOpen)}
+                    className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                      Pickup
+                    </p>
+                    <p className="text-sm font-medium text-gray-800 font-poppins">
+                      {state.dateRange.pickup || "Enter a pickup date"}
+                    </p>
+                  </button>
+                </div>
+                <div
+                  className={`rounded-r-2xl bg-white overflow-hidden ${errors.returnDate ? "border-l border-red-400" : ""}`}
+                >
+                  <button
+                    onClick={() => setDateOpen(true)}
+                    className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                      Return
+                    </p>
+                    <p
+                      className={`text-sm font-medium font-poppins ${errors.returnDate && !state.dateRange.return ? "text-red-400" : "text-gray-800"}`}
+                    >
+                      {state.dateRange.return || "Enter a return date"}
+                    </p>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Only pickup date (within city & city-to-city one-way)
+              <div
+                className={`border rounded-2xl bg-white overflow-hidden ${errors.date ? "border-red-400" : "border-gray-200"}`}
+              >
                 <button
                   ref={dateRef}
                   onClick={() => setDateOpen(!dateOpen)}
@@ -611,21 +390,9 @@ export default function BookingForm({
                   </p>
                 </button>
               </div>
-              <div className="rounded-2xl bg-white overflow-hidden">
-                <button
-                  onClick={() => setDateOpen(true)}
-                  className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                    Return
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.dateRange.return || "Enter a return date"}
-                  </p>
-                </button>
-              </div>
-            </div>
+            )}
             <FieldErrorMsg message={errors.date} />
+            <FieldErrorMsg message={errors.returnDate} />
           </div>
 
           <div>
@@ -665,7 +432,7 @@ export default function BookingForm({
         {/* ── Desktop ── */}
         <div className="hidden lg:flex flex-col gap-2">
           <div
-            className={`flex items-stretch border rounded-xl overflow-hidden ${errors.destination || errors.date ? "border-red-400" : "border-gray-200"}`}
+            className={`flex items-stretch border rounded-xl overflow-hidden ${errors.destination || errors.date || errors.returnDate ? "border-red-400" : "border-gray-200"}`}
           >
             <div
               ref={destRef}
@@ -724,7 +491,8 @@ export default function BookingForm({
               )}
             </button>
 
-            {state.tripType === "round-trip" && (
+            {/* Return date only for round-trip (short/long) or custom tab */}
+            {showReturnDate && (
               <>
                 <div className="w-px bg-gray-200 shrink-0" />
                 <button
@@ -736,7 +504,7 @@ export default function BookingForm({
                   <p className="text-sm font-medium text-gray-800 font-poppins truncate">
                     {state.dateRange.return || "Enter return date"}
                   </p>
-                  {errors.date && !state.dateRange.return && (
+                  {errors.returnDate && !state.dateRange.return && (
                     <p className="text-[11px] text-red-500 font-poppins mt-0.5">
                       Please select a return date
                     </p>
@@ -777,6 +545,13 @@ export default function BookingForm({
             </button>
           </div>
         </div>
+
+        {/* Custom trip note */}
+        {isCustom && (
+          <p className="text-sm text-gray-500 font-poppins leading-relaxed mt-2">
+            {CUSTOM_TRIP_NOTE}
+          </p>
+        )}
       </div>
 
       <PortalDropdown

@@ -6,14 +6,14 @@ import type {
 } from "@/types/booking.types";
 
 export const TRIP_TABS: { value: TripTab; label: string }[] = [
-  { value: "long", label: "Long Trip" },
-  { value: "short", label: "Short Trip" },
+  { value: "short", label: "Within City Ride" },
+  { value: "long", label: "City-to-City Ride" },
   { value: "custom", label: "Custom Trip" },
 ];
 
 export const TRIP_TYPES: { value: TripType; label: string }[] = [
   { value: "round-trip", label: "Round Trip" },
-  { value: "one-way", label: "One way" },
+  { value: "one-way", label: "One Way" },
 ];
 
 export const DRIVER_TYPES: { value: DriverType; label: string }[] = [
@@ -40,8 +40,8 @@ export const PASSENGER_OPTIONS = [
 ];
 
 export const DEFAULT_BOOKING_STATE: BookingFormState = {
-  tripTab: "long",
-  tripType: "round-trip",
+  tripTab: "short",
+  tripType: "one-way",
   driverType: "with-driver",
   destination: { from: "", to: "" },
   dateRange: { pickup: "", return: "" },

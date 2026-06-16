@@ -9,13 +9,13 @@ import type { TripTab, BookingFormState } from "@/types/booking.types";
 import BookingForm from "./Bookingform";
 
 export default function BookingSection() {
-  const [activeTab, setActiveTab] = useState<TripTab>("long");
+  const [activeTab, setActiveTab] = useState<TripTab>("short");
   const [formState, setFormState] = useState<BookingFormState>(
     DEFAULT_BOOKING_STATE,
   );
 
   return (
-    <div className="absolute  z-10 w-full flex justify-center mt-10 px-4 sm:px-6 lg:px-8 -translate-y-1/2">
+    <div className="absolute z-10 w-full flex justify-center mt-10 px-4 sm:px-6 lg:px-8 -translate-y-1/2">
       <div className="w-full max-w-6xl shadow-xl rounded-2xl overflow-visible">
         <div className="flex bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
           {TRIP_TABS.map((tab, i) => {
@@ -28,7 +28,11 @@ export default function BookingSection() {
                 key={tab.value}
                 onClick={() => {
                   setActiveTab(tab.value);
-                  setFormState({ ...formState, tripTab: tab.value });
+                  setFormState({
+                    ...DEFAULT_BOOKING_STATE,
+                    tripTab: tab.value,
+                    passengers: formState.passengers, // preserve passenger count
+                  });
                 }}
                 className={[
                   "flex-1 py-4 text-sm font-semibold font-poppins transition-all duration-200 relative",
