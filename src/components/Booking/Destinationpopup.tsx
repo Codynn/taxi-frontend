@@ -1,7 +1,7 @@
 "use client";
 
 import type { Destination } from "@/types/booking.types";
-import { ArrowLeftRight } from "lucide-react";
+import { Clock, ArrowDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 
@@ -12,6 +12,7 @@ interface LocationRoute {
   oneWayFare: number;
   roundTripFare: number;
   outsideDistrict: boolean;
+  totalDays: number;
 }
 
 interface LocationResponse {
@@ -68,13 +69,34 @@ function DestinationContent({
               }}
               className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
             >
-              <span className="text-sm font-medium text-gray-800 font-poppins w-1/3 text-left">
-                {route.fromLocation}
-              </span>
-              <ArrowLeftRight size={18} className="text-[#FEA800] shrink-0" />
-              <span className="text-sm font-medium text-gray-800 font-poppins w-1/3 text-right">
-                {route.toLocation}
-              </span>
+              {/* From → To */}
+              <div className="flex flex-col items-start gap-1 w-1/3">
+                <span className="text-sm font-medium text-gray-800 font-poppins">
+                  {route.fromLocation}
+                </span>
+                <ArrowDown size={14} className="text-gray-400 mx-1" />
+                <span className="text-sm font-medium text-gray-800 font-poppins">
+                  {route.toLocation}
+                </span>
+              </div>
+
+              {/* Total Days */}
+              <div className="flex flex-col items-center gap-1">
+                <Clock size={16} className="text-gray-400" />
+                <span className="text-xs text-gray-500 font-poppins">
+                  {route.totalDays} {route.totalDays === 1 ? "Day" : "Days"}
+                </span>
+              </div>
+
+              {/* Starting from price */}
+              <div className="flex flex-col items-end gap-0.5 w-1/3">
+                <span className="text-[11px] text-gray-400 font-poppins">
+                  Starting from
+                </span>
+                <span className="text-base font-bold text-gray-900 font-poppins">
+                  Rs {route.oneWayFare.toLocaleString()}
+                </span>
+              </div>
             </button>
           ))
         )}

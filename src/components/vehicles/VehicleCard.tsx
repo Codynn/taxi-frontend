@@ -26,7 +26,6 @@ export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
     vechileGearType,
     noOfSeats,
     hasAC,
-    pricePerDay,
   } = vehicle;
 
   console.log(vechileImage);
@@ -70,14 +69,6 @@ export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
 
         {/* Price + CTA */}
         <div className="flex items-center justify-between gap-3 mt-auto pt-1">
-          <div>
-            <p className="text-[12px] text-[#000000] font-poppins leading-none mb-1">
-              Per Day
-            </p>
-            <p className="text-[23px] text-[#FEA800] font-poppins font-bold leading-tight">
-              Rs {pricePerDay?.toLocaleString()}
-            </p>
-          </div>
           <button
             onClick={() => onChoose?.(vehicle)}
             className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-5 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0 whitespace-nowrap"
