@@ -26,8 +26,8 @@ export const FOOTER_LINK_GROUPS: FooterLinkGroup[] = [
 
 export const CONTACT_INFO: ContactInfo = {
   address: "Lokpriya Taxi Pvt.Ltd. Dang, Tulsipur",
-  phones: ["082-590800", "9763641235"],
-  email: "support@rentalcars.com.np",
+  phones: ["9763641235", "9857822548"],
+  email: "ghanashyamdangi30@gmail.com",
 };
 
 export const SOCIAL_LINKS: SocialLink[] = [

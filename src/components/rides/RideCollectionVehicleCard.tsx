@@ -105,7 +105,7 @@ export default function RideCollectionVehicleCard({
             {hasPrice ? (
               <div>
                 <p className="text-[11px] text-black font-poppins leading-none mb-1">
-                  Per Day
+                  Starting From
                 </p>
                 <p className="text-[20px] text-[#FEA800] font-poppins font-bold leading-tight">
                   Rs {calculatedPrice.toLocaleString()}
@@ -167,7 +167,7 @@ export default function RideCollectionVehicleCard({
             {hasPrice ? (
               <div>
                 <p className="text-[12px] text-black font-poppins leading-none mb-1">
-                  Per Day
+                  Starting From
                 </p>
                 <p className="text-[24px] text-[#FEA800] font-poppins font-bold leading-tight">
                   Rs {calculatedPrice.toLocaleString()}

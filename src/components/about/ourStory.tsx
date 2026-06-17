@@ -48,7 +48,7 @@ export default function OurStory() {
             alt=""
             width={245}
             height={150}
-            className="absolute left-1/2 top-1/8 lg:top-1/6 -translate-x-1/2 -translate-y-1/2 z-0 w-[245px] h-auto"
+            className="absolute left-1/2 top-1/4 lg:top-1/4 -translate-x-1/2 -translate-y-1/2 z-0 w-[245px] h-auto"
           />
 
           <h2 className="relative z-10 text-[48px] font-semibold font-sora text-center text-[#000000]">

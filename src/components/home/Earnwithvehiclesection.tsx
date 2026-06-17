@@ -44,7 +44,7 @@ export default function EarnWithVehicleSection() {
 
             <div>
               <Link
-                href="/become-a-partner"
+                href="/"
                 className="inline-block bg-[#FEA800] text-black font-semibold font-poppins text-sm px-7 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors"
               >
                 Become a Partner

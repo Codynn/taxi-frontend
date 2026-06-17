@@ -106,19 +106,7 @@ export default function Navbar({
           </Link>
 
           <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <UserMenu />
-            ) : (
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#FEA800] shrink-0">
-                <Image
-                  src="/logo/logo.svg"
-                  alt="User Avatar"
-                  width={40}
-                  height={40}
-                  className="object-cover"
-                />
-              </div>
-            )}
+            {isAuthenticated && <UserMenu />}
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -191,7 +179,7 @@ export default function Navbar({
             {/* Auth buttons */}
             <div className="flex flex-col items-center px-8 pb-10 gap-3">
               {!hasHydrated ? null : isAuthenticated ? (
-                <UserMenu />
+                <div></div>
               ) : (
                 <>
                   <button

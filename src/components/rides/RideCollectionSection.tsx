@@ -50,9 +50,22 @@ function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
     currency: "Rs",
     priceIncreasePercentage: v.priceIncreasePercentage,
     features: [
-      { label: v.vechileFuelType, icon: "vehicle/electric.svg" },
+      {
+        label: v.vechileFuelType,
+        icon:
+          v.vechileFuelType?.toLowerCase() === "electric"
+            ? "vehicle/battery.svg"
+            : "vehicle/fuel.svg", // ← petrol/diesel/hybrid all get fuel icon
+      },
+      {
+        label: v.vechileGearType,
+        icon:
+          v.vechileGearType?.toLowerCase() === "automatic"
+            ? "vehicle/battery.svg"
+            : "vehicle/settings.svg",
+      },
       { label: `${v.noOfSeats} Seats`, icon: "vehicle/seat.svg" },
-      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/ac.svg" }] : []),
+      ...(v.hasAC ? [{ label: "AC", icon: "vehicle/wind.svg" }] : []),
     ],
   };
 }

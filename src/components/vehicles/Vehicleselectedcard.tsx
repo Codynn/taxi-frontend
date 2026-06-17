@@ -64,12 +64,12 @@ export default function VehicleSelectedCard({
             </div>
           )}
           {/* Rating badge */}
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white text-black text-[10px] font-poppins font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
+          {/* <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white text-black text-[10px] font-poppins font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
             <Image src="/vehicle/star.svg" alt="star" width={11} height={11} />
             <span>
               {rating.toFixed(1)} ({totalTrips}+ trips)
             </span>
-          </div>
+          </div> */}
         </div>
 
         {/* Right: Details */}
