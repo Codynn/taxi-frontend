@@ -4,12 +4,29 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { DateRange } from "@/types/booking.types";
 
+// Datepickerpopup.tsx — add bookedRanges prop
+
+interface BookedRange {
+  pickUpDate: string;
+  returnDate: string | null;
+  bookingType: "ONE_WAY" | "ROUND_TRIP";
+}
+
 interface DatePickerPopupProps {
   open: boolean;
   onClose: () => void;
   dateRange: DateRange;
   onConfirm: (range: DateRange) => void;
-  inline?: boolean; // ← add this
+  inline?: boolean;
+  bookedDates?: Set<string>;
+}
+
+// Pass it into DatePickerContent:
+interface DatePickerContentProps {
+  dateRange: DateRange;
+  onConfirm: (range: DateRange) => void;
+  onClose: () => void;
+  bookedRanges?: BookedRange[]; // ← new
 }
 
 const MONTHS = [
@@ -56,6 +73,7 @@ interface CalendarGridProps {
   pickup: string;
   returnDate: string;
   onSelect: (date: string) => void;
+  bookedDates?: Set<string>; // ← new
 }
 
 function CalendarGrid({
@@ -64,7 +82,11 @@ function CalendarGrid({
   pickup,
   returnDate,
   onSelect,
+  bookedDates = new Set(),
 }: CalendarGridProps) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const daysInMonth = getDaysInMonth(month, year);
   const firstDay = getFirstDayOfMonth(month, year);
   const cells: (number | null)[] = Array(firstDay)
@@ -93,10 +115,13 @@ function CalendarGrid({
           const dateObj = new Date(year, month, day);
           const dateStr = toStr(dateObj);
 
+          const isPast = dateObj < today;
+          const booked = bookedDates.has(dateStr);
+          const disabled = isPast || booked;
+
           const isPickup = pickup === dateStr;
           const isReturn = returnDate === dateStr;
           const isSelected = isPickup || isReturn;
-
           const isInRange =
             pickupDate && returnD && dateObj > pickupDate && dateObj < returnD;
 
@@ -105,7 +130,7 @@ function CalendarGrid({
               key={i}
               className="relative flex items-center justify-center h-10"
             >
-              {isInRange && (
+              {isInRange && !disabled && (
                 <div className="absolute inset-0 bg-[#FEA800]/15" />
               )}
               {isPickup && returnDate && (
@@ -114,17 +139,29 @@ function CalendarGrid({
               {isReturn && pickup && (
                 <div className="absolute left-0 top-0 bottom-0 w-1/2 bg-[#FEA800]/15" />
               )}
-              <button
-                onClick={() => onSelect(dateStr)}
-                className={[
-                  "relative z-10 w-9 h-9 rounded-full text-sm font-poppins transition-all flex items-center justify-center",
-                  isSelected
-                    ? "bg-[#FEA800] text-white font-semibold shadow-sm"
-                    : "text-gray-700 hover:bg-[#FEA800]/20",
-                ].join(" ")}
-              >
-                {String(day).padStart(2, "0")}
-              </button>
+
+              {booked ? (
+                <div className="relative z-10 w-9 h-9 flex items-center justify-center rounded-full bg-red-50">
+                  <span className="text-sm font-poppins text-red-400 line-through">
+                    {String(day).padStart(2, "0")}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  disabled={disabled}
+                  onClick={() => onSelect(dateStr)}
+                  className={[
+                    "relative z-10 w-9 h-9 rounded-full text-sm font-poppins transition-all flex items-center justify-center",
+                    disabled
+                      ? "text-gray-300 cursor-not-allowed"
+                      : isSelected
+                        ? "bg-[#FEA800] text-white font-semibold shadow-sm"
+                        : "text-gray-700 hover:bg-[#FEA800]/20",
+                  ].join(" ")}
+                >
+                  {String(day).padStart(2, "0")}
+                </button>
+              )}
             </div>
           );
         })}
@@ -137,10 +174,12 @@ function DatePickerContent({
   dateRange,
   onConfirm,
   onClose,
+  bookedDates = new Set(),
 }: {
   dateRange: DateRange;
   onConfirm: (range: DateRange) => void;
   onClose: () => void;
+  bookedDates?: Set<string>;
 }) {
   const now = new Date();
   const [leftMonth, setLeftMonth] = useState(now.getMonth());
@@ -152,6 +191,7 @@ function DatePickerContent({
   const rightYear = leftMonth === 11 ? leftYear + 1 : leftYear;
 
   function handleSelect(date: string) {
+    if (bookedDates.has(date)) return;
     if (!pickup || (pickup && returnDate)) {
       setPickup(date);
       setReturnDate("");
@@ -181,16 +221,17 @@ function DatePickerContent({
 
   return (
     <>
-      <div className="px-8 pt-6 pb-4">
-        <div className="flex items-center gap-4">
+      <div className="px-2 pt-6 pb-4">
+        <div className="flex items-center justify-between gap-1">
           <button
+            type="button"
             onClick={handlePrev}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shrink-0"
           >
             <ArrowLeft size={24} className="text-[#000000]" />
           </button>
 
-          <div className="flex flex-1 items-center justify-around gap-4">
+          <div className="flex flex-1 items-center justify-around gap-1">
             <div className="flex items-center gap-2">
               <select
                 value={leftMonth}
@@ -215,7 +256,8 @@ function DatePickerContent({
                 ))}
               </select>
             </div>
-            <div className="hidden sm:flex items-center gap-2">
+
+            <div className="hidden sm:flex items-center gap-1">
               <select
                 value={rightMonth}
                 disabled
@@ -242,8 +284,9 @@ function DatePickerContent({
           </div>
 
           <button
+            type="button"
             onClick={handleNext}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors shrink-0"
           >
             <ArrowRight size={24} className="text-[#000000]" />
           </button>
@@ -257,6 +300,7 @@ function DatePickerContent({
           pickup={pickup}
           returnDate={returnDate}
           onSelect={handleSelect}
+          bookedDates={bookedDates}
         />
         <div className="hidden sm:block w-px bg-gray-100 mx-6" />
         <div className="hidden sm:block flex-1">
@@ -266,6 +310,7 @@ function DatePickerContent({
             pickup={pickup}
             returnDate={returnDate}
             onSelect={handleSelect}
+            bookedDates={bookedDates}
           />
         </div>
       </div>
@@ -299,29 +344,26 @@ export default function DatePickerPopup({
   onClose,
   dateRange,
   onConfirm,
-  inline = false, // ← add this
+  inline = false,
+  bookedDates = new Set(),
 }: DatePickerPopupProps) {
   if (!open) return null;
 
-  if (inline) {
-    return (
-      <DatePickerContent
-        dateRange={dateRange}
-        onConfirm={onConfirm}
-        onClose={onClose}
-      />
-    );
-  }
+  const content = (
+    <DatePickerContent
+      dateRange={dateRange}
+      onConfirm={onConfirm}
+      onClose={onClose}
+      bookedDates={bookedDates}
+    />
+  );
 
+  if (inline) return content;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 z-10 overflow-hidden">
-        <DatePickerContent
-          dateRange={dateRange}
-          onConfirm={onConfirm}
-          onClose={onClose}
-        />
+        {content}
       </div>
     </div>
   );

@@ -26,12 +26,14 @@ import DatePickerPopup from "./Datepickerpopup";
 import PassengersPopup from "./Passengerspopup";
 import DestinationPopup from "./Destinationpopup";
 import { useBookingStore } from "@/hooks/useBookingStore";
+import { useVehicleBookedDates } from "@/hooks/useVehicleBookDates";
 
 interface BookingModalProps {
   open: boolean;
   onClose: () => void;
   onSearch?: (state: BookingFormState) => void;
-  onBeforeNavigate?: () => void; // ← added
+  onBeforeNavigate?: () => void;
+  vehicleId?: string; // ← added
 }
 
 function CustomRadioGroup<T extends string>({
@@ -89,10 +91,12 @@ export default function BookingModal({
   open,
   onClose,
   onSearch,
-  onBeforeNavigate, // ← destructured
+  onBeforeNavigate,
+  vehicleId, // ← destructured
 }: BookingModalProps) {
   const router = useRouter();
   const { setModalData, setBookingState } = useBookingStore();
+  const { data: bookedDates } = useVehicleBookedDates(vehicleId ?? null);
 
   const [activeTab, setActiveTab] = useState<TripTab>("long");
   const [formState, setFormState] = useState<BookingFormState>(
@@ -435,6 +439,7 @@ export default function BookingModal({
               open
               onClose={() => setActivePopup(null)}
               dateRange={formState.dateRange}
+              bookedDates={bookedDates}
               onConfirm={(range) => {
                 setFormState((s) => ({ ...s, dateRange: range }));
                 setErrors((e) => ({ ...e, date: undefined }));

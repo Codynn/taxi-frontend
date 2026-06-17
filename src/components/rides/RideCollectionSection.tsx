@@ -563,7 +563,8 @@ export default function RideCollectionSection() {
           setModalOpen(false);
           setPendingVehicle(null);
         }}
-        onSearch={handleSearch} // ← this triggers price calc path
+        onSearch={handleSearch}
+        vehicleId={pendingVehicle?.id}
       />
     </section>
   );
