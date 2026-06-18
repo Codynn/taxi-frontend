@@ -30,6 +30,8 @@ interface ApiVehicleFull {
 
 interface ApiBookingRaw extends Omit<ApiBooking, "vehicle"> {
   vechicle: ApiVehicleFull;
+  totalAmount?: number;
+  quotedPrice?: number;
   totalPrice?: number;
   fare?: number;
 }
@@ -97,6 +99,8 @@ function buildFeatures(v: ApiVehicleFull) {
 function toBookingRecord(b: ApiBookingRaw): BookingRecord {
   const v = b.vechicle;
 
+  // console.log(b);
+
   return {
     id: b.id,
     bookingNumber: `#${b.id.slice(0, 8).toUpperCase()}`,
@@ -106,7 +110,7 @@ function toBookingRecord(b: ApiBookingRaw): BookingRecord {
     return: b.returnDate ? formatDate(b.returnDate) : "—",
     status: STATUS_UI_MAP[b.status] ?? "Pending",
     currency: "Rs",
-    paid: b.totalPrice ?? b.fare ?? 0, // ← use actual price from API
+    paid: b.totalAmount ?? b.quotedPrice ?? b.totalPrice ?? b.fare ?? 0, // ← use actual price from API
     tripType: TRIP_TYPE_MAP[b.tripType] ?? "long",
     vehicle: {
       name: v?.vechileName ?? "Unknown Vehicle",

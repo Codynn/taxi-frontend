@@ -165,9 +165,6 @@ export default function RideCollectionSection() {
   const [pendingVehicle, setPendingVehicle] = useState<SelectedVehicle | null>(
     null,
   );
-  const [localModalData, setLocalModalData] = useState<BookingModalData | null>(
-    null,
-  );
 
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({
     gearTypes: [],
@@ -351,6 +348,8 @@ export default function RideCollectionSection() {
     setActiveCategoryId(categories[0]?.id ?? null);
   };
 
+  const isCustomTrip = modalData?.tripType === "CUSTOM_TRIP";
+
   return (
     <section className="bg-white py-10 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -510,10 +509,9 @@ export default function RideCollectionSection() {
                     key={vehicle.id}
                     vehicle={vehicle}
                     calculatedPrice={
-                      localModalData
-                        ? calculatePrice(vehicle, localModalData)
-                        : undefined
+                      modalData ? calculatePrice(vehicle, modalData) : undefined
                     }
+                    isCustomTrip={isCustomTrip}
                     onChoose={() => handleVehicleChoose(vehicle)}
                   />
                 ))}

@@ -70,6 +70,7 @@ export default function CompleteBookingClient() {
               <div className="w-full flex-1 lg:w-[380px] shrink-0">
                 <VehicleSelectedCard
                   vehicle={selectedVehicle}
+                  isCustomTrip={modalData?.tripType === "CUSTOM_TRIP"}
                   onChangeVehicle={() => router.push("/choose-ride")}
                 />
               </div>

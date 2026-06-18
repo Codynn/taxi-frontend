@@ -7,6 +7,7 @@ import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
 interface RideCollectionVehicleCardProps {
   vehicle: ApiVehicle;
   calculatedPrice?: number;
+  isCustomTrip?: boolean;
   onChoose?: (vehicle: SelectedVehicle) => void;
 }
 
@@ -29,6 +30,7 @@ export default function RideCollectionVehicleCard({
   vehicle,
   calculatedPrice,
   onChoose,
+  isCustomTrip,
 }: RideCollectionVehicleCardProps) {
   const {
     id,
@@ -101,21 +103,26 @@ export default function RideCollectionVehicleCard({
             />
             {hasAC && <FeatureBadge label="AC" icon="vehicle/wind.svg" />}
           </div>
-          <div className="flex items-center justify-between gap-3">
-            {hasPrice ? (
-              <div>
-                <p className="text-[11px] text-black font-poppins leading-none mb-1">
-                  Starting From
+          <div
+            className={`flex items-center gap-3 ${
+              isCustomTrip ? "justify-end" : "justify-between"
+            }`}
+          >
+            {!isCustomTrip &&
+              (hasPrice ? (
+                <div>
+                  <p className="text-[11px] text-black font-poppins leading-none mb-1">
+                    Starting From
+                  </p>
+                  <p className="text-[20px] text-[#FEA800] font-poppins font-bold leading-tight">
+                    Rs {calculatedPrice.toLocaleString()}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-[12px] text-gray-400 font-poppins">
+                  Select route to see price
                 </p>
-                <p className="text-[20px] text-[#FEA800] font-poppins font-bold leading-tight">
-                  Rs {calculatedPrice.toLocaleString()}
-                </p>
-              </div>
-            ) : (
-              <p className="text-[12px] text-gray-400 font-poppins">
-                Select route to see price
-              </p>
-            )}
+              ))}
             <button
               onClick={handleChoose}
               className="bg-[#FEA800] text-black text-[13px] font-medium font-poppins px-5 py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"
@@ -163,21 +170,26 @@ export default function RideCollectionVehicleCard({
             {hasAC && <FeatureBadge label="AC" icon="vehicle/wind.svg" />}
           </div>
 
-          <div className="flex items-center justify-between px-6 pt-4 pb-5">
-            {hasPrice ? (
-              <div>
-                <p className="text-[12px] text-black font-poppins leading-none mb-1">
-                  Starting From
+          <div
+            className={`flex items-center px-6 pt-4 pb-5 ${
+              isCustomTrip ? "justify-end" : "justify-between"
+            }`}
+          >
+            {!isCustomTrip &&
+              (hasPrice ? (
+                <div>
+                  <p className="text-[12px] text-black font-poppins leading-none mb-1">
+                    Starting From
+                  </p>
+                  <p className="text-[24px] text-[#FEA800] font-poppins font-bold leading-tight">
+                    Rs {calculatedPrice.toLocaleString()}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-[13px] text-gray-400 font-poppins">
+                  Select route to see price
                 </p>
-                <p className="text-[24px] text-[#FEA800] font-poppins font-bold leading-tight">
-                  Rs {calculatedPrice.toLocaleString()}
-                </p>
-              </div>
-            ) : (
-              <p className="text-[13px] text-gray-400 font-poppins">
-                Select route to see price
-              </p>
-            )}
+              ))}
             <button
               onClick={handleChoose}
               className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-7 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"

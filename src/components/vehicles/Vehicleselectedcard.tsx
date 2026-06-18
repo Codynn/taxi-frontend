@@ -19,11 +19,13 @@ export interface SelectedVehicle {
 
 interface VehicleSelectedCardProps {
   vehicle: SelectedVehicle;
+  isCustomTrip?: boolean;
   onChangeVehicle?: () => void;
 }
 
 export default function VehicleSelectedCard({
   vehicle,
+  isCustomTrip,
   onChangeVehicle,
 }: VehicleSelectedCardProps) {
   const {
@@ -92,15 +94,21 @@ export default function VehicleSelectedCard({
           </div>
 
           {/* Price + Change Vehicle */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div>
-              <p className="text-[11px] text-black font-poppins leading-none mb-0.5">
-                Starting from
-              </p>
-              <p className="text-[20px] sm:text-[22px] text-[#FEA800] font-poppins font-bold leading-tight">
-                {currency} {startingPrice.toLocaleString()}
-              </p>
-            </div>
+          <div
+            className={`flex items-center gap-2 flex-wrap ${
+              isCustomTrip ? "justify-end" : "justify-between"
+            }`}
+          >
+            {!isCustomTrip && (
+              <div>
+                <p className="text-[11px] text-black font-poppins leading-none mb-0.5">
+                  Starting from
+                </p>
+                <p className="text-[20px] sm:text-[22px] text-[#FEA800] font-poppins font-bold leading-tight">
+                  {currency} {startingPrice.toLocaleString()}
+                </p>
+              </div>
+            )}
             {onChangeVehicle && (
               <button
                 onClick={onChangeVehicle}

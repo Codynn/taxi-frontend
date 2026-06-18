@@ -116,7 +116,7 @@ export const metadata: Metadata = {
     title: "Popular Ride | Lokpriya Taxi",
     description:
       "Reliable taxi and vehicle booking across Nepal. Cars, auto rickshaws, and bikes — anytime you need.",
-    images: ["/og-image.png"],
+    images: ["/og-image.svg"],
   },
 
   icons: {

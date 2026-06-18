@@ -87,10 +87,18 @@ function BookingCardDesktop({ booking }: { booking: BookingRecord }) {
       <div className="w-px h-35 bg-[#808080]/50 my-auto shrink-0" />
 
       <div className="flex flex-col justify-center items-start px-6 py-5 shrink-0">
-        <p className="text-[12px] text-black font-poppins mb-1">Paid</p>
-        <p className="text-[24px] font-bold text-[#FEA800] font-poppins">
-          {booking.currency} {booking.paid.toLocaleString()}
-        </p>
+        {booking.tripType === "custom" ? (
+          <p className="text-[13px] text-gray-400 font-poppins max-w-[140px]">
+            Price to be confirmed
+          </p>
+        ) : (
+          <>
+            <p className="text-[12px] text-black font-poppins mb-1">Paid</p>
+            <p className="text-[24px] font-bold text-[#FEA800] font-poppins">
+              {booking.currency} {booking.paid.toLocaleString()}
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
@@ -162,10 +170,18 @@ function BookingCardMobile({ booking }: { booking: BookingRecord }) {
       <div className="h-px bg-[#808080]/50" />
 
       <div>
-        <p className="text-[12px] text-black font-poppins mb-0.5">Paid</p>
-        <p className="text-[22px] font-bold text-[#FEA800] font-poppins">
-          {booking.currency} {booking.paid.toLocaleString()}
-        </p>
+        {booking.tripType === "custom" ? (
+          <p className="text-[13px] text-gray-400 font-poppins">
+            Price to be confirmed
+          </p>
+        ) : (
+          <>
+            <p className="text-[12px] text-black font-poppins mb-0.5">Paid</p>
+            <p className="text-[22px] font-bold text-[#FEA800] font-poppins">
+              {booking.currency} {booking.paid.toLocaleString()}
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

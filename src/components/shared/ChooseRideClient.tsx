@@ -54,8 +54,9 @@ const SORT_OPTIONS = [
 function toSelectedVehicle(
   v: ApiVehicle,
   modalData: BookingModalData,
+  isCustomTrip: boolean,
 ): SelectedVehicle {
-  const price = calculatePrice(v, modalData);
+  const price = isCustomTrip ? 0 : calculatePrice(v, modalData);
   return {
     id: v.id,
     name: v.vechileName,
@@ -203,6 +204,8 @@ export default function ChooseRideClient() {
   }, [modalData, router]);
 
   if (!modalData) return null;
+
+  const isCustomTrip = modalData.tripType === "CUSTOM_TRIP";
 
   const filtered = allVehicles.filter((v) => {
     if (
@@ -462,9 +465,16 @@ export default function ChooseRideClient() {
                 <RideCollectionVehicleCard
                   key={vehicle.id}
                   vehicle={vehicle}
-                  calculatedPrice={calculatePrice(vehicle, modalData)}
+                  calculatedPrice={
+                    isCustomTrip
+                      ? undefined
+                      : calculatePrice(vehicle, modalData)
+                  }
+                  isCustomTrip={isCustomTrip}
                   onChoose={() => {
-                    setSelectedVehicle(toSelectedVehicle(vehicle, modalData));
+                    setSelectedVehicle(
+                      toSelectedVehicle(vehicle, modalData, isCustomTrip),
+                    );
                     router.push("/complete-booking");
                   }}
                 />

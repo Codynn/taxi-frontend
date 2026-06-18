@@ -20,6 +20,7 @@ import DestinationPopup from "./Destinationpopup";
 import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { BookingType, TripType as ApiTripType } from "@/lib/api/booking.api";
+import CustomDestinationPopup from "./CustomDestinationPopup";
 
 interface BookingFormProps {
   tripTab: TripTab;
@@ -564,16 +565,28 @@ export default function BookingForm({
         align="left"
         minWidth={460}
       >
-        <DestinationPopup
-          open={destOpen}
-          onClose={() => setDestOpen(false)}
-          onSelect={(dest) => {
-            onChange({ ...state, destination: dest });
-            setErrors((e) => ({ ...e, destination: undefined }));
-          }}
-          tripType={state.tripType}
-          inline
-        />
+        {isCustom ? (
+          <CustomDestinationPopup
+            open={destOpen}
+            onClose={() => setDestOpen(false)}
+            onSelect={(dest) => {
+              onChange({ ...state, destination: { ...dest } });
+              setErrors((e) => ({ ...e, destination: undefined }));
+            }}
+            inline
+          />
+        ) : (
+          <DestinationPopup
+            open={destOpen}
+            onClose={() => setDestOpen(false)}
+            onSelect={(dest) => {
+              onChange({ ...state, destination: dest });
+              setErrors((e) => ({ ...e, destination: undefined }));
+            }}
+            tripType={state.tripType}
+            inline
+          />
+        )}
       </PortalDropdown>
 
       <PortalDropdown
