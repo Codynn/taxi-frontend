@@ -88,22 +88,33 @@ export function useFCM() {
   const registerFCM = async () => {
     try {
       const supported = await isSupported();
+      // console.log("FCM supported:", supported);
       if (!supported) return;
 
-      const permission = await Notification.requestPermission();
+      console.log("Notification permission:", Notification.permission);
+      const permission =
+        Notification.permission === "granted"
+          ? "granted"
+          : await Notification.requestPermission();
+
+      // console.log("Permission result:", permission);
       if (permission !== "granted") return;
 
       const msg = messaging();
+      // console.log("Messaging instance:", msg);
       if (!msg) return;
 
       const token = await getToken(msg, {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
       });
 
+      // console.log("FCM Token:", token);
+
       if (token && !tokenSavedRef.current) {
         saveFcmToken(token, {
           onSuccess: () => {
             tokenSavedRef.current = true;
+            console.log("Token saved successfully");
           },
           onError: (err: any) => {
             console.error("FCM token save error:", err);

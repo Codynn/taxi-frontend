@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import type { ApiVehicle } from "@/lib/api/vehicle.api";
+import { useAuthStore } from "@/store/useAuthStore";
+import { toast } from "sonner";
 
 interface VehicleCardProps {
   vehicle: ApiVehicle;
@@ -18,6 +20,8 @@ function FeatureBadge({ label, icon }: { label: string; icon: string }) {
 }
 
 export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
+  const user = useAuthStore((s) => s.user);
+
   const {
     vechileName,
     vechileImage,
@@ -28,7 +32,13 @@ export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
     hasAC,
   } = vehicle;
 
-  console.log(vechileImage);
+  const handleChoose = () => {
+    if (!user) {
+      toast.error("Please login first to book a vehicle");
+      return;
+    }
+    onChoose?.(vehicle);
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-[#808080]/50 transition-all duration-300 ease-out  hover:shadow-xl flex flex-col p-4">
@@ -70,7 +80,7 @@ export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
         {/* Price + CTA */}
         <div className="flex items-center justify-between gap-3 mt-auto pt-1">
           <button
-            onClick={() => onChoose?.(vehicle)}
+            onClick={handleChoose}
             className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-5 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0 whitespace-nowrap"
           >
             Choose Vehicle

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import type { ApiVehicle } from "@/hooks/useVehicle";
 import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
+import { toast } from "sonner";
+import { useAuthStore } from "@/store/useAuthStore";
 
 interface RideCollectionVehicleCardProps {
   vehicle: ApiVehicle;
@@ -32,6 +34,8 @@ export default function RideCollectionVehicleCard({
   onChoose,
   isCustomTrip,
 }: RideCollectionVehicleCardProps) {
+  const user = useAuthStore((s) => s.user);
+
   const {
     id,
     vechileName,
@@ -47,6 +51,11 @@ export default function RideCollectionVehicleCard({
   const hasPrice = calculatedPrice !== undefined;
 
   const handleChoose = () => {
+    if (!user) {
+      toast.error("Please login first to book a vehicle");
+      return;
+    }
+
     onChoose?.({
       id,
       name: vechileName,
