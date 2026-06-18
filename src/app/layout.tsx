@@ -45,7 +45,7 @@ const luckiestGuy = Luckiest_Guy({
 
 export const metadata: Metadata = {
   title: {
-    default: "Popular Ride | Lokpriya Taxi",
+    default: "Lokpriya Taxi | Popular Ride ",
     template: "%s | Popular Ride",
   },
 

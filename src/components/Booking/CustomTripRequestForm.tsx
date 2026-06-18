@@ -76,13 +76,10 @@ export default function CustomTripRequestForm({
       },
       {
         onSuccess: () => {
-          toast.success(
-            "Custom trip request submitted! We'll contact you shortly.",
-          );
           router.push("/my-bookings");
         },
         onError: () => {
-          toast.error("Failed to submit request. Please try again.");
+          toast.error(errors.message);
         },
       },
     );
