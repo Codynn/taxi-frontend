@@ -27,6 +27,7 @@ import PassengersPopup from "./Passengerspopup";
 import DestinationPopup from "./Destinationpopup";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { useVehicleBookedDates } from "@/hooks/useVehicleBookDates";
+import CustomDestinationPopup from "./CustomDestinationPopup";
 
 interface BookingModalProps {
   open: boolean;
@@ -409,17 +410,30 @@ export default function BookingModal({
             className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <DestinationPopup
-              open
-              onClose={() => setActivePopup(null)}
-              onSelect={(dest) => {
-                setFormState((s) => ({ ...s, destination: dest }));
-                setErrors((e) => ({ ...e, destination: undefined }));
-                setActivePopup(null);
-              }}
-              tripType={formState.tripType} // <-- add this
-              inline
-            />
+            {isCustom ? (
+              <CustomDestinationPopup
+                open
+                onClose={() => setActivePopup(null)}
+                onSelect={(dest) => {
+                  setFormState((s) => ({ ...s, destination: dest }));
+                  setErrors((e) => ({ ...e, destination: undefined }));
+                  setActivePopup(null);
+                }}
+                inline
+              />
+            ) : (
+              <DestinationPopup
+                open
+                onClose={() => setActivePopup(null)}
+                onSelect={(dest) => {
+                  setFormState((s) => ({ ...s, destination: dest }));
+                  setErrors((e) => ({ ...e, destination: undefined }));
+                  setActivePopup(null);
+                }}
+                tripType={formState.tripType}
+                inline
+              />
+            )}
           </div>
         </div>
       )}
