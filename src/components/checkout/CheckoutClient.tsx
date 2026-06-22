@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, X } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 import Navbar from "@/components/layout/navbar";
 
 import VehicleSelectedCard from "@/components/vehicles/Vehicleselectedcard";
 import CheckoutBookingSummary from "./CheckoutBookingSummary";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { useCreateBooking } from "@/lib/api/booking.api";
+import { useConfiguration, uploadFile } from "@/lib/api/configuration.api";
 
-type PaymentMethod = "esewa" | "khalti" | null;
 type ModalState = "success" | "failure" | null;
 
 /* ── Success Modal ── */
@@ -43,11 +44,11 @@ function SuccessModal({
           </svg>
         </div>
         <h2 className="text-[22px] font-bold font-poppins text-black">
-          Booking Successful!
+          Booking Submitted!
         </h2>
         <p className="text-[15px] font-poppins text-black/70 leading-relaxed">
-          Thank you for choosing us. Your ride is confirmed and ready for your
-          journey.
+          Thank you for choosing us. We&apos;ve received your booking and payment
+          proof. Our team will verify and confirm it shortly.
         </p>
         <div className="flex gap-3 w-full mt-2">
           <button
@@ -122,12 +123,12 @@ function FailureModal({
 
 export default function CheckoutClient() {
   const router = useRouter();
-  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>(null);
   const [modalState, setModalState] = useState<ModalState>(null);
+  const [paymentProof, setPaymentProof] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const {
     bookingState,
-    setBookingState,
     selectedVehicle,
     modalData,
     contactData,
@@ -136,6 +137,7 @@ export default function CheckoutClient() {
   } = useBookingStore();
 
   const { mutate: createBooking, isPending } = useCreateBooking();
+  const { data: configuration } = useConfiguration();
 
   // Guard: must have vehicle, modal data and contact info (wait for persisted store to load)
   useEffect(() => {
@@ -151,24 +153,9 @@ export default function CheckoutClient() {
   if (!selectedVehicle || !modalData || !contactData) return null;
 
   // Calculate fare details from real data
-  const pricePerDay = selectedVehicle.startingPrice;
-  const pickUpDate = new Date(modalData.pickUpDate);
-  const returnDate = modalData.returnDate
-    ? new Date(modalData.returnDate)
-    : null;
-  const days = returnDate
-    ? Math.max(
-        1,
-        Math.ceil(
-          (returnDate.getTime() - pickUpDate.getTime()) / (1000 * 60 * 60 * 24),
-        ),
-      )
-    : 1;
-
   const baseFare = selectedVehicle.startingPrice;
-  // const serviceFee = Math.round(baseFare * 0.05);
   const driverCharge = modalData.driverRequired
-    ? Math.round(baseFare * days * 0.2)
+    ? (configuration?.defaultDriverCharge ?? 0)
     : 0;
   const total = baseFare + driverCharge;
 
@@ -179,8 +166,21 @@ export default function CheckoutClient() {
       : []),
   ];
 
+  const handleUploadProof = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const url = await uploadFile(file);
+      setPaymentProof(url);
+      toast.success("Payment proof uploaded");
+    } catch {
+      toast.error("Failed to upload payment proof. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleContinueToPayment = () => {
-    if (!selectedPayment) return;
+    if (!paymentProof) return;
 
     const toISO = (value: string | Date) => new Date(value).toISOString();
 
@@ -202,6 +202,7 @@ export default function CheckoutClient() {
         locationId: modalData.locationId,
         pickUpTime: toISO(contactData.pickUpTime),
         vechicleId: selectedVehicle.id,
+        paymentProof,
       },
       {
         onSuccess: () => setModalState("success"),
@@ -265,8 +266,11 @@ export default function CheckoutClient() {
           <div className="flex flex-col gap-5">
             <FareDetailsCard fareDetails={fareDetails} total={total} />
             <PaymentCard
-              selectedPayment={selectedPayment}
-              onSelect={setSelectedPayment}
+              qrImage={configuration?.paymentQrImage ?? null}
+              paymentProof={paymentProof}
+              isUploading={isUploading}
+              onUpload={handleUploadProof}
+              onRemoveProof={() => setPaymentProof(null)}
               onContinue={handleContinueToPayment}
               isLoading={isPending}
             />
@@ -285,8 +289,11 @@ export default function CheckoutClient() {
           />
           <FareDetailsCard fareDetails={fareDetails} total={total} />
           <PaymentCard
-            selectedPayment={selectedPayment}
-            onSelect={setSelectedPayment}
+            qrImage={configuration?.paymentQrImage ?? null}
+            paymentProof={paymentProof}
+            isUploading={isUploading}
+            onUpload={handleUploadProof}
+            onRemoveProof={() => setPaymentProof(null)}
             onContinue={handleContinueToPayment}
             isLoading={isPending}
           />
@@ -332,63 +339,114 @@ function FareDetailsCard({
 
 /* ── Payment ── */
 function PaymentCard({
-  selectedPayment,
-  onSelect,
+  qrImage,
+  paymentProof,
+  isUploading,
+  onUpload,
+  onRemoveProof,
   onContinue,
   isLoading,
 }: {
-  selectedPayment: "esewa" | "khalti" | null;
-  onSelect: (v: "esewa" | "khalti") => void;
+  qrImage: string | null;
+  paymentProof: string | null;
+  isUploading: boolean;
+  onUpload: (file: File) => void;
+  onRemoveProof: () => void;
   onContinue: () => void;
   isLoading: boolean;
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="bg-[#f5f5f5] rounded-2xl p-5">
       <h2 className="text-[24px] font-bold font-sora text-black mb-4">
-        Choose Payment Method
+        Scan & Pay
       </h2>
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <button
-          onClick={() => onSelect("esewa")}
-          className={[
-            "flex items-center justify-center p-4 rounded-xl border-2 bg-white transition-all",
-            selectedPayment === "esewa"
-              ? "border-[#FEA800]"
-              : "border-gray-200 hover:border-gray-300",
-          ].join(" ")}
-        >
-          <Image
-            src="/ride/esewa.svg"
-            alt="eSewa"
-            width={100}
-            height={100}
-            className="h-12 w-auto object-contain"
-          />
-        </button>
-        <button
-          onClick={() => onSelect("khalti")}
-          className={[
-            "flex items-center justify-center p-4 rounded-xl border-2 bg-white transition-all",
-            selectedPayment === "khalti"
-              ? "border-[#FEA800]"
-              : "border-gray-200 hover:border-gray-300",
-          ].join(" ")}
-        >
-          <Image
-            src="/ride/khalti.svg"
-            alt="Khalti"
-            width={100}
-            height={36}
-            className="h-9 w-auto object-contain"
-          />
-        </button>
+
+      {/* QR code */}
+      <div className="flex flex-col items-center gap-3 mb-5">
+        {qrImage ? (
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <Image
+              src={qrImage}
+              alt="Payment QR"
+              width={220}
+              height={220}
+              unoptimized
+              className="w-52 h-52 object-contain"
+            />
+          </div>
+        ) : (
+          <div className="w-52 h-52 rounded-xl bg-white border border-dashed border-gray-300 flex items-center justify-center text-center px-4">
+            <p className="text-[13px] font-poppins text-black/50">
+              Payment QR is not available right now. Please contact us to
+              complete your payment.
+            </p>
+          </div>
+        )}
+        <p className="text-[14px] font-poppins text-black/70 text-center">
+          Scan the QR with any payment app, complete the payment, then upload a
+          screenshot below.
+        </p>
       </div>
+
+      {/* Payment proof upload */}
+      <div className="mb-5">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onUpload(file);
+            e.target.value = "";
+          }}
+        />
+
+        {paymentProof ? (
+          <div className="relative bg-white rounded-xl p-3 border border-gray-200">
+            <Image
+              src={paymentProof}
+              alt="Payment proof"
+              width={400}
+              height={240}
+              unoptimized
+              className="w-full max-h-60 object-contain rounded-lg"
+            />
+            <button
+              type="button"
+              onClick={onRemoveProof}
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full py-6 rounded-xl border-2 border-dashed border-gray-300 bg-white flex flex-col items-center justify-center gap-2 hover:border-[#FEA800] transition-colors disabled:opacity-50"
+          >
+            {isUploading ? (
+              <Loader2 className="w-6 h-6 text-[#FEA800] animate-spin" />
+            ) : (
+              <Upload className="w-6 h-6 text-[#FEA800]" />
+            )}
+            <span className="text-[14px] font-poppins text-black/70">
+              {isUploading ? "Uploading..." : "Upload payment screenshot"}
+            </span>
+          </button>
+        )}
+      </div>
+
       <button
-        disabled={!selectedPayment || isLoading}
+        disabled={!paymentProof || isLoading || isUploading}
         onClick={onContinue}
         className="w-full py-4 rounded-full bg-[#FEA800] text-black font-semibold font-poppins text-[15px] hover:bg-[#e09700] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? "Processing..." : "Continue to Payment"}
+        {isLoading ? "Submitting..." : "Submit Booking"}
       </button>
     </div>
   );

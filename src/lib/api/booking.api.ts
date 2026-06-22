@@ -27,6 +27,7 @@ export interface CreateBookingDto {
   driverRequired: boolean;
   locationId?: string;
   vechicleId: string;
+  paymentProof?: string;
 }
 
 export interface ApiBooking {
@@ -45,6 +46,9 @@ export interface ApiBooking {
   driverRequired: boolean;
   status: BookingStatus;
   vechicleId: string;
+  paymentProof?: string | null;
+  quotedPrice?: number | null;
+  driverCharge?: number | null;
   vehicle?: {
     id: string;
     vechileName: string;

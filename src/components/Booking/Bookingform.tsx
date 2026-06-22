@@ -218,8 +218,8 @@ export default function BookingForm({
       newErrors.date = "Please select pickup date";
     }
 
-    // Return date required only for round-trip on short/long tabs
-    if (state.tripType === "round-trip" && !state.dateRange.return) {
+    // Return date is only used (and shown) for custom round-trips
+    if (showReturnDate && !state.dateRange.return) {
       newErrors.returnDate = "Please select a return date";
     }
 
