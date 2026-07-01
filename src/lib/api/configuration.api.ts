@@ -9,6 +9,30 @@ export interface Configuration {
   updatedAt: string;
 }
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
+
+/**
+ * Resolve a stored upload URL against the current API base.
+ * Stored values may be absolute with a stale host (e.g. localhost baked in at
+ * upload time) or a relative `/upload/...` path. We always keep just the path
+ * and prefix the current API base so images load from wherever the API lives.
+ */
+export const resolveUploadUrl = (
+  stored?: string | null,
+): string | undefined => {
+  if (!stored) return undefined;
+  let path = stored;
+  if (/^https?:\/\//i.test(stored)) {
+    try {
+      path = new URL(stored).pathname;
+    } catch {
+      return stored;
+    }
+  }
+  if (!path.startsWith("/")) path = `/${path}`;
+  return `${API_BASE}${path}`;
+};
+
 // ── Get site configuration (payment QR + default driver charge) ──
 export const useConfiguration = () => {
   return useQuery({

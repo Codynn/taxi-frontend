@@ -1,13 +1,13 @@
 {
-  "name": "Popular Rides Admin Panel",
-  "short_name": "Popular Rides",
-  "description": "Admin dashboard for Popular Rides by Lokpriya Taxi Pvt. Ltd.",
+  "name": "Lokpriya Taxi | Popular Ride",
+  "short_name": "Lokpriya Taxi",
+  "description": "Book the right car for every journey across Nepal with Lokpriya Taxi.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#FEA800",
-  "background_color": "#000000",
+  "background_color": "#ffffff",
   "icons": [
     {
       "src": "/pwa/icon-192.png",

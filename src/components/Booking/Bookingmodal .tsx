@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatBsDate } from "@/lib/bs-date";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -149,7 +150,8 @@ export default function BookingModal({
   const isCustom = activeTab === "custom";
   const showTripTypeRadio = true; // all tabs
   const showDriverRadio = isCustom; // custom only
-  const showReturnDate = isCustom || formState.tripType === "round-trip";
+  // Only Custom Trip uses a return date / date range (two calendars).
+  const showReturnDate = isCustom;
 
   const handleSubmit = () => {
     const newErrors: typeof errors = {};
@@ -159,7 +161,7 @@ export default function BookingModal({
     if (!formState.dateRange.pickup) {
       newErrors.date = "Please select pickup date";
     }
-    if (formState.tripType === "round-trip" && !formState.dateRange.return) {
+    if (showReturnDate && !formState.dateRange.return) {
       newErrors.returnDate = "Please select a return date";
     }
     if (isCustom && !formState.driverType) {
@@ -182,9 +184,10 @@ export default function BookingModal({
       pickUpLocation: formState.destination.from,
       dropOffLocation: formState.destination.to,
       pickUpDate: toISO(formState.dateRange.pickup),
-      returnDate: formState.dateRange.return
-        ? toISO(formState.dateRange.return)
-        : "",
+      returnDate:
+        showReturnDate && formState.dateRange.return
+          ? toISO(formState.dateRange.return)
+          : "",
       bookingType,
       tripType: apiTripType,
       driverRequired,
@@ -280,7 +283,7 @@ export default function BookingModal({
         >
           <p className="text-xs text-gray-400 font-poppins mb-0.5">Pickup</p>
           <p className="text-sm font-medium text-gray-800 font-poppins">
-            {formState.dateRange.pickup || "Enter a pickup date"}
+            {formatBsDate(formState.dateRange.pickup) || "Enter a pickup date"}
           </p>
           {errors.date && (
             <p className="text-[11px] text-red-500 font-poppins mt-0.5">
@@ -297,7 +300,7 @@ export default function BookingModal({
             <p
               className={`text-sm font-medium font-poppins ${errors.returnDate && !formState.dateRange.return ? "text-red-400" : "text-gray-800"}`}
             >
-              {formState.dateRange.return || "Enter a return date"}
+              {formatBsDate(formState.dateRange.return) || "Enter a return date"}
             </p>
             {errors.returnDate && !formState.dateRange.return && (
               <p className="text-[11px] text-red-500 font-poppins mt-0.5">
@@ -454,6 +457,7 @@ export default function BookingModal({
               onClose={() => setActivePopup(null)}
               dateRange={formState.dateRange}
               bookedDates={bookedDates}
+              single={!isCustom}
               onConfirm={(range) => {
                 setFormState((s) => ({ ...s, dateRange: range }));
                 setErrors((e) => ({ ...e, date: undefined }));

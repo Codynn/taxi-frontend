@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { formatBsDate } from "@/lib/bs-date";
 import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpDown, ChevronDown } from "lucide-react";
 import {
@@ -204,8 +205,9 @@ export default function BookingForm({
   const showTripTypeRadio = true; // short & long tabs
   const showDriverRadio = isCustom; // custom tab only
 
-  // Within City & City-to-City hide the return date field
-  const showReturnDate = isCustom && state.tripType === "round-trip";
+  // Only Custom Trip uses a return date / date range (two calendars).
+  // Within City & City-to-City use a single calendar with one date.
+  const showReturnDate = isCustom;
 
   const handleSubmit = () => {
     const newErrors: typeof errors = {};
@@ -254,7 +256,10 @@ export default function BookingForm({
       pickUpLocation: state.destination.from,
       dropOffLocation: state.destination.to,
       pickUpDate: toISO(state.dateRange.pickup),
-      returnDate: state.dateRange.return ? toISO(state.dateRange.return) : "",
+      returnDate:
+        showReturnDate && state.dateRange.return
+          ? toISO(state.dateRange.return)
+          : "",
       bookingType,
       tripType: apiTripType,
       driverRequired,
@@ -354,7 +359,7 @@ export default function BookingForm({
                       Pickup
                     </p>
                     <p className="text-sm font-medium text-gray-800 font-poppins">
-                      {state.dateRange.pickup || "Enter a pickup date"}
+                      {formatBsDate(state.dateRange.pickup) || "Enter a pickup date"}
                     </p>
                   </button>
                 </div>
@@ -371,7 +376,7 @@ export default function BookingForm({
                     <p
                       className={`text-sm font-medium font-poppins ${errors.returnDate && !state.dateRange.return ? "text-red-400" : "text-gray-800"}`}
                     >
-                      {state.dateRange.return || "Enter a return date"}
+                      {formatBsDate(state.dateRange.return) || "Enter a return date"}
                     </p>
                   </button>
                 </div>
@@ -390,7 +395,7 @@ export default function BookingForm({
                     Pickup
                   </p>
                   <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.dateRange.pickup || "Enter a pickup date"}
+                    {formatBsDate(state.dateRange.pickup) || "Enter a pickup date"}
                   </p>
                 </button>
               </div>
@@ -486,7 +491,7 @@ export default function BookingForm({
             >
               <p className="text-xs text-gray-400 font-poppins">Pickup</p>
               <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                {state.dateRange.pickup || "Enter a pickup date"}
+                {formatBsDate(state.dateRange.pickup) || "Enter a pickup date"}
               </p>
               {errors.date && (
                 <p className="text-[11px] text-red-500 font-poppins mt-0.5">
@@ -506,7 +511,7 @@ export default function BookingForm({
                 >
                   <p className="text-xs text-gray-400 font-poppins">Return</p>
                   <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                    {state.dateRange.return || "Enter return date"}
+                    {formatBsDate(state.dateRange.return) || "Enter return date"}
                   </p>
                   {errors.returnDate && !state.dateRange.return && (
                     <p className="text-[11px] text-red-500 font-poppins mt-0.5">
@@ -600,6 +605,7 @@ export default function BookingForm({
           open={dateOpen}
           onClose={() => setDateOpen(false)}
           dateRange={state.dateRange}
+          single={!isCustom}
           onConfirm={(range) => {
             onChange({ ...state, dateRange: range });
             setErrors((e) => ({ ...e, date: undefined }));

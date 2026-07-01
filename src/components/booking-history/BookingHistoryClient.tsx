@@ -14,6 +14,7 @@ import BookingHistoryTabs from "./BookingHistoryTabs";
 import BookingHistoryPagination from "./BookingHistoryPagination";
 import BookingHistoryList from "./BookingHistoryList";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatBsDate } from "@/lib/bs-date";
 
 interface ApiVehicleFull {
   id: string;
@@ -61,11 +62,7 @@ const STATUS_UI_MAP: Record<string, BookingStatus> = {
 
 function formatDate(iso: string): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return formatBsDate(iso) || "—";
 }
 
 function calcDays(from: string, to?: string): number {

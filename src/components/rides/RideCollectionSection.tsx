@@ -77,9 +77,11 @@ function toModalData(state: BookingFormState) {
     pickUpDate: state.dateRange.pickup
       ? new Date(state.dateRange.pickup).toISOString()
       : new Date().toISOString(),
-    returnDate: state.dateRange.return
-      ? new Date(state.dateRange.return).toISOString()
-      : undefined,
+    // Return date only applies to Custom trips (single-date for City rides).
+    returnDate:
+      state.tripTab === "custom" && state.dateRange.return
+        ? new Date(state.dateRange.return).toISOString()
+        : undefined,
     bookingType: (state.tripType === "round-trip"
       ? "ROUND_TRIP"
       : "ONE_WAY") as "ROUND_TRIP" | "ONE_WAY",

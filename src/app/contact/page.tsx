@@ -1,7 +1,9 @@
+import { HydrationBoundary } from "@tanstack/react-query";
 import ContactHero from "@/components/contact/ContactHero";
 import ContactSection from "@/components/contact/ContactSection";
 import Navbar from "@/components/layout/navbar";
 import { createMetadata } from "@/lib/utils/metadata";
+import { prefetchPublic } from "@/lib/server/prefetch";
 
 export const metadata = createMetadata({
   title: "Contact Us",
@@ -10,13 +12,19 @@ export const metadata = createMetadata({
   path: "/contact",
 });
 
-export default function AboutPage() {
-  return (
-    <main className="relative w-full">
-      <Navbar />
+export default async function ContactPage() {
+  const dehydratedState = await prefetchPublic([
+    { key: ["cms-contact"], path: "/cms/contact-details" },
+  ]);
 
-      <ContactHero />
-      <ContactSection />
-    </main>
+  return (
+    <HydrationBoundary state={dehydratedState}>
+      <main className="relative w-full">
+        <Navbar />
+
+        <ContactHero />
+        <ContactSection />
+      </main>
+    </HydrationBoundary>
   );
 }

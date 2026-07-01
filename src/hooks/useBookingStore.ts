@@ -33,11 +33,17 @@ export interface BookingContactData {
   message?: string;
 }
 
+// How long a homepage date/location selection stays valid (10 minutes).
+// After this, the persisted selection is cleared on rehydrate so stale picks
+// don't show confusing prices when the user reopens the cars page later.
+const SELECTION_TTL_MS = 10 * 60 * 1000;
+
 interface BookingStore {
   bookingState: BookingFormState;
   modalData: BookingModalData | null;
   selectedVehicle: SelectedVehicle | null;
   contactData: BookingContactData | null;
+  selectionTimestamp: number | null;
   hasHydrated: boolean;
 
   setBookingState: (state: BookingFormState) => void;
@@ -56,10 +62,13 @@ export const useBookingStore = create<BookingStore>()(
       modalData: null,
       selectedVehicle: null,
       contactData: null,
+      selectionTimestamp: null,
       hasHydrated: false,
 
-      setBookingState: (state) => set({ bookingState: state }),
-      setModalData: (data) => set({ modalData: data }),
+      setBookingState: (state) =>
+        set({ bookingState: state, selectionTimestamp: Date.now() }),
+      setModalData: (data) =>
+        set({ modalData: data, selectionTimestamp: Date.now() }),
       setSelectedVehicle: (vehicle) => set({ selectedVehicle: vehicle }),
       clearSelectedVehicle: () => set({ selectedVehicle: null }),
       setContactData: (data) => set({ contactData: data }),
@@ -69,6 +78,7 @@ export const useBookingStore = create<BookingStore>()(
           modalData: null,
           selectedVehicle: null,
           contactData: null,
+          selectionTimestamp: null,
         }),
       setHasHydrated: (state) => set({ hasHydrated: state }),
     }),
@@ -79,9 +89,18 @@ export const useBookingStore = create<BookingStore>()(
         modalData: state.modalData,
         selectedVehicle: state.selectedVehicle,
         contactData: state.contactData,
+        selectionTimestamp: state.selectionTimestamp,
       }),
       onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+        if (!state) return;
+        // Expire stale selections older than the TTL.
+        if (
+          state.selectionTimestamp &&
+          Date.now() - state.selectionTimestamp > SELECTION_TTL_MS
+        ) {
+          state.resetBooking();
+        }
+        state.setHasHydrated(true);
       },
     },
   ),

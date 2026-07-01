@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { formatBsDate } from "@/lib/bs-date";
 import { ArrowLeftRight, Pencil } from "lucide-react";
 import type { BookingFormState } from "@/types/booking.types";
 
@@ -88,7 +89,7 @@ export default function BookingSummaryCard({
             Pickup
           </p>
           <p className="text-black font-poppins text-[16px] whitespace-nowrap">
-            {state.dateRange.pickup || "2083/02/07-08:00 AM"}
+            {formatBsDate(state.dateRange.pickup) || "2083/02/07-08:00 AM"}
           </p>
         </div>
 
@@ -99,7 +100,7 @@ export default function BookingSummaryCard({
             Return
           </p>
           <p className="text-black font-poppins text-[16px] whitespace-nowrap">
-            {state.dateRange.return || "2083/02/07-08:00 AM"}
+            {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
           </p>
         </div>
 
@@ -199,7 +200,7 @@ export default function BookingSummaryCard({
               Pickup
             </p>
             <p className="text-black font-poppins text-[14px] font-medium">
-              {state.dateRange.pickup || "2083/02/07-08:00 AM"}
+              {formatBsDate(state.dateRange.pickup) || "2083/02/07-08:00 AM"}
             </p>
           </div>
           <div className="px-4 py-3">
@@ -207,7 +208,7 @@ export default function BookingSummaryCard({
               Return
             </p>
             <p className="text-black font-poppins text-[14px] font-medium">
-              {state.dateRange.return || "2083/02/07-08:00 AM"}
+              {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
             </p>
           </div>
         </div>

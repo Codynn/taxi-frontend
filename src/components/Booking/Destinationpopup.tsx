@@ -1,7 +1,7 @@
 "use client";
 
 import type { Destination } from "@/types/booking.types";
-import { Clock, ArrowDown } from "lucide-react";
+import { Clock, ArrowDown, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useState } from "react";
@@ -50,17 +50,31 @@ function DestinationContent({
 }) {
   const { data: routes, isLoading } = useLocations();
 
-  // Use internal state so the toggle works even without an external prop
+  // Trip-type toggle is local to the popup (only changes which fare is shown).
+  // Seed from the parent prop, but always let the buttons drive the display.
   const [localTripType, setLocalTripType] = useState<"one-way" | "round-trip">(
-    externalTripType ?? "one-way"
+    externalTripType ?? "one-way",
   );
+  const [prevExternal, setPrevExternal] = useState(externalTripType);
+  if (externalTripType !== prevExternal) {
+    setPrevExternal(externalTripType);
+    if (externalTripType) setLocalTripType(externalTripType);
+  }
+  const activeTripType = localTripType;
 
-  // Sync when the parent prop changes
-  const activeTripType = externalTripType ?? localTripType;
+  const [search, setSearch] = useState("");
+  const query = search.trim().toLowerCase();
+  const filteredRoutes = (routes ?? []).filter((route) =>
+    query === ""
+      ? true
+      : `${route.fromLocation} ${route.toLocation}`
+          .toLowerCase()
+          .includes(query),
+  );
 
   return (
     <>
-      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3">
+      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3 max-h-[98vh] overflow-y-auto">
         <h3 className="text-base font-semibold font-sora text-gray-900">
           All Destinations
         </h3>
@@ -70,9 +84,10 @@ function DestinationContent({
           {(["one-way", "round-trip"] as const).map((type) => (
             <button
               key={type}
+              type="button"
               onClick={() => setLocalTripType(type)}
               className={[
-                "px-4 py-1.5 rounded-full text-xs font-semibold font-poppins transition-all duration-200",
+                "px-4 py-1.5 rounded-full text-xs font-semibold font-poppins transition-all duration-200 cursor-pointer",
                 activeTripType === type
                   ? "bg-[#FEA800] text-black shadow-sm"
                   : "text-gray-500 hover:text-gray-700",
@@ -82,15 +97,34 @@ function DestinationContent({
             </button>
           ))}
         </div>
+
+        {/* Search */}
+        <div className="relative w-full">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search destination (e.g. Kathmandu)"
+            className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
+          />
+        </div>
       </div>
 
-      <div className="flex flex-col max-h-[60vh] overflow-y-auto">
+      <div className="flex flex-col max-h-[50vh] overflow-y-auto">
         {isLoading ? (
           <div className="py-8 text-center text-sm font-poppins text-gray-400">
             Loading destinations...
           </div>
+        ) : filteredRoutes.length === 0 ? (
+          <div className="py-8 text-center text-sm font-poppins text-gray-400">
+            No destinations found.
+          </div>
         ) : (
-          (routes ?? []).map((route) => {
+          filteredRoutes.map((route) => {
             const fare =
               activeTripType === "round-trip"
                 ? route.roundTripFare
@@ -126,8 +160,7 @@ function DestinationContent({
                 <div className="flex flex-col items-center gap-1">
                   <Clock size={16} className="text-gray-400" />
                   <span className="text-xs text-gray-500 font-poppins">
-                    {route.totalDays}{" "}
-                    {route.totalDays === 1 ? "Day" : "Days"}
+                    {route.totalDays} {route.totalDays === 1 ? "Day" : "Days"}
                   </span>
                 </div>
 

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Sora,
   Poppins,
@@ -42,6 +42,13 @@ const luckiestGuy = Luckiest_Guy({
   subsets: ["latin"],
   weight: ["400"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#FEA800",
+};
 
 export const metadata: Metadata = {
   title: {

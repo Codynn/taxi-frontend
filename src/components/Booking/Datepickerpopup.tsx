@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { DateRange } from "@/types/booking.types";
+import {
+  BS_MONTHS,
+  BS_WEEKDAYS_SHORT,
+  adToBs,
+  bsToAd,
+  bsMonthDays,
+  dateToAdString,
+  adStringToDate,
+} from "@/lib/bs-date";
 
-// Datepickerpopup.tsx — add bookedRanges prop
-
-interface BookedRange {
-  pickUpDate: string;
-  returnDate: string | null;
-  bookingType: "ONE_WAY" | "ROUND_TRIP";
-}
+// Datepickerpopup.tsx — renders a Bikram Sambat (BS) calendar.
+// Selection/storage stays in AD `YYYY/MM/DD` strings; only the grid is BS.
 
 interface DatePickerPopupProps {
   open: boolean;
@@ -19,66 +23,27 @@ interface DatePickerPopupProps {
   onConfirm: (range: DateRange) => void;
   inline?: boolean;
   bookedDates?: Set<string>;
+  /** Single-date mode: one calendar, picking a date replaces the selection. */
+  single?: boolean;
 }
 
-// Pass it into DatePickerContent:
-interface DatePickerContentProps {
-  dateRange: DateRange;
-  onConfirm: (range: DateRange) => void;
-  onClose: () => void;
-  bookedRanges?: BookedRange[]; // ← new
-}
+const DAYS = BS_WEEKDAYS_SHORT;
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const YEARS = Array.from(
-  { length: 10 },
-  (_, i) => new Date().getFullYear() + i,
-);
-
-function getDaysInMonth(month: number, year: number) {
-  return new Date(year, month + 1, 0).getDate();
-}
-
-function getFirstDayOfMonth(month: number, year: number) {
-  return new Date(year, month, 1).getDay();
-}
-
-function toDateObj(str: string): Date | null {
-  if (!str) return null;
-  const [y, m, d] = str.split("/").map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function toStr(date: Date): string {
-  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
-}
+const nowBsYear = adToBs(new Date()).year;
+const YEARS = Array.from({ length: 11 }, (_, i) => nowBsYear + i);
 
 interface CalendarGridProps {
-  month: number;
-  year: number;
+  bsMonth: number;
+  bsYear: number;
   pickup: string;
   returnDate: string;
   onSelect: (date: string) => void;
-  bookedDates?: Set<string>; // ← new
+  bookedDates?: Set<string>;
 }
 
 function CalendarGrid({
-  month,
-  year,
+  bsMonth,
+  bsYear,
   pickup,
   returnDate,
   onSelect,
@@ -87,14 +52,14 @@ function CalendarGrid({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const daysInMonth = getDaysInMonth(month, year);
-  const firstDay = getFirstDayOfMonth(month, year);
-  const cells: (number | null)[] = Array(firstDay)
+  const daysInMonth = bsMonthDays(bsYear, bsMonth);
+  const firstWeekday = bsToAd(bsYear, bsMonth, 1).getDay();
+  const cells: (number | null)[] = Array(firstWeekday)
     .fill(null)
     .concat(Array.from({ length: daysInMonth }, (_, i) => i + 1));
 
-  const pickupDate = toDateObj(pickup);
-  const returnD = toDateObj(returnDate);
+  const pickupDate = adStringToDate(pickup);
+  const returnD = adStringToDate(returnDate);
 
   return (
     <div className="flex-1">
@@ -112,8 +77,9 @@ function CalendarGrid({
         {cells.map((day, i) => {
           if (!day) return <div key={i} className="h-10" />;
 
-          const dateObj = new Date(year, month, day);
-          const dateStr = toStr(dateObj);
+          const dateObj = bsToAd(bsYear, bsMonth, day);
+          dateObj.setHours(0, 0, 0, 0);
+          const dateStr = dateToAdString(dateObj);
 
           const isPast = dateObj < today;
           const booked = bookedDates.has(dateStr);
@@ -175,23 +141,31 @@ function DatePickerContent({
   onConfirm,
   onClose,
   bookedDates = new Set(),
+  single = false,
 }: {
   dateRange: DateRange;
   onConfirm: (range: DateRange) => void;
   onClose: () => void;
   bookedDates?: Set<string>;
+  single?: boolean;
 }) {
-  const now = new Date();
-  const [leftMonth, setLeftMonth] = useState(now.getMonth());
-  const [leftYear, setLeftYear] = useState(now.getFullYear());
+  const nowBs = adToBs(new Date());
+  const [leftMonth, setLeftMonth] = useState(nowBs.month);
+  const [leftYear, setLeftYear] = useState(nowBs.year);
   const [pickup, setPickup] = useState(dateRange.pickup);
-  const [returnDate, setReturnDate] = useState(dateRange.return);
+  const [returnDate, setReturnDate] = useState(single ? "" : dateRange.return);
 
   const rightMonth = (leftMonth + 1) % 12;
   const rightYear = leftMonth === 11 ? leftYear + 1 : leftYear;
 
   function handleSelect(date: string) {
     if (bookedDates.has(date)) return;
+    // Single-date mode: each click just replaces the selected date.
+    if (single) {
+      setPickup(date);
+      setReturnDate("");
+      return;
+    }
     if (!pickup || (pickup && returnDate)) {
       setPickup(date);
       setReturnDate("");
@@ -238,7 +212,7 @@ function DatePickerContent({
                 onChange={(e) => setLeftMonth(Number(e.target.value))}
                 className="text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none cursor-pointer"
               >
-                {MONTHS.map((m, i) => (
+                {BS_MONTHS.map((m, i) => (
                   <option key={m} value={i}>
                     {m}
                   </option>
@@ -257,30 +231,32 @@ function DatePickerContent({
               </select>
             </div>
 
-            <div className="hidden sm:flex items-center gap-1">
-              <select
-                value={rightMonth}
-                disabled
-                className="text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none"
-              >
-                {MONTHS.map((m, i) => (
-                  <option key={m} value={i}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={rightYear}
-                disabled
-                className="text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none"
-              >
-                {YEARS.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!single && (
+              <div className="hidden sm:flex items-center gap-1">
+                <select
+                  value={rightMonth}
+                  disabled
+                  className="text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none"
+                >
+                  {BS_MONTHS.map((m, i) => (
+                    <option key={m} value={i}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={rightYear}
+                  disabled
+                  className="text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none"
+                >
+                  {YEARS.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <button
@@ -295,24 +271,28 @@ function DatePickerContent({
 
       <div className="flex gap-0 px-8 pb-6">
         <CalendarGrid
-          month={leftMonth}
-          year={leftYear}
+          bsMonth={leftMonth}
+          bsYear={leftYear}
           pickup={pickup}
           returnDate={returnDate}
           onSelect={handleSelect}
           bookedDates={bookedDates}
         />
-        <div className="hidden sm:block w-px bg-gray-100 mx-6" />
-        <div className="hidden sm:block flex-1">
-          <CalendarGrid
-            month={rightMonth}
-            year={rightYear}
-            pickup={pickup}
-            returnDate={returnDate}
-            onSelect={handleSelect}
-            bookedDates={bookedDates}
-          />
-        </div>
+        {!single && (
+          <>
+            <div className="hidden sm:block w-px bg-gray-100 mx-6" />
+            <div className="hidden sm:block flex-1">
+              <CalendarGrid
+                bsMonth={rightMonth}
+                bsYear={rightYear}
+                pickup={pickup}
+                returnDate={returnDate}
+                onSelect={handleSelect}
+                bookedDates={bookedDates}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex items-center justify-end gap-3 px-8 py-4 border-t border-gray-100">
@@ -346,6 +326,7 @@ export default function DatePickerPopup({
   onConfirm,
   inline = false,
   bookedDates = new Set(),
+  single = false,
 }: DatePickerPopupProps) {
   if (!open) return null;
 
@@ -355,6 +336,7 @@ export default function DatePickerPopup({
       onConfirm={onConfirm}
       onClose={onClose}
       bookedDates={bookedDates}
+      single={single}
     />
   );
 
@@ -362,7 +344,11 @@ export default function DatePickerPopup({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 z-10 overflow-hidden">
+      <div
+        className={`relative bg-white rounded-2xl shadow-2xl w-full ${
+          single ? "max-w-md" : "max-w-3xl"
+        } mx-4 z-10 overflow-hidden`}
+      >
         {content}
       </div>
     </div>

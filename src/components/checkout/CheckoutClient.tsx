@@ -11,7 +11,11 @@ import VehicleSelectedCard from "@/components/vehicles/Vehicleselectedcard";
 import CheckoutBookingSummary from "./CheckoutBookingSummary";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { useCreateBooking } from "@/lib/api/booking.api";
-import { useConfiguration, uploadFile } from "@/lib/api/configuration.api";
+import {
+  useConfiguration,
+  uploadFile,
+  resolveUploadUrl,
+} from "@/lib/api/configuration.api";
 
 type ModalState = "success" | "failure" | null;
 
@@ -266,7 +270,7 @@ export default function CheckoutClient() {
           <div className="flex flex-col gap-5">
             <FareDetailsCard fareDetails={fareDetails} total={total} />
             <PaymentCard
-              qrImage={configuration?.paymentQrImage ?? null}
+              qrImage={resolveUploadUrl(configuration?.paymentQrImage) ?? null}
               paymentProof={paymentProof}
               isUploading={isUploading}
               onUpload={handleUploadProof}
@@ -289,7 +293,7 @@ export default function CheckoutClient() {
           />
           <FareDetailsCard fareDetails={fareDetails} total={total} />
           <PaymentCard
-            qrImage={configuration?.paymentQrImage ?? null}
+            qrImage={resolveUploadUrl(configuration?.paymentQrImage) ?? null}
             paymentProof={paymentProof}
             isUploading={isUploading}
             onUpload={handleUploadProof}

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { formatBsDate } from "@/lib/bs-date";
 import type { BookingFormState } from "@/types/booking.types";
 
 interface Props {
@@ -119,7 +120,7 @@ export default function CheckoutBookingSummary({
                   {bookingState.destination.from || "Enter pickup location"}
                 </p>
                 <p className="text-[13px] text-black/65 font-poppins">
-                  {bookingState.dateRange.pickup || "2083/02/07-08:00 AM"}
+                  {formatBsDate(bookingState.dateRange.pickup) || "2083/02/07-08:00 AM"}
                 </p>
               </div>
             </div>
@@ -140,7 +141,7 @@ export default function CheckoutBookingSummary({
                   {bookingState.destination.to || "Enter drop location"}
                 </p>
                 <p className="text-[12px] font-poppins">
-                  {bookingState.dateRange.return || "2083/02/07-08:00 AM"}
+                  {formatBsDate(bookingState.dateRange.return) || "2083/02/07-08:00 AM"}
                 </p>
               </div>
             </div>

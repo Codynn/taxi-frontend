@@ -2,6 +2,7 @@
 "use client";
 
 import Image from "next/image";
+import { formatBsDate } from "@/lib/bs-date";
 import {
   ArrowLeftRight,
   Pencil,
@@ -159,7 +160,7 @@ export default function BookingSummaryBar({
             Pickup
           </p>
           <p className="text-black font-poppins text-[16px] whitespace-nowrap">
-            {state.dateRange.pickup || "2083/02/07-08:00 AM"}
+            {formatBsDate(state.dateRange.pickup) || "2083/02/07-08:00 AM"}
           </p>
         </div>
 
@@ -170,7 +171,7 @@ export default function BookingSummaryBar({
             Return
           </p>
           <p className="text-black font-poppins  text-[16px] whitespace-nowrap">
-            {state.dateRange.return || "2083/02/07-08:00 AM"}
+            {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
           </p>
         </div>
 
@@ -275,7 +276,7 @@ export default function BookingSummaryBar({
               Pickup
             </p>
             <p className="text-black font-poppins text-[14px] font-medium">
-              {state.dateRange.pickup || "2083/02/07-08:00 AM"}
+              {formatBsDate(state.dateRange.pickup) || "2083/02/07-08:00 AM"}
             </p>
           </div>
           <div className="px-4 py-3">
@@ -283,7 +284,7 @@ export default function BookingSummaryBar({
               Return
             </p>
             <p className="text-black font-poppins text-[14px] font-medium">
-              {state.dateRange.return || "2083/02/07-08:00 AM"}
+              {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
             </p>
           </div>
         </div>
@@ -369,7 +370,7 @@ export default function BookingSummaryBar({
                   Pickup
                 </p>
                 <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {editState.dateRange.pickup || "2083/02/07-08:00 AM"}
+                  {formatBsDate(editState.dateRange.pickup) || "2083/02/07-08:00 AM"}
                 </p>
               </button>
               <button
@@ -380,7 +381,7 @@ export default function BookingSummaryBar({
                   Return
                 </p>
                 <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {editState.dateRange.return || "2083/02/07-08:00 AM"}
+                  {formatBsDate(editState.dateRange.return) || "2083/02/07-08:00 AM"}
                 </p>
               </button>
             </div>
