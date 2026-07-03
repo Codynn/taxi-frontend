@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Checkout | Popular Ride",
   description:
     "Review your booking summary, selected vehicle, fare details, and complete your payment securely through Popular Ride.",
+  robots: { index: false, follow: false },
 };
 
 export default function CheckoutPage() {

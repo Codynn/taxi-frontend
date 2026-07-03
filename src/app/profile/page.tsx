@@ -7,6 +7,7 @@ import ChangePasswordForm from "@/components/shared/ChangePasswordForm";
 export const metadata: Metadata = {
   title: "My Profile | Popular Rides",
   description: "View and update your Popular Rides profile details.",
+  robots: { index: false, follow: false },
 };
 
 export default function ProfilePage() {

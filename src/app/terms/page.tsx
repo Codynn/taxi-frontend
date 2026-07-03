@@ -7,7 +7,7 @@ export const metadata = createMetadata({
   title: "Terms & Conditions",
   description:
     "Read the terms and conditions for using Popular Ride services. Understand your rights and responsibilities when booking vehicles with Lokpriya Taxi Pvt. Ltd.",
-  path: "/terms-and-conditions",
+  path: "/terms",
 });
 
 export default function TermsAndConditionsPage() {
