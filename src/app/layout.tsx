@@ -80,10 +80,10 @@ export const metadata: Metadata = {
   creator: "Lokpriya Taxi Pvt. Ltd.",
   publisher: "Lokpriya Taxi Pvt. Ltd.",
 
-  metadataBase: new URL("https://lokpriyataxi.com.np"),
+  metadataBase: new URL("https://www.lokpriyataxi.com.np"),
 
   alternates: {
-    canonical: "https://lokpriyataxi.com.np",
+    canonical: "https://www.lokpriyataxi.com.np",
   },
 
   robots: {
@@ -104,7 +104,7 @@ export const metadata: Metadata = {
     title: "Popular Ride | Lokpriya Taxi",
     description:
       "Book reliable cars, auto rickshaws, and bikes across Nepal. Seamless booking experience with Popular Ride by Lokpriya Taxi.",
-    url: "https://lokpriyataxi.com.np",
+    url: "https://www.lokpriyataxi.com.np",
     siteName: "Popular Ride",
     images: [
       {

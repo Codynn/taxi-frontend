@@ -28,12 +28,12 @@ export default async function HomePage() {
     name: "Lokpriya Taxi",
     description:
       "Reliable car, jeep, and taxi booking across Nepal for short rides, long trips, and custom journeys.",
-    url: "https://lokpriyataxi.com.np",
+    url: "https://www.lokpriyataxi.com.np",
     areaServed: "Nepal",
     provider: {
       "@type": "Organization",
       name: "Lokpriya Taxi Pvt. Ltd.",
-      url: "https://lokpriyataxi.com.np",
+      url: "https://www.lokpriyataxi.com.np",
     },
   };
 
