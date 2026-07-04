@@ -75,20 +75,12 @@ export default function Navbar({
               {!hasHydrated ? null : isAuthenticated ? (
                 <UserMenu />
               ) : (
-                <>
-                  <button
-                    onClick={() => openModal("login")}
-                    className="text-[16px] font-medium text-[#FEA800] border border-[#FEA800] rounded-full px-6 py-2 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => openModal("register")}
-                    className="text-[16px] font-medium bg-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/90 transition-colors font-poppins text-black"
-                  >
-                    Get Started
-                  </button>
-                </>
+                <button
+                  onClick={() => openModal("login")}
+                  className="text-[16px] font-medium bg-[#FEA800] rounded-full px-6 py-2.5 hover:bg-[#FEA800]/90 transition-colors font-poppins text-black"
+                >
+                  Sign In
+                </button>
               )}
             </div>
           </div>
@@ -181,26 +173,15 @@ export default function Navbar({
               {!hasHydrated ? null : isAuthenticated ? (
                 <div></div>
               ) : (
-                <>
-                  <button
-                    onClick={() => {
-                      openModal("login");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-center text-[16px] font-semibold text-[#FEA800] border-2 border-[#FEA800] rounded-full px-6 py-3 hover:bg-[#FEA800]/10 transition-colors font-poppins"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => {
-                      openModal("register");
-                      setMenuOpen(false);
-                    }}
-                    className="w-full text-center text-[16px] font-semibold bg-[#FEA800] text-black rounded-full px-6 py-3 hover:bg-[#FEA800]/90 transition-colors font-poppins"
-                  >
-                    Get Started
-                  </button>
-                </>
+                <button
+                  onClick={() => {
+                    openModal("login");
+                    setMenuOpen(false);
+                  }}
+                  className="w-full text-center text-[16px] font-semibold bg-[#FEA800] text-black rounded-full px-6 py-3 hover:bg-[#FEA800]/90 transition-colors font-poppins"
+                >
+                  Sign In
+                </button>
               )}
             </div>
           </div>

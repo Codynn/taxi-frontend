@@ -1,43 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Mail, X } from "lucide-react";
-import { useState } from "react";
+import { X, ShieldCheck, Clock, MapPin } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-
-import { loginSchema, type LoginSchema } from "@/lib/validations/auth.schema";
 import { POST_LOGIN_REDIRECT_KEY } from "@/constants/features/auth.constants";
-import { AUTH_STRINGS } from "@/constants/features/auth.constants";
 import { useAuthModal } from "@/context/Authmodalcontext";
-import { useLogin } from "@/hooks/useAuthMutations";
 
 export default function LoginModal() {
-  const { closeModal, switchView } = useAuthModal();
-  const [showPassword, setShowPassword] = useState(false);
-
-  const form = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "", rememberMe: false },
-  });
-
-  const { mutate: loginMutate, isPending } = useLogin({
-    onSuccess: () => {
-      closeModal();
-      form.reset();
-    },
-  });
+  const { closeModal } = useAuthModal();
 
   const handleGoogleLogin = () => {
     // Remember the current page so we can return here after Google sign-in.
@@ -55,19 +27,15 @@ export default function LoginModal() {
     window.location.href = `${apiBase}/auth/initiate-google-auth?role=CUSTOMER&redirectTo=${encodeURIComponent(redirectTo)}`;
   };
 
-  function onSubmit(values: LoginSchema) {
-    loginMutate({
-      payload: { email: values.email, password: values.password },
-      remember: values.rememberMe,
-    });
-  }
-
   return (
     <>
-      <DialogPrimitive.Overlay className="fixed inset-0   data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogPrimitive.Overlay className="fixed inset-0 bg-black/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
-      <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-[860px] rounded-2xl overflow-hidden shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
-        <div className="flex min-h-[540px]">
+      <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-[820px] rounded-2xl overflow-hidden shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+        <DialogPrimitive.Title className="sr-only">
+          Sign in to Lokpriya Taxi
+        </DialogPrimitive.Title>
+        <div className="flex min-h-[460px]">
           {/* Left — full image */}
           <div className="hidden md:block w-[45%] shrink-0 relative">
             <Image
@@ -79,159 +47,58 @@ export default function LoginModal() {
             />
           </div>
 
-          {/* Right — form */}
-          <div className="flex flex-col flex-1 px-6 md:px-8 py-6 md:py-8 bg-white relative">
+          {/* Right — content */}
+          <div className="flex flex-col flex-1 px-6 md:px-10 py-8 bg-white relative">
             <DialogPrimitive.Close
               onClick={closeModal}
-              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-[#FE4830]  transition-colors focus:outline-none"
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-[#FE4830] transition-colors focus:outline-none"
             >
               <X size={24} />
             </DialogPrimitive.Close>
 
-            <div className="mb-6 mt-2">
+            <div className="mb-8 mt-2">
               <Image
                 src="/logo/logo.svg"
                 alt="Popular Rides"
                 width={120}
                 height={40}
-                className="mb-4"
+                className="mb-5"
               />
-              <h2 className="text-[22px] font-bold font-poppins text-[#000000] leading-tight">
-                Welcome Back
+              <h2 className="text-[24px] font-bold font-poppins text-black leading-tight">
+                Welcome to Lokpriya Taxi
               </h2>
-              <p className="text-[13px] font-poppins text-[#000000] mt-1">
-                Login to continue to your account.
+              <p className="text-[13px] font-poppins text-gray-600 mt-1.5">
+                Sign in with Google to book your ride in seconds.
               </p>
             </div>
 
-            <form
-              id="login-form"
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col gap-2 flex-1"
-            >
-              <FieldGroup>
-                <Controller
-                  name="email"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="login-email">Email</FieldLabel>
-                      <div className="relative">
-                        <Input
-                          {...field}
-                          id="login-email"
-                          type="email"
-                          placeholder="Enter your Email"
-                          aria-invalid={fieldState.invalid}
-                          className="pr-10 rounded-lg border-none bg-[#F5F5F5] focus-visible:ring-[#FEA800] focus-visible:border-[#FEA800] h-10 text-sm outline-none"
-                        />
-                        <Mail
-                          size={15}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#000000] pointer-events-none"
-                        />
-                      </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
+            {/* Simple graphics / value points to fill the space */}
+            <div className="flex flex-col gap-4 mb-8">
+              <Feature
+                icon={<ShieldCheck size={18} />}
+                title="Secure & fast"
+                desc="One tap sign-in with your Google account — no passwords."
+              />
+              <Feature
+                icon={<MapPin size={18} />}
+                title="Book across Nepal"
+                desc="Reserve cars, jeeps, and taxis for any route."
+              />
+              <Feature
+                icon={<Clock size={18} />}
+                title="Track your bookings"
+                desc="View and manage your trips anytime."
+              />
+            </div>
 
-                <Controller
-                  name="password"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="login-password">Password</FieldLabel>
-                      <div className="relative">
-                        <Input
-                          {...field}
-                          id="login-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter your password"
-                          aria-invalid={fieldState.invalid}
-                          className="pr-10 rounded-lg border-none bg-[#F5F5F5] focus-visible:ring-[#FEA800] focus-visible:border-[#FEA800] h-10 text-sm outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword((p) => !p)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#000000] hover:text-gray-600 transition-colors"
-                        >
-                          {showPassword ? (
-                            <EyeOff size={15} />
-                          ) : (
-                            <Eye size={15} />
-                          )}
-                        </button>
-                      </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </FieldGroup>
-
-              <div className="flex items-center justify-between">
-                <Controller
-                  name="rememberMe"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Field
-                      orientation="horizontal"
-                      className="flex items-center gap-2"
-                    >
-                      <Checkbox
-                        id="login-remember"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        className="border-[#000000] data-[state=checked]:bg-[#FEA800] data-[state=checked]:border-[#FEA800]"
-                      />
-                      <FieldLabel
-                        htmlFor="login-remember"
-                        className="text-[16px] font-poppins text-[#000000] cursor-pointer"
-                      >
-                        Remember me
-                      </FieldLabel>
-                    </Field>
-                  )}
-                />
-                <button
-                  type="button"
-                  onClick={() => switchView("forgot-password")}
-                  className="text-[16px] text-[#000000] font-poppins hover:text-[#FFB119] transition-colors whitespace-nowrap"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              <Button
-                type="submit"
-                form="login-form"
-                disabled={isPending}
-                className="w-full h-10 rounded-full bg-[#FEA800] hover:bg-[#e09600] text-black font-semibold text-[14px] transition-colors disabled:opacity-60"
-              >
-                {isPending ? "Signing in…" : "Login"}
-              </Button>
-
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-[11px] text-gray-400">or</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-
+            <div className="mt-auto">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleGoogleLogin}
-                className="w-full h-10 rounded-full border-2 border-[#FFB119] text-gray-700 font-medium text-[13px] flex items-center gap-2.5 hover:bg-gray-50 transition-colors"
+                className="w-full h-12 rounded-full border-2 border-[#FFB119] text-gray-800 font-semibold text-[14px] flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                   <path
                     fill="#EA4335"
                     d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
@@ -250,23 +117,40 @@ export default function LoginModal() {
                   />
                   <path fill="none" d="M0 0h48v48H0z" />
                 </svg>
-                Login with Google
+                Continue with Google
               </Button>
 
-              <p className="text-center text-[16px] font-poppins text-[#000000] mt-auto pt-1">
-                Don&apos;t have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => switchView("register")}
-                  className="text-[#FEA800] font-semibold hover:underline"
-                >
-                  Register
-                </button>
+              <p className="text-center text-[11px] font-poppins text-gray-400 mt-3">
+                We only use Google to verify your identity.
               </p>
-            </form>
+            </div>
           </div>
         </div>
       </DialogPrimitive.Content>
     </>
+  );
+}
+
+function Feature({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="h-9 w-9 shrink-0 rounded-xl bg-[#FEA800]/10 flex items-center justify-center text-[#FEA800]">
+        {icon}
+      </div>
+      <div>
+        <p className="text-[14px] font-semibold font-poppins text-black leading-tight">
+          {title}
+        </p>
+        <p className="text-[12px] font-poppins text-gray-500 mt-0.5">{desc}</p>
+      </div>
+    </div>
   );
 }

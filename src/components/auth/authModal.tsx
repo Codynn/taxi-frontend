@@ -3,12 +3,10 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useAuthModal } from "@/context/Authmodalcontext";
 
-import RegisterModal from "./register";
 import LoginModal from "./login";
-import ForgotPasswordModal from "./Forgotpasswordmodal";
 
 export default function AuthModal() {
-  const { isOpen, view, closeModal } = useAuthModal();
+  const { isOpen, closeModal } = useAuthModal();
 
   return (
     <DialogPrimitive.Root
@@ -16,11 +14,7 @@ export default function AuthModal() {
       onOpenChange={(open) => !open && closeModal()}
     >
       <DialogPrimitive.Portal>
-        {view === "login" && <LoginModal />}
-        {view === "register" && <RegisterModal />}
-        {view === "forgot-password" && (
-          <ForgotPasswordModal onClose={closeModal} />
-        )}
+        <LoginModal />
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
