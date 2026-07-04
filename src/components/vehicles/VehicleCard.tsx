@@ -3,7 +3,7 @@
 import Image from "next/image";
 import type { ApiVehicle } from "@/lib/api/vehicle.api";
 import { useAuthStore } from "@/store/useAuthStore";
-import { toast } from "sonner";
+import { useAuthModal } from "@/context/Authmodalcontext";
 
 interface VehicleCardProps {
   vehicle: ApiVehicle;
@@ -21,6 +21,7 @@ function FeatureBadge({ label, icon }: { label: string; icon: string }) {
 
 export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
   const user = useAuthStore((s) => s.user);
+  const { openModal } = useAuthModal();
 
   const {
     vechileName,
@@ -34,7 +35,7 @@ export default function VehicleCard({ vehicle, onChoose }: VehicleCardProps) {
 
   const handleChoose = () => {
     if (!user) {
-      toast.error("Please login first to book a vehicle");
+      openModal("login");
       return;
     }
     onChoose?.(vehicle);

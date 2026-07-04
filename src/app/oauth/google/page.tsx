@@ -6,6 +6,22 @@ import Cookies from "js-cookie";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { api } from "@/lib/axios";
+import { POST_LOGIN_REDIRECT_KEY } from "@/constants/features/auth.constants";
+
+// Read (and clear) the page the user was on before Google sign-in.
+function consumeRedirect(): string {
+  let dest = "/";
+  try {
+    const saved = localStorage.getItem(POST_LOGIN_REDIRECT_KEY);
+    if (saved && saved.startsWith("/") && !saved.startsWith("/oauth")) {
+      dest = saved;
+    }
+    localStorage.removeItem(POST_LOGIN_REDIRECT_KEY);
+  } catch {
+    /* ignore storage errors */
+  }
+  return dest;
+}
 
 function GoogleCallbackHandler() {
   const searchParams = useSearchParams();
@@ -24,6 +40,8 @@ function GoogleCallbackHandler() {
         path: "/",
       });
 
+      const dest = consumeRedirect();
+
       api
         .get("/user/me", {
           headers: { Authorization: `Bearer ${token}` },
@@ -33,13 +51,14 @@ function GoogleCallbackHandler() {
             setAuth(res.data.data, token);
           }
           toast.success("Signed in with Google!");
-          router.replace("/");
+          router.replace(dest);
         })
         .catch(() => {
           toast.success("Signed in with Google!");
-          router.replace("/");
+          router.replace(dest);
         });
     } else if (error) {
+      consumeRedirect();
       toast.error(decodeURIComponent(error) || "Google sign-in failed.");
       router.replace("/");
     } else {

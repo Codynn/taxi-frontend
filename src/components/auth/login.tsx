@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/field";
 
 import { loginSchema, type LoginSchema } from "@/lib/validations/auth.schema";
+import { POST_LOGIN_REDIRECT_KEY } from "@/constants/features/auth.constants";
 import { AUTH_STRINGS } from "@/constants/features/auth.constants";
 import { useAuthModal } from "@/context/Authmodalcontext";
 import { useLogin } from "@/hooks/useAuthMutations";
@@ -39,6 +40,15 @@ export default function LoginModal() {
   });
 
   const handleGoogleLogin = () => {
+    // Remember the current page so we can return here after Google sign-in.
+    try {
+      localStorage.setItem(
+        POST_LOGIN_REDIRECT_KEY,
+        window.location.pathname + window.location.search,
+      );
+    } catch {
+      /* ignore storage errors */
+    }
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
     const redirectTo = `${baseUrl}/oauth/google`;
     const apiBase = process.env.NEXT_PUBLIC_API_URL;

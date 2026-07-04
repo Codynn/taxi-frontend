@@ -1,5 +1,8 @@
 export const AUTH_MODAL_VISITED_KEY = "dajubhai_visited"; // localStorage key
 
+// Where to send the user back to after a Google OAuth round-trip.
+export const POST_LOGIN_REDIRECT_KEY = "postLoginRedirect";
+
 export const LOGIN_FORM_DEFAULTS = {
   email: "",
   password: "",
