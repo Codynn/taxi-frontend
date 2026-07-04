@@ -175,8 +175,21 @@ export default function RideCollectionSection() {
     hasAC: undefined,
   });
 
-  const { setSelectedVehicle, setModalData, setBookingState, modalData } =
-    useBookingStore();
+  const {
+    setSelectedVehicle,
+    setModalData,
+    setBookingState,
+    modalData,
+    bookingState,
+  } = useBookingStore();
+
+  // Passengers chosen on the homepage → default minimum seats.
+  const requiredSeats =
+    (bookingState?.passengers?.adults ?? 0) +
+    (bookingState?.passengers?.children ?? 0);
+  // Session-only: resets to true on reload so the seat filter re-applies.
+  const [seatFilterOn, setSeatFilterOn] = useState(true);
+  const seatFilterActive = seatFilterOn && requiredSeats > 1;
 
   const { data: categories = [], isLoading: catsLoading } =
     usePublicVehicleCategories();
@@ -245,6 +258,7 @@ export default function RideCollectionSection() {
       !appliedFilters.fuelTypes.includes(v.vechileFuelType)
     )
       return false;
+    if (seatFilterActive && v.noOfSeats < requiredSeats) return false;
     return true;
   });
 
@@ -484,6 +498,28 @@ export default function RideCollectionSection() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <VehicleCardSkeleton key={i} />
                 ))}
+              </div>
+            )}
+
+            {!isLoading && !isError && requiredSeats > 1 && (
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#FEA800]/10 border border-[#FEA800]/30 px-4 py-3">
+                <p className="text-[13px] font-poppins text-gray-700">
+                  {seatFilterActive
+                    ? `Displaying vehicles with seats ${requiredSeats} or more`
+                    : "Showing all vehicles"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSeatFilterOn((v) => !v);
+                    setCurrentPage(1);
+                  }}
+                  className="text-[13px] font-semibold font-poppins text-[#FEA800] hover:underline whitespace-nowrap"
+                >
+                  {seatFilterActive
+                    ? "Display all"
+                    : `Show ${requiredSeats}+ seats only`}
+                </button>
               </div>
             )}
 
