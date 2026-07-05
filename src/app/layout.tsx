@@ -197,6 +197,21 @@ export default function RootLayout({
           </AuthInitProvider>
         </Providers>
       </body>
+
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-Q6P94HKHFN"
+        strategy="afterInteractive"
+      />
+
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-Q6P94HKHFN');
+        `}
+      </Script>
     </html>
   );
 }
