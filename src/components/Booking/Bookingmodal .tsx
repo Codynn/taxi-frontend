@@ -36,6 +36,7 @@ interface BookingModalProps {
   onSearch?: (state: BookingFormState) => void;
   onBeforeNavigate?: () => void;
   vehicleId?: string; // ← added
+  maxSeats?: number; // selected vehicle's seat capacity
 }
 
 function CustomRadioGroup<T extends string>({
@@ -95,6 +96,7 @@ export default function BookingModal({
   onSearch,
   onBeforeNavigate,
   vehicleId, // ← destructured
+  maxSeats,
 }: BookingModalProps) {
   const router = useRouter();
   const { setModalData, setBookingState } = useBookingStore();
@@ -484,6 +486,7 @@ export default function BookingModal({
               open
               onClose={() => setActivePopup(null)}
               passengers={formState.passengers}
+              maxSeats={maxSeats}
               onConfirm={(p) => {
                 setFormState((s) => ({ ...s, passengers: p }));
                 setActivePopup(null);

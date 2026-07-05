@@ -134,6 +134,9 @@ export default function ChooseRideClient() {
 
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  // Passengers chosen on the homepage → default minimum-seats filter.
+  // Session-only: resets to true on reload so the filter re-applies.
+  const [seatFilterOn, setSeatFilterOn] = useState(true);
   const [sortBy, setSortBy] = useState<
     "recommended" | "price-low" | "price-high" | "name-asc"
   >("recommended");
@@ -207,6 +210,11 @@ export default function ChooseRideClient() {
 
   const isCustomTrip = modalData.tripType === "CUSTOM_TRIP";
 
+  const requiredSeats =
+    (bookingState?.passengers?.adults ?? 0) +
+    (bookingState?.passengers?.children ?? 0);
+  const seatFilterActive = seatFilterOn && requiredSeats > 1;
+
   const filtered = allVehicles.filter((v) => {
     if (
       appliedFilters.gearTypes.length > 1 &&
@@ -218,6 +226,7 @@ export default function ChooseRideClient() {
       !appliedFilters.fuelTypes.includes(v.vechileFuelType)
     )
       return false;
+    if (seatFilterActive && v.noOfSeats < requiredSeats) return false;
     return true;
   });
 
@@ -437,6 +446,28 @@ export default function ChooseRideClient() {
 
           {/* Cards */}
           <div className="flex-1 min-w-0 flex flex-col gap-4">
+            {requiredSeats > 1 && (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#FEA800]/10 border border-[#FEA800]/30 px-4 py-3">
+                <p className="text-[13px] font-poppins text-gray-700">
+                  {seatFilterActive
+                    ? `Displaying vehicles with seats ${requiredSeats} or more`
+                    : "Showing all vehicles"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSeatFilterOn((v) => !v);
+                    setCurrentPage(1);
+                  }}
+                  className="text-[13px] font-semibold font-poppins text-[#FEA800] hover:underline whitespace-nowrap"
+                >
+                  {seatFilterActive
+                    ? "Display all"
+                    : `Show ${requiredSeats}+ seats only`}
+                </button>
+              </div>
+            )}
+
             {isLoading &&
               Array.from({ length: 3 }).map((_, i) => (
                 <VehicleCardSkeleton key={i} />

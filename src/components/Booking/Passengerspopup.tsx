@@ -10,14 +10,17 @@ interface PassengersPopupProps {
   passengers: Passengers;
   onConfirm: (p: Passengers) => void;
   inline?: boolean;
+  maxSeats?: number;
 }
 
 function Counter({
   value,
   onChange,
+  disableInc,
 }: {
   value: number;
   onChange: (v: number) => void;
+  disableInc?: boolean;
 }) {
   return (
     <div className="flex items-center gap-4">
@@ -31,8 +34,9 @@ function Counter({
         {value}
       </span>
       <button
-        onClick={() => onChange(value + 1)}
-        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+        onClick={() => !disableInc && onChange(value + 1)}
+        disabled={disableInc}
+        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
       >
         <Plus size={16} />
       </button>
@@ -44,13 +48,18 @@ function PassengersContent({
   passengers,
   onConfirm,
   onClose,
+  maxSeats,
 }: {
   passengers: Passengers;
   onConfirm: (p: Passengers) => void;
   onClose: () => void;
+  maxSeats?: number;
 }) {
   const [adults, setAdults] = useState(passengers.adults);
   const [children, setChildren] = useState(passengers.children);
+
+  const total = adults + children;
+  const atCapacity = maxSeats !== undefined && total >= maxSeats;
 
   return (
     <>
@@ -70,7 +79,11 @@ function PassengersContent({
               10+ years
             </p>
           </div>
-          <Counter value={adults} onChange={setAdults} />
+          <Counter
+            value={adults}
+            onChange={setAdults}
+            disableInc={atCapacity}
+          />
         </div>
 
         <div className="flex items-center justify-between">
@@ -82,8 +95,21 @@ function PassengersContent({
               Below 10 years
             </p>
           </div>
-          <Counter value={children} onChange={setChildren} />
+          <Counter
+            value={children}
+            onChange={setChildren}
+            disableInc={atCapacity}
+          />
         </div>
+
+        {maxSeats !== undefined && (
+          <p
+            className={`text-xs font-poppins ${atCapacity ? "text-red-500" : "text-gray-400"}`}
+          >
+            This vehicle seats up to {maxSeats}{" "}
+            {maxSeats === 1 ? "passenger" : "passengers"}.
+          </p>
+        )}
 
         <div className="p-4 bg-gray-50 rounded-xl">
           <p className="text-xs font-semibold text-gray-700 font-poppins mb-2">
@@ -118,6 +144,7 @@ export default function PassengersPopup({
   passengers,
   onConfirm,
   inline = false,
+  maxSeats,
 }: PassengersPopupProps) {
   if (!open) return null;
 
@@ -127,6 +154,7 @@ export default function PassengersPopup({
         passengers={passengers}
         onConfirm={onConfirm}
         onClose={onClose}
+        maxSeats={maxSeats}
       />
     );
   }
@@ -139,6 +167,7 @@ export default function PassengersPopup({
           passengers={passengers}
           onConfirm={onConfirm}
           onClose={onClose}
+          maxSeats={maxSeats}
         />
       </div>
     </div>
