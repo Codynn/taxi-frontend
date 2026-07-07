@@ -51,8 +51,8 @@ function SuccessModal({
           Booking Submitted!
         </h2>
         <p className="text-[15px] font-poppins text-black/70 leading-relaxed">
-          Thank you for choosing us. We&apos;ve received your booking and payment
-          proof. Our team will verify and confirm it shortly.
+          Thank you for choosing us. We&apos;ve received your booking and
+          payment proof. Our team will verify and confirm it shortly.
         </p>
         <div className="flex gap-3 w-full mt-2">
           <button
@@ -176,7 +176,8 @@ export default function CheckoutClient() {
       const url = await uploadFile(file);
       setPaymentProof(url);
       toast.success("Payment proof uploaded");
-    } catch {
+    } catch (error: any) {
+      alert("ERROR:" + (error?.response?.message || error?.message || error));
       toast.error("Failed to upload payment proof. Please try again.");
     } finally {
       setIsUploading(false);
