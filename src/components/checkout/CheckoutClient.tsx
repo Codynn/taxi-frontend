@@ -177,8 +177,11 @@ export default function CheckoutClient() {
       setPaymentProof(url);
       toast.success("Payment proof uploaded");
     } catch (error: any) {
-      alert("ERROR:" + (error?.response?.message || error?.message || error));
-      toast.error("Failed to upload payment proof. Please try again.");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.response?.message ||
+          "Failed to upload payment proof. Please try again.",
+      );
     } finally {
       setIsUploading(false);
     }
@@ -229,7 +232,7 @@ export default function CheckoutClient() {
             router.push("/choose-ride=");
           }}
           onViewDetails={() => {
-            router.push("/my-bookings");
+            window.location.href = "/my-bookings";
             setModalState(null);
             resetBooking();
           }}

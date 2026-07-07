@@ -76,7 +76,7 @@ export default function CustomTripRequestForm({
       },
       {
         onSuccess: () => {
-          router.push("/my-bookings");
+          window.location.href = "/my-bookings";
         },
         onError: () => {
           toast.error(errors.message);
