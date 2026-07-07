@@ -106,7 +106,7 @@ function PassengersContent({
           <p
             className={`text-xs font-poppins ${atCapacity ? "text-red-500" : "text-gray-400"}`}
           >
-            This vehicle seats up to {maxSeats}{" "}
+            Vehicle seats up to {maxSeats}{" "}
             {maxSeats === 1 ? "passenger" : "passengers"}.
           </p>
         )}
@@ -154,7 +154,7 @@ export default function PassengersPopup({
         passengers={passengers}
         onConfirm={onConfirm}
         onClose={onClose}
-        maxSeats={maxSeats}
+        maxSeats={maxSeats || 12}
       />
     );
   }
@@ -167,7 +167,7 @@ export default function PassengersPopup({
           passengers={passengers}
           onConfirm={onConfirm}
           onClose={onClose}
-          maxSeats={maxSeats}
+          maxSeats={maxSeats || 12}
         />
       </div>
     </div>

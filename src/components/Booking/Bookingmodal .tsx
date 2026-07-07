@@ -302,7 +302,8 @@ export default function BookingModal({
             <p
               className={`text-sm font-medium font-poppins ${errors.returnDate && !formState.dateRange.return ? "text-red-400" : "text-gray-800"}`}
             >
-              {formatBsDate(formState.dateRange.return) || "Enter a return date"}
+              {formatBsDate(formState.dateRange.return) ||
+                "Enter a return date"}
             </p>
             {errors.returnDate && !formState.dateRange.return && (
               <p className="text-[11px] text-red-500 font-poppins mt-0.5">
@@ -430,6 +431,7 @@ export default function BookingModal({
               <DestinationPopup
                 open
                 onClose={() => setActivePopup(null)}
+                onCustomClick={() => {}}
                 onSelect={(dest) => {
                   setFormState((s) => ({ ...s, destination: dest }));
                   setErrors((e) => ({ ...e, destination: undefined }));

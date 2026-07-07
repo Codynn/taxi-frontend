@@ -57,6 +57,9 @@ export default function BookingSection() {
         <div className="bg-white px-5 sm:px-6 py-6 rounded-b-2xl overflow-visible">
           <BookingForm
             tripTab={activeTab}
+            onChangeTab={(tab: TripTab) => {
+              setActiveTab(tab);
+            }}
             state={formState}
             onChange={setFormState}
           />

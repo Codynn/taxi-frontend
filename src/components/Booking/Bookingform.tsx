@@ -8,6 +8,7 @@ import {
   TRIP_TYPES,
   DRIVER_TYPES,
   CUSTOM_TRIP_NOTE,
+  TRIP_TABS,
 } from "@/constants/booking.constants";
 import type {
   BookingFormState,
@@ -27,6 +28,7 @@ interface BookingFormProps {
   tripTab: TripTab;
   state: BookingFormState;
   onChange: (s: BookingFormState) => void;
+  onChangeTab: (tab: TripTab) => void;
 }
 
 function CustomRadioGroup<T extends string>({
@@ -178,6 +180,7 @@ export default function BookingForm({
   tripTab,
   state,
   onChange,
+  onChangeTab,
 }: BookingFormProps) {
   const [destOpen, setDestOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
@@ -202,7 +205,7 @@ export default function BookingForm({
   const passengerLabel = `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`;
 
   const isCustom = tripTab === "custom";
-  const showTripTypeRadio = true; // short & long tabs
+  const showTripTypeRadio = !isCustom; // short & long tabs
   const showDriverRadio = isCustom; // custom tab only
 
   // Only Custom Trip uses a return date / date range (two calendars).
@@ -289,8 +292,6 @@ export default function BookingForm({
               />
             )}
 
-            {isCustom && <div className="w-px h-5 bg-gray-200 mx-5" />}
-
             {showDriverRadio && (
               <CustomRadioGroup<DriverType>
                 options={DRIVER_TYPES}
@@ -359,7 +360,8 @@ export default function BookingForm({
                       Pickup
                     </p>
                     <p className="text-sm font-medium text-gray-800 font-poppins">
-                      {formatBsDate(state.dateRange.pickup) || "Enter a pickup date"}
+                      {formatBsDate(state.dateRange.pickup) ||
+                        "Enter a pickup date"}
                     </p>
                   </button>
                 </div>
@@ -376,7 +378,8 @@ export default function BookingForm({
                     <p
                       className={`text-sm font-medium font-poppins ${errors.returnDate && !state.dateRange.return ? "text-red-400" : "text-gray-800"}`}
                     >
-                      {formatBsDate(state.dateRange.return) || "Enter a return date"}
+                      {formatBsDate(state.dateRange.return) ||
+                        "Enter a return date"}
                     </p>
                   </button>
                 </div>
@@ -395,7 +398,8 @@ export default function BookingForm({
                     Pickup
                   </p>
                   <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {formatBsDate(state.dateRange.pickup) || "Enter a pickup date"}
+                    {formatBsDate(state.dateRange.pickup) ||
+                      "Enter a pickup date"}
                   </p>
                 </button>
               </div>
@@ -511,7 +515,8 @@ export default function BookingForm({
                 >
                   <p className="text-xs text-gray-400 font-poppins">Return</p>
                   <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                    {formatBsDate(state.dateRange.return) || "Enter return date"}
+                    {formatBsDate(state.dateRange.return) ||
+                      "Enter return date"}
                   </p>
                   {errors.returnDate && !state.dateRange.return && (
                     <p className="text-[11px] text-red-500 font-poppins mt-0.5">
@@ -587,6 +592,9 @@ export default function BookingForm({
             onSelect={(dest) => {
               onChange({ ...state, destination: dest });
               setErrors((e) => ({ ...e, destination: undefined }));
+            }}
+            onCustomClick={() => {
+              onChangeTab("custom");
             }}
             tripType={state.tripType}
             inline

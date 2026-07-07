@@ -34,6 +34,7 @@ function useLocations() {
 interface DestinationPopupProps {
   open: boolean;
   onClose: () => void;
+  onCustomClick: () => void;
   onSelect: (dest: Destination) => void;
   inline?: boolean;
   tripType?: "one-way" | "round-trip"; // <-- pass in from BookingForm
@@ -41,10 +42,12 @@ interface DestinationPopupProps {
 
 function DestinationContent({
   onClose,
+  onCustomClick,
   onSelect,
   tripType: externalTripType,
 }: {
   onClose: () => void;
+  onCustomClick: () => void;
   onSelect: (dest: Destination) => void;
   tripType?: "one-way" | "round-trip";
 }) {
@@ -192,7 +195,10 @@ function DestinationContent({
           </p>
         </div>
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            onCustomClick();
+          }}
           className="shrink-0 bg-[#FEA800] text-black text-sm font-semibold font-poppins px-6 py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors"
         >
           Custom Trip
@@ -205,6 +211,7 @@ function DestinationContent({
 export default function DestinationPopup({
   open,
   onClose,
+  onCustomClick,
   onSelect,
   inline = false,
   tripType,
@@ -215,6 +222,7 @@ export default function DestinationPopup({
     return (
       <DestinationContent
         onClose={onClose}
+        onCustomClick={onCustomClick}
         onSelect={onSelect}
         tripType={tripType}
       />
@@ -227,6 +235,7 @@ export default function DestinationPopup({
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 z-10 overflow-hidden">
         <DestinationContent
           onClose={onClose}
+          onCustomClick={() => {}}
           onSelect={onSelect}
           tripType={tripType}
         />

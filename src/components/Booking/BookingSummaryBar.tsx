@@ -370,7 +370,8 @@ export default function BookingSummaryBar({
                   Pickup
                 </p>
                 <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {formatBsDate(editState.dateRange.pickup) || "2083/02/07-08:00 AM"}
+                  {formatBsDate(editState.dateRange.pickup) ||
+                    "2083/02/07-08:00 AM"}
                 </p>
               </button>
               <button
@@ -381,7 +382,8 @@ export default function BookingSummaryBar({
                   Return
                 </p>
                 <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {formatBsDate(editState.dateRange.return) || "2083/02/07-08:00 AM"}
+                  {formatBsDate(editState.dateRange.return) ||
+                    "2083/02/07-08:00 AM"}
                 </p>
               </button>
             </div>
@@ -440,6 +442,7 @@ export default function BookingSummaryBar({
             <DestinationPopup
               open
               onClose={() => setActivePopup(null)}
+              onCustomClick={() => {}}
               onSelect={(dest) => {
                 setEditState((s) => ({ ...s, destination: dest }));
                 setActivePopup(null);
