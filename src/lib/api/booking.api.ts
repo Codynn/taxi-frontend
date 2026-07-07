@@ -118,9 +118,5 @@ export const useMyBookings = (params?: BookingListParams) => {
       );
       return response.data;
     },
-    throwOnError: (error: Error) => {
-      toast.error(error.message || "Failed to load bookings.");
-      return false;
-    },
   });
 };

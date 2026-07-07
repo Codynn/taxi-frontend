@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/navbar";
 import { BookingRecord, BookingStatus, TripTab } from "@/types/booking.types";
 import {
@@ -15,6 +15,7 @@ import BookingHistoryPagination from "./BookingHistoryPagination";
 import BookingHistoryList from "./BookingHistoryList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBsDate } from "@/lib/bs-date";
+import { useAuthModal } from "@/context/Authmodalcontext";
 
 interface ApiVehicleFull {
   id: string;
@@ -121,19 +122,26 @@ function toBookingRecord(b: ApiBookingRaw): BookingRecord {
 const ITEMS_PER_PAGE = 6;
 
 export default function BookingHistoryClient() {
+  const { openModal } = useAuthModal();
   const [activeTab, setActiveTab] = useState<TripTab>("long");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState(""); // "" = All Status (API value)
   const [sortBy, setSortBy] = useState<"latest" | "oldest">("latest");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading, isError } = useMyBookings({
+  const { data, isLoading, isError, error } = useMyBookings({
     tripType: UI_TO_API_TRIP[activeTab],
     status: statusFilter ? (statusFilter as ApiBookingStatus) : undefined,
     sort: sortBy,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });
+
+  useEffect(() => {
+    if (error?.message?.includes("issing toke")) {
+      openModal();
+    }
+  }, [error]);
 
   const allBookings: BookingRecord[] = (
     (data?.data ?? []) as unknown as ApiBookingRaw[]
