@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { ArrowLeft, SlidersHorizontal, X, Car } from "lucide-react";
 import {
   Sheet,
@@ -33,7 +34,6 @@ import type { SelectedVehicle } from "@/components/vehicles/Vehicleselectedcard"
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/axios";
 
-const PRICE_MAX = 10000;
 const ITEMS_PER_PAGE = 6;
 
 const SORT_OPTIONS = [
@@ -127,6 +127,28 @@ function calculatePrice(
   return baseFare + (vehicle.priceIncreasePercentage / 100) * baseFare;
 }
 
+// The date/location selection made on the homepage is persisted in
+// localStorage and can go stale if the user leaves and returns much later
+// (their chosen pickup date may now be in the past). Re-validate right
+// before the user commits to a vehicle instead of only failing later at
+// checkout with a confusing backend error.
+function isBookingDateValid(modalData: BookingModalData): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const pickUpDate = new Date(modalData.pickUpDate);
+  pickUpDate.setHours(0, 0, 0, 0);
+  if (isNaN(pickUpDate.getTime()) || pickUpDate < today) return false;
+
+  if (modalData.returnDate) {
+    const returnDate = new Date(modalData.returnDate);
+    returnDate.setHours(0, 0, 0, 0);
+    if (isNaN(returnDate.getTime()) || returnDate < pickUpDate) return false;
+  }
+
+  return true;
+}
+
 export default function ChooseRideClient() {
   const router = useRouter();
   const { bookingState, setBookingState, setSelectedVehicle, modalData } =
@@ -143,7 +165,6 @@ export default function ChooseRideClient() {
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({
     gearTypes: [],
     fuelTypes: [],
-    priceRange: [0, PRICE_MAX],
     hasAC: undefined,
   });
 
@@ -194,12 +215,6 @@ export default function ChooseRideClient() {
     ...(appliedFilters.hasAC !== undefined
       ? { hasAC: appliedFilters.hasAC }
       : {}),
-    ...(appliedFilters.priceRange[0] > 0
-      ? { minPrice: appliedFilters.priceRange[0] }
-      : {}),
-    ...(appliedFilters.priceRange[1] < PRICE_MAX
-      ? { maxPrice: appliedFilters.priceRange[1] }
-      : {}),
   });
 
   useEffect(() => {
@@ -209,6 +224,17 @@ export default function ChooseRideClient() {
   if (!modalData) return null;
 
   const isCustomTrip = modalData.tripType === "CUSTOM_TRIP";
+
+  const handleChooseVehicle = (vehicle: ApiVehicle) => {
+    if (!isBookingDateValid(modalData)) {
+      toast.error(
+        "Your chosen pickup date is invalid — it may be in the past. Please go back and select a new date.",
+      );
+      return;
+    }
+    setSelectedVehicle(toSelectedVehicle(vehicle, modalData, isCustomTrip));
+    router.push("/complete-booking");
+  };
 
   const requiredSeats =
     (bookingState?.passengers?.adults ?? 0) +
@@ -298,7 +324,6 @@ export default function ChooseRideClient() {
     setAppliedFilters({
       gearTypes: [],
       fuelTypes: [],
-      priceRange: [0, PRICE_MAX],
       hasAC: undefined,
     });
     setCurrentPage(1);
@@ -502,12 +527,7 @@ export default function ChooseRideClient() {
                       : calculatePrice(vehicle, modalData)
                   }
                   isCustomTrip={isCustomTrip}
-                  onChoose={() => {
-                    setSelectedVehicle(
-                      toSelectedVehicle(vehicle, modalData, isCustomTrip),
-                    );
-                    router.push("/complete-booking");
-                  }}
+                  onChoose={() => handleChooseVehicle(vehicle)}
                 />
               ))}
 

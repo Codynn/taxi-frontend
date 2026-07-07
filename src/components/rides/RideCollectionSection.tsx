@@ -36,8 +36,6 @@ import { BookingModalData, useBookingStore } from "@/hooks/useBookingStore";
 import type { BookingFormState } from "@/types/booking.types";
 import { api } from "@/lib/axios";
 
-const PRICE_MAX = 10000;
-
 function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
   return {
     id: v.id,
@@ -174,7 +172,6 @@ export default function RideCollectionSection() {
   const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({
     gearTypes: [],
     fuelTypes: [],
-    priceRange: [0, PRICE_MAX],
     hasAC: undefined,
   });
 
@@ -228,12 +225,6 @@ export default function RideCollectionSection() {
       : {}),
     ...(appliedFilters.hasAC !== undefined
       ? { hasAC: appliedFilters.hasAC }
-      : {}),
-    ...(appliedFilters.priceRange[0] > 0
-      ? { minPrice: appliedFilters.priceRange[0] }
-      : {}),
-    ...(appliedFilters.priceRange[1] < PRICE_MAX
-      ? { maxPrice: appliedFilters.priceRange[1] }
       : {}),
   });
 
@@ -320,10 +311,6 @@ export default function RideCollectionSection() {
     if (filters.fuelTypes.length > 1)
       filterParams.fuelTypes = filters.fuelTypes.join(",");
     if (filters.hasAC !== undefined) filterParams.hasAC = filters.hasAC;
-    if (filters.priceRange[0] > 0)
-      filterParams.minPrice = filters.priceRange[0];
-    if (filters.priceRange[1] < PRICE_MAX)
-      filterParams.maxPrice = filters.priceRange[1];
 
     for (const cat of categories) {
       try {
@@ -347,7 +334,6 @@ export default function RideCollectionSection() {
     setAppliedFilters({
       gearTypes: [],
       fuelTypes: [],
-      priceRange: [0, PRICE_MAX],
       hasAC: undefined,
     });
     setCurrentPage(1);

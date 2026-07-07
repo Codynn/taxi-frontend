@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 export interface AppliedFilters {
   gearTypes: string[];
   fuelTypes: string[];
-  priceRange: [number, number];
   hasAC?: boolean;
 }
 
@@ -20,8 +18,6 @@ interface FilterPanelProps {
 
 const GEAR_TYPES = ["Automatic", "Manual"];
 const FUEL_TYPES = ["Petrol", "Diesel", "Electric"];
-const PRICE_MIN = 0;
-const PRICE_MAX = 10000;
 
 const CheckItem = ({
   id,
@@ -96,10 +92,6 @@ export default function RideFilterPanel({
   const [gearTypes, setGearTypes] = useState<string[]>([]);
   const [fuelTypes, setFuelTypes] = useState<string[]>([]);
   const [hasAC, setHasAC] = useState<boolean | undefined>(undefined);
-  const [priceRange, setPriceRange] = useState<[number, number]>([
-    PRICE_MIN,
-    PRICE_MAX,
-  ]);
 
   const toggle = (
     value: string,
@@ -117,12 +109,11 @@ export default function RideFilterPanel({
     setGearTypes([]);
     setFuelTypes([]);
     setHasAC(undefined);
-    setPriceRange([PRICE_MIN, PRICE_MAX]);
     onReset?.();
   };
 
   const handleApply = () => {
-    onApply?.({ gearTypes, fuelTypes, priceRange, hasAC });
+    onApply?.({ gearTypes, fuelTypes, hasAC });
   };
 
   return (
@@ -177,41 +168,6 @@ export default function RideFilterPanel({
           checked={hasAC === false}
           onChange={() => setHasAC(hasAC === false ? undefined : false)}
         />
-      </div>
-
-      {/* Price Range */}
-      <div className="flex flex-col gap-3">
-        <h4 className="text-[13px] font-semibold font-poppins text-black">
-          Price Range
-        </h4>
-        <Slider
-          min={PRICE_MIN}
-          max={PRICE_MAX}
-          step={50}
-          value={priceRange}
-          onValueChange={(v) => setPriceRange(v as [number, number])}
-          className="
-            [&_[role=slider]]:bg-[#FEA800]
-            [&_[role=slider]]:border-[#FEA800]
-            [&_[role=slider]]:shadow-none
-            [&_.absolute]:bg-[#FEA800]
-          "
-        />
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 flex-1">
-            <span className="text-[12px] text-gray-500 font-poppins">Rs</span>
-            <span className="text-[13px] font-poppins font-medium">
-              {priceRange[0]}
-            </span>
-          </div>
-          <span className="text-[12px] text-gray-500 font-poppins">To</span>
-          <div className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 flex-1">
-            <span className="text-[12px] text-gray-500 font-poppins">Rs</span>
-            <span className="text-[13px] font-poppins font-medium">
-              {priceRange[1]}
-            </span>
-          </div>
-        </div>
       </div>
 
       <div className="flex gap-3 pt-1">
