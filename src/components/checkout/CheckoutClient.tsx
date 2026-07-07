@@ -229,9 +229,9 @@ export default function CheckoutClient() {
             router.push("/choose-ride=");
           }}
           onViewDetails={() => {
+            router.push("/my-bookings");
             setModalState(null);
             resetBooking();
-            router.push("/my-bookings");
           }}
         />
       )}
