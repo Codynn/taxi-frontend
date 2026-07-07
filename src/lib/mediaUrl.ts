@@ -3,9 +3,9 @@
 
 const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
 
-export function resolveMediaUrl(
-  stored?: string | null,
-): string | undefined {
+export function resolveMediaUrl(stored?: string | null): string | undefined {
+  console.log("STORED::", stored);
+  if (stored?.startsWith("https://")) return stored;
   if (!stored) return undefined;
   let path = stored;
   if (/^https?:\/\//i.test(stored)) {

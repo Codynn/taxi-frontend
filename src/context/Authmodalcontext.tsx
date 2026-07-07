@@ -33,8 +33,6 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const hasVisited = localStorage.getItem(AUTH_MODAL_VISITED_KEY);
     if (!hasVisited) {
-      setIsOpen(true);
-      setView("login");
       localStorage.setItem(AUTH_MODAL_VISITED_KEY, "true");
     }
   }, []);

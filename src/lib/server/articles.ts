@@ -34,7 +34,7 @@ export async function getPublishedArticles(
 ): Promise<{ data: ArticleListItem[]; pagination: ArticlePagination | null }> {
   try {
     const res = await fetch(
-      `${BASE}/articles/published?page=${page}&limit=24`,
+      `${BASE}/articles/published?page=${page}&limit=100`,
       { cache: "no-store" },
     );
     if (!res.ok) return { data: [], pagination: null };
