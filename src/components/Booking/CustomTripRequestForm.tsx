@@ -7,6 +7,10 @@ import { toast } from "sonner";
 import { useCreateBooking } from "@/lib/api/booking.api";
 import { BookingModalData } from "@/hooks/useBookingStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import {
+  isBookingDateValid,
+  BOOKING_DATE_INVALID_MESSAGE,
+} from "@/lib/bookingDateValidation";
 
 interface CustomTripRequestFormProps {
   defaultValues?: {
@@ -55,6 +59,11 @@ export default function CustomTripRequestForm({
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      return;
+    }
+
+    if (!isBookingDateValid(modalData)) {
+      toast.error(BOOKING_DATE_INVALID_MESSAGE);
       return;
     }
 

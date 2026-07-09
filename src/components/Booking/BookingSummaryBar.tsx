@@ -164,16 +164,20 @@ export default function BookingSummaryBar({
           </p>
         </div>
 
-        <div className="w-px h-6 bg-[#808080]/50 shrink-0" />
+        {state.tripTab === "custom" && (
+          <>
+            <div className="w-px h-6 bg-[#808080]/50 shrink-0" />
 
-        <div className="px-5 py-4 flex flex-col justify-center">
-          <p className="text-[14px] text-black font-poppins leading-none mb-0.5">
-            Return
-          </p>
-          <p className="text-black font-poppins  text-[16px] whitespace-nowrap">
-            {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
-          </p>
-        </div>
+            <div className="px-5 py-4 flex flex-col justify-center">
+              <p className="text-[14px] text-black font-poppins leading-none mb-0.5">
+                Return
+              </p>
+              <p className="text-black font-poppins  text-[16px] whitespace-nowrap">
+                {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
+              </p>
+            </div>
+          </>
+        )}
 
         <div className="w-px h-6 bg-[#808080]/50 shrink-0" />
 
@@ -270,7 +274,11 @@ export default function BookingSummaryBar({
         <div className="h-px bg-[#808080]/30 mx-4" />
 
         {/* Row 3: Pickup + Return */}
-        <div className="grid grid-cols-2 divide-x divide-[#808080]/30">
+        <div
+          className={`grid divide-x divide-[#808080]/30 ${
+            state.tripTab === "custom" ? "grid-cols-2" : "grid-cols-1"
+          }`}
+        >
           <div className="px-4 py-3">
             <p className="text-[11px] text-black font-poppins leading-none mb-0.5">
               Pickup
@@ -279,14 +287,16 @@ export default function BookingSummaryBar({
               {formatBsDate(state.dateRange.pickup) || "2083/02/07-08:00 AM"}
             </p>
           </div>
-          <div className="px-4 py-3">
-            <p className="text-[11px] text-black font-poppins leading-none mb-0.5">
-              Return
-            </p>
-            <p className="text-black font-poppins text-[14px] font-medium">
-              {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
-            </p>
-          </div>
+          {state.tripTab === "custom" && (
+            <div className="px-4 py-3">
+              <p className="text-[11px] text-black font-poppins leading-none mb-0.5">
+                Return
+              </p>
+              <p className="text-black font-poppins text-[14px] font-medium">
+                {formatBsDate(state.dateRange.return) || "2083/02/07-08:00 AM"}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="h-px bg-[#808080]/30 mx-4" />
@@ -361,7 +371,11 @@ export default function BookingSummaryBar({
             </div>
 
             {/* Pickup + Return */}
-            <div className="border border-gray-200 rounded-2xl overflow-hidden grid grid-cols-2 divide-x divide-gray-200">
+            <div
+              className={`border border-gray-200 rounded-2xl overflow-hidden grid divide-x divide-gray-200 ${
+                editState.tripTab === "custom" ? "grid-cols-2" : "grid-cols-1"
+              }`}
+            >
               <button
                 onClick={() => setActivePopup("date")}
                 className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
@@ -374,18 +388,20 @@ export default function BookingSummaryBar({
                     "2083/02/07-08:00 AM"}
                 </p>
               </button>
-              <button
-                onClick={() => setActivePopup("date")}
-                className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
-              >
-                <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                  Return
-                </p>
-                <p className="text-sm font-medium text-gray-800 font-poppins">
-                  {formatBsDate(editState.dateRange.return) ||
-                    "2083/02/07-08:00 AM"}
-                </p>
-              </button>
+              {editState.tripTab === "custom" && (
+                <button
+                  onClick={() => setActivePopup("date")}
+                  className="px-4 py-4 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                    Return
+                  </p>
+                  <p className="text-sm font-medium text-gray-800 font-poppins">
+                    {formatBsDate(editState.dateRange.return) ||
+                      "2083/02/07-08:00 AM"}
+                  </p>
+                </button>
+              )}
             </div>
 
             {/* Passengers */}
@@ -468,6 +484,7 @@ export default function BookingSummaryBar({
               open
               onClose={() => setActivePopup(null)}
               dateRange={editState.dateRange}
+              single={editState.tripTab !== "custom"}
               onConfirm={(range) => {
                 setEditState((s) => ({ ...s, dateRange: range }));
                 setActivePopup(null);

@@ -96,6 +96,23 @@ export function dateToAdString(date: Date): string {
 }
 
 /**
+ * Convert the internal `YYYY/MM/DD` calendar-date string into an ISO string
+ * at UTC midnight of that same calendar day.
+ *
+ * IMPORTANT: don't use `new Date(str).toISOString()` for this — slash-format
+ * date strings are parsed as *local* midnight, so `.toISOString()` shifts the
+ * instant into the previous day for any timezone ahead of UTC (e.g. Nepal,
+ * UTC+5:45). That off-by-one-day then makes a perfectly valid future booking
+ * look like it's "in the past" once the backend compares calendar dates.
+ * Building the instant directly from UTC components avoids that shift.
+ */
+export function adStringToUtcIso(str: string): string {
+  const [y, m, d] = str.split("/").map(Number);
+  if (!y || !m || !d) return "";
+  return new Date(Date.UTC(y, m - 1, d)).toISOString();
+}
+
+/**
  * Format any AD input (Date, ISO string, or `YYYY/MM/DD`) as a BS display
  * string, e.g. "15 Asar 2083". Returns "" for empty/invalid input.
  */

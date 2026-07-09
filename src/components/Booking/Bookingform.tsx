@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { formatBsDate } from "@/lib/bs-date";
+import { formatBsDate, adStringToUtcIso } from "@/lib/bs-date";
 import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpDown, ChevronDown } from "lucide-react";
 import {
@@ -172,9 +172,10 @@ function FieldErrorMsg({ message }: { message?: string }) {
   );
 }
 
-const toISO = (value: string) => {
-  return new Date(value).toISOString();
-};
+// dateRange values are local "YYYY/MM/DD" calendar-date strings; convert
+// them to UTC-midnight ISO so the intended calendar day is preserved
+// regardless of the browser's timezone (see adStringToUtcIso for why).
+const toISO = adStringToUtcIso;
 
 export default function BookingForm({
   tripTab,

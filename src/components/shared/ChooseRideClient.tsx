@@ -33,6 +33,12 @@ import { usePublicVehicleCategories } from "@/hooks/useVehicleCategories";
 import type { SelectedVehicle } from "@/components/vehicles/Vehicleselectedcard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/axios";
+import { adStringToUtcIso } from "@/lib/bs-date";
+import type { BookingFormState } from "@/types/booking.types";
+import {
+  isBookingDateValid,
+  BOOKING_DATE_INVALID_MESSAGE,
+} from "@/lib/bookingDateValidation";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -127,31 +133,9 @@ function calculatePrice(
   return baseFare + (vehicle.priceIncreasePercentage / 100) * baseFare;
 }
 
-// The date/location selection made on the homepage is persisted in
-// localStorage and can go stale if the user leaves and returns much later
-// (their chosen pickup date may now be in the past). Re-validate right
-// before the user commits to a vehicle instead of only failing later at
-// checkout with a confusing backend error.
-function isBookingDateValid(modalData: BookingModalData): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const pickUpDate = new Date(modalData.pickUpDate);
-  pickUpDate.setHours(0, 0, 0, 0);
-  if (isNaN(pickUpDate.getTime()) || pickUpDate < today) return false;
-
-  if (modalData.returnDate) {
-    const returnDate = new Date(modalData.returnDate);
-    returnDate.setHours(0, 0, 0, 0);
-    if (isNaN(returnDate.getTime()) || returnDate < pickUpDate) return false;
-  }
-
-  return true;
-}
-
 export default function ChooseRideClient() {
   const router = useRouter();
-  const { bookingState, setBookingState, setSelectedVehicle, modalData } =
+  const { bookingState, setBookingState, setModalData, setSelectedVehicle, modalData } =
     useBookingStore();
 
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
@@ -225,11 +209,36 @@ export default function ChooseRideClient() {
 
   const isCustomTrip = modalData.tripType === "CUSTOM_TRIP";
 
+  // The "Edit" sheet on BookingSummaryBar only updates bookingState. Keep
+  // modalData (what actually gets submitted) in sync so a corrected pickup
+  // date here really does fix the "date invalid" error below.
+  const handleBookingStateUpdate = (state: BookingFormState) => {
+    setBookingState(state);
+    setModalData({
+      ...modalData,
+      pickUpLocation: state.destination.from || modalData.pickUpLocation,
+      dropOffLocation: state.destination.to || modalData.dropOffLocation,
+      pickUpDate: state.dateRange.pickup
+        ? adStringToUtcIso(state.dateRange.pickup)
+        : modalData.pickUpDate,
+      returnDate:
+        state.tripTab === "custom" && state.dateRange.return
+          ? adStringToUtcIso(state.dateRange.return)
+          : undefined,
+      bookingType: state.tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY",
+      driverRequired:
+        state.tripTab === "custom"
+          ? state.driverType === "with-driver"
+          : modalData.driverRequired,
+      locationId: state.destination.locationId ?? modalData.locationId,
+      oneWayFare: state.destination.oneWayFare ?? modalData.oneWayFare,
+      roundTripFare: state.destination.roundTripFare ?? modalData.roundTripFare,
+    });
+  };
+
   const handleChooseVehicle = (vehicle: ApiVehicle) => {
     if (!isBookingDateValid(modalData)) {
-      toast.error(
-        "Your chosen pickup date is invalid — it may be in the past. Please go back and select a new date.",
-      );
+      toast.error(BOOKING_DATE_INVALID_MESSAGE);
       return;
     }
     setSelectedVehicle(toSelectedVehicle(vehicle, modalData, isCustomTrip));
@@ -344,7 +353,10 @@ export default function ChooseRideClient() {
           Go Back
         </button>
 
-        <BookingSummaryBar state={bookingState} onUpdate={setBookingState} />
+        <BookingSummaryBar
+          state={bookingState}
+          onUpdate={handleBookingStateUpdate}
+        />
 
         <h2 className="text-[20px] md:text-[24px] font-semibold font-sora text-black text-center">
           Available Rides for Your Trip
