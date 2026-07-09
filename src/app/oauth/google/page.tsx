@@ -51,18 +51,18 @@ function GoogleCallbackHandler() {
             setAuth(res.data.data, token);
           }
           toast.success("Signed in with Google!");
-          router.replace(dest);
+          window.location.href = dest;
         })
         .catch(() => {
           toast.success("Signed in with Google!");
-          router.replace(dest);
+          window.location.href = dest;
         });
     } else if (error) {
       consumeRedirect();
       toast.error(decodeURIComponent(error) || "Google sign-in failed.");
-      router.replace("/");
+      window.location.href = "/";
     } else {
-      router.replace("/");
+      window.location.href = "/";
     }
   }, [searchParams, router, setAuth]);
 
