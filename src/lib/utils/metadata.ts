@@ -2,7 +2,7 @@ import { Metadata } from "next";
 
 const BASE_URL = "https://www.lokpriyataxi.com.np";
 const SITE_NAME = "Lokpriya Taxi";
-const DEFAULT_OG_IMAGE = "/og-image.png";
+const DEFAULT_OG_IMAGE = "/logo/logo-full.png";
 
 export function createMetadata({
   title,

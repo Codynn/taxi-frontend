@@ -63,7 +63,7 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   const notificationType = payload.data?.type || NOTIFICATION_TYPES.DEFAULT;
-  const notificationTitle = payload.notification?.title || "Popular Rides";
+  const notificationTitle = payload.notification?.title || "Lokpriya Rides";
   const notificationUrl =
     payload.fcmOptions?.link || getNotificationUrl(payload.data);
 

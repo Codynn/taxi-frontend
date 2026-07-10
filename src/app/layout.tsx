@@ -123,12 +123,12 @@ export const metadata: Metadata = {
     title: "Popular Ride | Lokpriya Taxi",
     description:
       "Reliable taxi and vehicle booking across Nepal. Cars, auto rickshaws, and bikes — anytime you need.",
-    images: ["/og-image.svg"],
+    images: ["/logo/logo-full.png.svg"],
   },
 
   icons: {
-    icon: "/logo/logo.svg",
-    apple: "/logo/logo.svg",
+    icon: "/logo/logo-full.svg",
+    apple: "/logo/logo-full.svg",
   },
 
   other: {
@@ -136,10 +136,10 @@ export const metadata: Metadata = {
     "geo.placename": "Dang, Nepal",
     "geo.position": "28.0069;82.4737",
     ICBM: "28.0069, 82.4737",
-    "application-name": "Popular Ride",
+    "application-name": "Lokpriya Rides",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "Popular Ride",
+    "apple-mobile-web-app-title": "Lokpriya Rides",
     "mobile-web-app-capable": "yes",
     "theme-color": "#FEA800",
     "msapplication-TileColor": "#FEA800",

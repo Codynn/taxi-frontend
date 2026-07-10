@@ -67,7 +67,8 @@ export function useFCM() {
     if (!msg) return;
 
     const unsubscribe = onMessage(msg, (payload: any) => {
-      const notificationTitle = payload?.notification?.title || "Popular Rides";
+      const notificationTitle =
+        payload?.notification?.title || "Lokpriya Rides";
       const notificationBody = payload?.notification?.body || "";
       const notificationType =
         (payload?.data?.type as NotificationType) || NOTIFICATION_TYPES.DEFAULT;

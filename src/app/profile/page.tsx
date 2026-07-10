@@ -5,8 +5,8 @@ import ProfileForm from "@/components/shared/ProfileForm";
 import ChangePasswordForm from "@/components/shared/ChangePasswordForm";
 
 export const metadata: Metadata = {
-  title: "My Profile | Popular Rides",
-  description: "View and update your Popular Rides profile details.",
+  title: "My Profile | Lokpriya Rides",
+  description: "View and update your Lokpriya Rides profile details.",
   robots: { index: false, follow: false },
 };
 

@@ -41,9 +41,9 @@ export default function Navbar({
         <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto">
           <Link href="/" className="shrink-0">
             <Image
-              src="/logo/logo.svg"
-              alt="Popular Rides Logo"
-              width={76}
+              src="/logo/logo-full.svg"
+              alt="Lokpriya Rides Logo"
+              width={100}
               height={66}
             />
           </Link>
@@ -90,8 +90,8 @@ export default function Navbar({
         <div className="flex lg:hidden items-center justify-between px-2">
           <Link href="/" className="shrink-0">
             <Image
-              src="/logo/logo.svg"
-              alt="Popular Rides Logo"
+              src="/logo/logo-full.svg"
+              alt="Lokpriya Rides Logo"
               width={90}
               height={78}
             />

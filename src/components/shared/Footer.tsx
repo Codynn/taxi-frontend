@@ -37,7 +37,7 @@ export default function Footer() {
               <Link href="/">
                 <Image
                   src="/footer/footerlogo.svg"
-                  alt="Popular Rides Logo"
+                  alt="Lokpriya Rides Logo"
                   width={80}
                   height={70}
                 />
