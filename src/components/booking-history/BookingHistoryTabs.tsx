@@ -3,8 +3,7 @@
 import { TripTab } from "@/types/booking.types";
 
 const TRIP_TABS: { value: TripTab; label: string }[] = [
-  { value: "long", label: "Long Trip" },
-  { value: "short", label: "Short Trip" },
+  { value: "normal", label: "Normal Trip" },
   { value: "custom", label: "Custom Trip" },
 ];
 

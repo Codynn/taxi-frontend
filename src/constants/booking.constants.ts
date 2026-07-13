@@ -6,10 +6,22 @@ import type {
 } from "@/types/booking.types";
 
 export const TRIP_TABS: { value: TripTab; label: string }[] = [
-  { value: "short", label: "Within City Ride" },
-  { value: "long", label: "City-to-City Ride" },
+  { value: "normal", label: "Normal Trip" },
   { value: "custom", label: "Custom Trip" },
 ];
+
+/**
+ * The "Normal Trip" tab covers both within-city and city-to-city routes.
+ * The actual LONG_TRIP vs SHORT_TRIP value sent to the backend is derived
+ * from the selected destination's `outsideDistrict` flag, not the tab.
+ */
+export function deriveApiTripType(
+  tripTab: TripTab,
+  outsideDistrict?: boolean,
+): "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP" {
+  if (tripTab === "custom") return "CUSTOM_TRIP";
+  return outsideDistrict ? "LONG_TRIP" : "SHORT_TRIP";
+}
 
 export const TRIP_TYPES: { value: TripType; label: string }[] = [
   { value: "round-trip", label: "Round Trip" },
@@ -40,7 +52,7 @@ export const PASSENGER_OPTIONS = [
 ];
 
 export const DEFAULT_BOOKING_STATE: BookingFormState = {
-  tripTab: "short",
+  tripTab: "normal",
   tripType: "one-way",
   driverType: "with-driver",
   destination: { from: "", to: "" },

@@ -135,8 +135,14 @@ function calculatePrice(
 
 export default function ChooseRideClient() {
   const router = useRouter();
-  const { bookingState, setBookingState, setModalData, setSelectedVehicle, modalData } =
-    useBookingStore();
+  const {
+    bookingState,
+    setBookingState,
+    setModalData,
+    setSelectedVehicle,
+    modalData,
+    hasHydrated,
+  } = useBookingStore();
 
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -202,9 +208,15 @@ export default function ChooseRideClient() {
   });
 
   useEffect(() => {
+    // Wait for the persisted store to finish rehydrating from localStorage
+    // before deciding modalData is missing — otherwise a full-page reload
+    // (e.g. returning from the Google OAuth redirect) briefly sees modalData
+    // as null and bounces the user back to the homepage.
+    if (!hasHydrated) return;
     if (!modalData) router.replace("/");
-  }, [modalData, router]);
+  }, [hasHydrated, modalData, router]);
 
+  if (!hasHydrated) return null;
   if (!modalData) return null;
 
   const isCustomTrip = modalData.tripType === "CUSTOM_TRIP";

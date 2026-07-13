@@ -11,6 +11,7 @@ import {
   TRIP_TYPES,
   DRIVER_TYPES,
   CUSTOM_TRIP_NOTE,
+  deriveApiTripType,
 } from "@/constants/booking.constants";
 import type {
   TripTab,
@@ -105,7 +106,7 @@ export default function BookingModal({
   const { setModalData, setBookingState } = useBookingStore();
   const { data: bookedDates } = useVehicleBookedDates(vehicleId ?? null);
 
-  const [activeTab, setActiveTab] = useState<TripTab>("long");
+  const [activeTab, setActiveTab] = useState<TripTab>("normal");
   const [formState, setFormState] = useState<BookingFormState>(
     DEFAULT_BOOKING_STATE,
   );
@@ -143,12 +144,10 @@ export default function BookingModal({
   const bookingType: BookingType =
     formState.tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY";
 
-  const apiTripType: ApiTripType =
-    activeTab === "long"
-      ? "LONG_TRIP"
-      : activeTab === "short"
-        ? "SHORT_TRIP"
-        : "CUSTOM_TRIP";
+  const apiTripType: ApiTripType = deriveApiTripType(
+    activeTab,
+    formState.destination.outsideDistrict,
+  );
 
   const driverRequired = formState.driverType === "with-driver";
 

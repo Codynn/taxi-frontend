@@ -65,15 +65,25 @@ function DestinationContent({
   }
   const activeTripType = localTripType;
 
-  const [search, setSearch] = useState("");
-  const query = search.trim().toLowerCase();
-  const filteredRoutes = (routes ?? []).filter((route) =>
-    query === ""
-      ? true
-      : `${route.fromLocation} ${route.toLocation}`
-          .toLowerCase()
-          .includes(query),
-  );
+  const [fromSearch, setFromSearch] = useState("");
+  const [toSearch, setToSearch] = useState("");
+  const fromQuery = fromSearch.trim().toLowerCase();
+  const toQuery = toSearch.trim().toLowerCase();
+  const hasQuery = fromQuery !== "" || toQuery !== "";
+
+  // Only show results once the user starts typing in either field. Each
+  // field searches the same route list but against its own column, so a
+  // user can start their search from either end of the trip.
+  const filteredRoutes = !hasQuery
+    ? []
+    : (routes ?? []).filter((route) => {
+        const matchesFrom =
+          fromQuery === "" ||
+          route.fromLocation.toLowerCase().includes(fromQuery);
+        const matchesTo =
+          toQuery === "" || route.toLocation.toLowerCase().includes(toQuery);
+        return matchesFrom && matchesTo;
+      });
 
   return (
     <>
@@ -101,19 +111,34 @@ function DestinationContent({
           ))}
         </div>
 
-        {/* Search */}
-        <div className="relative w-full">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search destination (e.g. Kathmandu)"
-            className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
-          />
+        {/* Search: separate From / To inputs over the same route list */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-2 w-full">
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={fromSearch}
+              onChange={(e) => setFromSearch(e.target.value)}
+              placeholder="From (e.g. Tulsipur)"
+              className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
+            />
+          </div>
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={toSearch}
+              onChange={(e) => setToSearch(e.target.value)}
+              placeholder="To (e.g. Kathmandu)"
+              className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
+            />
+          </div>
         </div>
       </div>
 
@@ -121,6 +146,10 @@ function DestinationContent({
         {isLoading ? (
           <div className="py-8 text-center text-sm font-poppins text-gray-400">
             Loading destinations...
+          </div>
+        ) : !hasQuery ? (
+          <div className="py-8 text-center text-sm font-poppins text-gray-400">
+            Start typing a From or To location to search destinations.
           </div>
         ) : filteredRoutes.length === 0 ? (
           <div className="py-8 text-center text-sm font-poppins text-gray-400">
@@ -143,6 +172,7 @@ function DestinationContent({
                     locationId: route.id,
                     oneWayFare: route.oneWayFare,
                     roundTripFare: route.roundTripFare,
+                    outsideDistrict: route.outsideDistrict,
                   });
                   onClose();
                 }}

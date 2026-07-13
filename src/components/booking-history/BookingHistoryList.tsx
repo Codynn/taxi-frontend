@@ -1,5 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import VehicleFeatureBadge from "@/components/vehicles/VehicleFeatureBadge";
+import BookingIdCopy from "./BookingIdCopy";
+import SupportContactLinks from "@/components/shared/SupportContactLinks";
+import { useConfiguration } from "@/lib/api/configuration.api";
 import { BookingRecord, BookingStatus } from "@/types/booking.types";
 
 function StatusBadge({ status }: { status: BookingStatus }) {
@@ -17,17 +22,30 @@ function StatusBadge({ status }: { status: BookingStatus }) {
   );
 }
 
-function BookingCardDesktop({ booking }: { booking: BookingRecord }) {
+function BookingCardDesktop({
+  booking,
+  whatsappNumber,
+}: {
+  booking: BookingRecord;
+  whatsappNumber?: string | null;
+}) {
   // console.log(booking.vehicle.image);
 
   return (
     <div className="hidden lg:flex bg-white rounded-2xl border border-[#808080]/50 overflow-hidden">
       <div className="flex flex-col justify-between p-5 w-[350px] shrink-0 ">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[12px] text-black font-poppins">
-            {booking.bookingNumber}
-          </span>
-          <StatusBadge status={booking.status} />
+        <div className="flex items-center justify-between mb-3 gap-2">
+          <BookingIdCopy bookingNumber={booking.bookingNumber} />
+          <div className="flex items-center gap-2">
+            {whatsappNumber && (
+              <SupportContactLinks
+                whatsappNumber={whatsappNumber}
+                whatsappMessage={`Hi, I'd like to ask about my booking ${booking.bookingNumber}.`}
+                compact
+              />
+            )}
+            <StatusBadge status={booking.status} />
+          </div>
         </div>
         <p className="text-[16px] font-semibold font-poppins text-black mb-4">
           {booking.from}
@@ -88,12 +106,21 @@ function BookingCardDesktop({ booking }: { booking: BookingRecord }) {
 
       <div className="flex flex-col justify-center items-start px-6 py-5 shrink-0">
         {booking.tripType === "custom" ? (
-          <p className="text-[13px] text-gray-400 font-poppins max-w-[140px]">
-            Price to be confirmed
-          </p>
+          isNaN(Number(booking.quotedPrice)) ? (
+            <p className="text-[13px] text-gray-400 font-poppins max-w-[140px]">
+              Price to be confirmed
+            </p>
+          ) : (
+            <>
+              <p className="text-[12px] text-black font-poppins mb-1">Price</p>
+              <p className="text-[24px] font-bold text-[#FEA800] font-poppins">
+                {booking.currency} {(booking.quotedPrice || 0).toLocaleString()}
+              </p>
+            </>
+          )
         ) : (
           <>
-            <p className="text-[12px] text-black font-poppins mb-1">Paid</p>
+            <p className="text-[12px] text-black font-poppins mb-1">Price</p>
             <p className="text-[24px] font-bold text-[#FEA800] font-poppins">
               {booking.currency} {booking.paid.toLocaleString()}
             </p>
@@ -105,14 +132,27 @@ function BookingCardDesktop({ booking }: { booking: BookingRecord }) {
 }
 
 // ── Mobile Card ────────────────────────────────────────────────────────────
-function BookingCardMobile({ booking }: { booking: BookingRecord }) {
+function BookingCardMobile({
+  booking,
+  whatsappNumber,
+}: {
+  booking: BookingRecord;
+  whatsappNumber?: string | null;
+}) {
   return (
     <div className="lg:hidden bg-white rounded-2xl border border-[#808080]/50 p-4 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] text-black font-poppins">
-          {booking.bookingNumber}
-        </span>
-        <StatusBadge status={booking.status} />
+      <div className="flex items-center justify-between gap-2">
+        <BookingIdCopy bookingNumber={booking.bookingNumber} />
+        <div className="flex items-center gap-2">
+          {whatsappNumber && (
+            <SupportContactLinks
+              whatsappNumber={whatsappNumber}
+              whatsappMessage={`Hi, I'd like to ask about my booking ${booking.bookingNumber}.`}
+              compact
+            />
+          )}
+          <StatusBadge status={booking.status} />
+        </div>
       </div>
 
       {/* Route */}
@@ -171,12 +211,21 @@ function BookingCardMobile({ booking }: { booking: BookingRecord }) {
 
       <div>
         {booking.tripType === "custom" ? (
-          <p className="text-[13px] text-gray-400 font-poppins">
-            Price to be confirmed
-          </p>
+          isNaN(Number(booking.quotedPrice)) ? (
+            <p className="text-[13px] text-gray-400 font-poppins max-w-[140px]">
+              Price to be confirmed
+            </p>
+          ) : (
+            <>
+              <p className="text-[12px] text-black font-poppins mb-1">Price</p>
+              <p className="text-[24px] font-bold text-[#FEA800] font-poppins">
+                {booking.currency} {(booking.quotedPrice || 0).toLocaleString()}
+              </p>
+            </>
+          )
         ) : (
           <>
-            <p className="text-[12px] text-black font-poppins mb-0.5">Paid</p>
+            <p className="text-[12px] text-black font-poppins mb-0.5">Price</p>
             <p className="text-[22px] font-bold text-[#FEA800] font-poppins">
               {booking.currency} {booking.paid.toLocaleString()}
             </p>
@@ -194,6 +243,8 @@ interface BookingHistoryListProps {
 export default function BookingHistoryList({
   bookings,
 }: BookingHistoryListProps) {
+  const { data: configuration } = useConfiguration();
+
   if (bookings.length === 0) {
     return (
       <div className="text-center py-16 text-black font-poppins text-[16px]">
@@ -206,8 +257,14 @@ export default function BookingHistoryList({
     <div className="flex flex-col gap-4">
       {bookings.map((booking) => (
         <div key={booking.id}>
-          <BookingCardDesktop booking={booking} />
-          <BookingCardMobile booking={booking} />
+          <BookingCardDesktop
+            booking={booking}
+            whatsappNumber={configuration?.whatsappNumber}
+          />
+          <BookingCardMobile
+            booking={booking}
+            whatsappNumber={configuration?.whatsappNumber}
+          />
         </div>
       ))}
     </div>

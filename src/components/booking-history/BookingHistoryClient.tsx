@@ -39,17 +39,15 @@ interface ApiBookingRaw extends Omit<ApiBooking, "vehicle"> {
 }
 
 const TRIP_TYPE_MAP: Record<string, TripTab> = {
-  LONG_TRIP: "long",
-  SHORT_TRIP: "short",
+  LONG_TRIP: "normal",
+  SHORT_TRIP: "normal",
   CUSTOM_TRIP: "custom",
 };
 
-const UI_TO_API_TRIP: Record<
-  TripTab,
-  "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP"
-> = {
-  long: "LONG_TRIP",
-  short: "SHORT_TRIP",
+// NORMAL_TRIP is a combined backend filter matching both LONG_TRIP and
+// SHORT_TRIP bookings, mirroring the merged "Normal Trip" tab in the UI.
+const UI_TO_API_TRIP: Record<TripTab, "NORMAL_TRIP" | "CUSTOM_TRIP"> = {
+  normal: "NORMAL_TRIP",
   custom: "CUSTOM_TRIP",
 };
 
@@ -109,7 +107,8 @@ function toBookingRecord(b: ApiBookingRaw): BookingRecord {
     status: STATUS_UI_MAP[b.status] ?? "Pending",
     currency: "Rs",
     paid: b.totalAmount ?? b.quotedPrice ?? b.totalPrice ?? b.fare ?? 0, // ← use actual price from API
-    tripType: TRIP_TYPE_MAP[b.tripType] ?? "long",
+    quotedPrice: b?.quotedPrice,
+    tripType: TRIP_TYPE_MAP[b.tripType] ?? "normal",
     vehicle: {
       name: v?.vechileName ?? "Unknown Vehicle",
       plateNumber: v?.vechileNumber ?? "",
@@ -123,7 +122,7 @@ const ITEMS_PER_PAGE = 6;
 
 export default function BookingHistoryClient() {
   const { openModal } = useAuthModal();
-  const [activeTab, setActiveTab] = useState<TripTab>("long");
+  const [activeTab, setActiveTab] = useState<TripTab>("normal");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState(""); // "" = All Status (API value)
   const [sortBy, setSortBy] = useState<"latest" | "oldest">("latest");

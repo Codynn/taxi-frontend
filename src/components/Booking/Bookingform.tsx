@@ -9,6 +9,7 @@ import {
   DRIVER_TYPES,
   CUSTOM_TRIP_NOTE,
   TRIP_TABS,
+  deriveApiTripType,
 } from "@/constants/booking.constants";
 import type {
   BookingFormState,
@@ -244,12 +245,10 @@ export default function BookingForm({
     const bookingType: BookingType =
       state.tripType === "round-trip" ? "ROUND_TRIP" : "ONE_WAY";
 
-    const apiTripType: ApiTripType =
-      tripTab === "long"
-        ? "LONG_TRIP"
-        : tripTab === "short"
-          ? "SHORT_TRIP"
-          : "CUSTOM_TRIP";
+    const apiTripType: ApiTripType = deriveApiTripType(
+      tripTab,
+      state.destination.outsideDistrict,
+    );
 
     // For within-city and city-to-city, driver is always not required
     const driverRequired = isCustom

@@ -9,7 +9,7 @@ import type { TripTab, BookingFormState } from "@/types/booking.types";
 import BookingForm from "./Bookingform";
 
 export default function BookingSection() {
-  const [activeTab, setActiveTab] = useState<TripTab>("short");
+  const [activeTab, setActiveTab] = useState<TripTab>("normal");
   const [formState, setFormState] = useState<BookingFormState>(
     DEFAULT_BOOKING_STATE,
   );

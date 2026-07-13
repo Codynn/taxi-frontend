@@ -65,7 +65,9 @@ export interface ApiBooking {
 export interface BookingListParams {
   page?: number;
   limit?: number;
-  tripType?: TripType;
+  // NORMAL_TRIP is a combined backend filter matching both LONG_TRIP and
+  // SHORT_TRIP, used by the merged "Normal Trip" tab in booking history.
+  tripType?: TripType | "NORMAL_TRIP";
   status?: BookingStatus;
   sort?: "latest" | "oldest";
 }

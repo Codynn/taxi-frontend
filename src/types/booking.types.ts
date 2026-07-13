@@ -1,4 +1,7 @@
-export type TripTab = "long" | "short" | "custom";
+// "normal" covers both within-city and city-to-city routes; the LONG_TRIP vs
+// SHORT_TRIP distinction sent to the backend is derived automatically from
+// the selected destination's `outsideDistrict` flag (see deriveApiTripType).
+export type TripTab = "normal" | "custom";
 export type TripType = "round-trip" | "one-way";
 export type DriverType = "with-driver" | "self-drive";
 
@@ -8,6 +11,7 @@ export interface Destination {
   locationId?: string;
   oneWayFare?: number;
   roundTripFare?: number;
+  outsideDistrict?: boolean;
 }
 
 export interface DateRange {
@@ -89,4 +93,5 @@ export interface BookingRecord {
   paid: number;
   currency: string;
   tripType: TripTab;
+  quotedPrice?: number;
 }

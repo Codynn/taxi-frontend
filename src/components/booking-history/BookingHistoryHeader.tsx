@@ -1,6 +1,12 @@
+"use client";
+
 import Image from "next/image";
+import { useConfiguration } from "@/lib/api/configuration.api";
+import SupportContactLinks from "@/components/shared/SupportContactLinks";
 
 export default function BookingHistoryHeader() {
+  const { data: configuration } = useConfiguration();
+
   return (
     <div>
       <div className="relative mb-8 md:mb-10">
@@ -24,9 +30,23 @@ export default function BookingHistoryHeader() {
         </h1>
       </div>
 
-      <p className="text-[16px] text-black font-poppins">
-        View and manage all your past and completed bookings
-      </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <p className="text-[16px] text-black font-poppins">
+          View and manage all your past and completed bookings
+        </p>
+
+        {(configuration?.whatsappNumber || configuration?.supportPhoneNumber) && (
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[12px] text-black/50 font-poppins">
+              Need help with a booking?
+            </p>
+            <SupportContactLinks
+              whatsappNumber={configuration?.whatsappNumber}
+              phoneNumber={configuration?.supportPhoneNumber}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

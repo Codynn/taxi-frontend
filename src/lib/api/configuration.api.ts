@@ -5,6 +5,12 @@ export interface Configuration {
   id: string;
   paymentQrImage: string | null;
   defaultDriverCharge: number;
+  bankName: string | null;
+  bankAccountName: string | null;
+  bankAccountNumber: string | null;
+  paymentPhoneNumber: string | null;
+  whatsappNumber: string | null;
+  supportPhoneNumber: string | null;
   createdAt: string;
   updatedAt: string;
 }

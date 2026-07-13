@@ -9,12 +9,14 @@ import Navbar from "@/components/layout/navbar";
 
 import VehicleSelectedCard from "@/components/vehicles/Vehicleselectedcard";
 import CheckoutBookingSummary from "./CheckoutBookingSummary";
+import SupportContactLinks from "@/components/shared/SupportContactLinks";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { useCreateBooking } from "@/lib/api/booking.api";
 import {
   useConfiguration,
   uploadFile,
   resolveUploadUrl,
+  type Configuration,
 } from "@/lib/api/configuration.api";
 
 type ModalState = "success" | "failure" | null;
@@ -298,6 +300,7 @@ export default function CheckoutClient() {
           <FareDetailsCard fareDetails={fareDetails} total={total} />
           <PaymentCard
             qrImage={resolveUploadUrl(configuration?.paymentQrImage) ?? null}
+            configuration={configuration}
             paymentProof={paymentProof}
             isUploading={isUploading}
             onUpload={handleUploadProof}
@@ -348,6 +351,7 @@ function FareDetailsCard({
 /* ── Payment ── */
 function PaymentCard({
   qrImage,
+  configuration,
   paymentProof,
   isUploading,
   onUpload,
@@ -356,6 +360,7 @@ function PaymentCard({
   isLoading,
 }: {
   qrImage: string | null;
+  configuration?: Configuration;
   paymentProof: string | null;
   isUploading: boolean;
   onUpload: (file: File) => void;
@@ -365,38 +370,85 @@ function PaymentCard({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const hasBankOption = configuration?.paymentPhoneNumber;
+
   return (
     <div className="bg-[#f5f5f5] rounded-2xl p-5">
       <h2 className="text-[24px] font-bold font-sora text-black mb-4">
-        Scan & Pay
+        Payment
       </h2>
 
-      {/* QR code */}
-      <div className="flex flex-col items-center gap-3 mb-5">
-        {qrImage ? (
-          <div className="bg-white rounded-xl p-4 border border-gray-200">
-            <Image
-              src={qrImage}
-              alt="Payment QR"
-              width={220}
-              height={220}
-              unoptimized
-              className="w-52 h-52 object-contain"
-            />
+      {/* Option 1: Scan QR */}
+      <div className="bg-white rounded-xl p-4 border border-gray-200 mb-3">
+        <p className="text-[13px] font-semibold font-poppins text-black mb-3">
+          Option 1: Scan QR and Pay
+        </p>
+        <div className="flex flex-col items-center gap-3">
+          {qrImage ? (
+            <div className="bg-white rounded-xl p-3 border border-gray-200">
+              <Image
+                src={qrImage}
+                alt="Payment QR"
+                width={200}
+                height={200}
+                unoptimized
+                className="w-48 h-48 object-contain"
+              />
+            </div>
+          ) : (
+            <div className="w-48 h-48 rounded-xl bg-gray-50 border border-dashed border-gray-300 flex items-center justify-center text-center px-4">
+              <p className="text-[13px] font-poppins text-black/50">
+                Payment QR is not available right now.
+              </p>
+            </div>
+          )}
+          <p className="text-[13px] font-poppins text-black/70 text-center">
+            Scan with any payment app and complete the payment.
+          </p>
+        </div>
+      </div>
+
+      {/* Option 2: Send to mobile wallet number */}
+      {hasBankOption && (
+        <>
+          <div className="flex items-center gap-3 my-3">
+            <div className="flex-1 h-px bg-gray-300" />
+            <span className="text-[12px] font-poppins text-black/40">OR</span>
+            <div className="flex-1 h-px bg-gray-300" />
           </div>
-        ) : (
-          <div className="w-52 h-52 rounded-xl bg-white border border-dashed border-gray-300 flex items-center justify-center text-center px-4">
-            <p className="text-[13px] font-poppins text-black/50">
-              Payment QR is not available right now. Please contact us to
-              complete your payment.
+
+          <div className="bg-white rounded-xl p-4 border border-gray-200 mb-5">
+            <p className="text-[13px] font-semibold font-poppins text-black mb-2">
+              Option 2: Send Money via Mobile Wallet
+            </p>
+            <p className="text-[14px] font-poppins text-black/80">
+              Send to{" "}
+              {configuration?.bankName && (
+                <span className="font-semibold">
+                  {configuration.bankName}{" "}
+                </span>
+              )}
+              with phone number{" "}
+              <span className="font-semibold">
+                {configuration?.paymentPhoneNumber}
+              </span>
             </p>
           </div>
-        )}
-        <p className="text-[14px] font-poppins text-black/70 text-center">
-          Scan the QR with any payment app, complete the payment, then upload a
-          screenshot below.
-        </p>
-      </div>
+        </>
+      )}
+
+      {/* Call / WhatsApp to verify */}
+      {(configuration?.whatsappNumber || configuration?.supportPhoneNumber) && (
+        <div className="mb-5">
+          <p className="text-[13px] font-semibold font-poppins text-black mb-2">
+            Need help? Call or message us
+          </p>
+          <SupportContactLinks
+            whatsappNumber={configuration?.whatsappNumber}
+            phoneNumber={configuration?.supportPhoneNumber}
+          />
+        </div>
+      )}
 
       {/* Payment proof upload */}
       <div className="mb-5">

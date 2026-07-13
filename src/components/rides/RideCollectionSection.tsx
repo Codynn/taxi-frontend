@@ -36,6 +36,7 @@ import { BookingModalData, useBookingStore } from "@/hooks/useBookingStore";
 import type { BookingFormState } from "@/types/booking.types";
 import { api } from "@/lib/axios";
 import { adStringToUtcIso } from "@/lib/bs-date";
+import { deriveApiTripType } from "@/constants/booking.constants";
 
 function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
   return {
@@ -87,11 +88,10 @@ function toModalData(state: BookingFormState) {
     bookingType: (state.tripType === "round-trip"
       ? "ROUND_TRIP"
       : "ONE_WAY") as "ROUND_TRIP" | "ONE_WAY",
-    tripType: (state.tripTab === "long"
-      ? "LONG_TRIP"
-      : state.tripTab === "short"
-        ? "SHORT_TRIP"
-        : "CUSTOM_TRIP") as "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP",
+    tripType: deriveApiTripType(
+      state.tripTab,
+      state.destination.outsideDistrict,
+    ),
     driverRequired: state.driverType === "with-driver",
     locationId: state.destination.locationId,
     oneWayFare: state.destination.oneWayFare,
