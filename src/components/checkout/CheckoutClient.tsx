@@ -132,6 +132,7 @@ export default function CheckoutClient() {
   const [modalState, setModalState] = useState<ModalState>(null);
   const [paymentProof, setPaymentProof] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const {
     bookingState,
@@ -189,36 +190,50 @@ export default function CheckoutClient() {
     }
   };
 
+  const toISO = (value: string | Date) => new Date(value).toISOString();
+
+  const buildBookingPayload = (proof?: string) => ({
+    pickUpLocation: modalData.pickUpLocation,
+    dropOffLocation: modalData.dropOffLocation,
+    pickUpDate: toISO(modalData.pickUpDate),
+    returnDate: modalData.returnDate ? toISO(modalData.returnDate) : undefined,
+    bookingType: modalData.bookingType,
+    tripType: modalData.tripType,
+    driverRequired: modalData.driverRequired,
+    fullName: contactData.fullName,
+    contactNumber: contactData.contactNumber,
+    email: contactData.email,
+    message: contactData.message,
+    locationId: modalData.locationId,
+    pickUpTime: toISO(contactData.pickUpTime),
+    vechicleId: selectedVehicle.id,
+    paymentProof: proof,
+  });
+
   const handleContinueToPayment = () => {
     if (!paymentProof) return;
 
-    const toISO = (value: string | Date) => new Date(value).toISOString();
+    createBooking(buildBookingPayload(paymentProof), {
+      onSuccess: () => setModalState("success"),
+      onError: () => setModalState("failure"),
+    });
+  };
 
-    createBooking(
-      {
-        pickUpLocation: modalData.pickUpLocation,
-        dropOffLocation: modalData.dropOffLocation,
-        pickUpDate: toISO(modalData.pickUpDate),
-        returnDate: modalData.returnDate
-          ? toISO(modalData.returnDate)
-          : undefined,
-        bookingType: modalData.bookingType,
-        tripType: modalData.tripType,
-        driverRequired: modalData.driverRequired,
-        fullName: contactData.fullName,
-        contactNumber: contactData.contactNumber,
-        email: contactData.email,
-        message: contactData.message,
-        locationId: modalData.locationId,
-        pickUpTime: toISO(contactData.pickUpTime),
-        vechicleId: selectedVehicle.id,
-        paymentProof,
+  // Fonepay needs a bookingId to generate a payment session against, and the
+  // payment can be retried multiple times — so the booking is created first
+  // (PENDING / unpaid) and the customer is sent to its detail page, which
+  // owns the actual pay/retry/history UI. This avoids re-creating a new
+  // booking on every retry, which the old inline flow used to do.
+  const handlePayWithFonepay = () => {
+    setIsRedirecting(true);
+    createBooking(buildBookingPayload(undefined), {
+      onSuccess: (res) => {
+        const bookingId = (res as any)?.data?.id;
+        resetBooking();
+        router.push(bookingId ? `/my-bookings/${bookingId}` : "/my-bookings");
       },
-      {
-        onSuccess: () => setModalState("success"),
-        onError: () => setModalState("failure"),
-      },
-    );
+      onError: () => setIsRedirecting(false),
+    });
   };
 
   return (
@@ -277,12 +292,15 @@ export default function CheckoutClient() {
             <FareDetailsCard fareDetails={fareDetails} total={total} />
             <PaymentCard
               qrImage={resolveUploadUrl(configuration?.paymentQrImage) ?? null}
+              configuration={configuration}
               paymentProof={paymentProof}
               isUploading={isUploading}
               onUpload={handleUploadProof}
               onRemoveProof={() => setPaymentProof(null)}
               onContinue={handleContinueToPayment}
               isLoading={isPending}
+              onPayWithFonepay={handlePayWithFonepay}
+              isRedirectingToFonepay={isRedirecting}
             />
           </div>
         </div>
@@ -307,6 +325,8 @@ export default function CheckoutClient() {
             onRemoveProof={() => setPaymentProof(null)}
             onContinue={handleContinueToPayment}
             isLoading={isPending}
+            onPayWithFonepay={handlePayWithFonepay}
+            isRedirectingToFonepay={isRedirecting}
           />
         </div>
       </div>
@@ -358,6 +378,8 @@ function PaymentCard({
   onRemoveProof,
   onContinue,
   isLoading,
+  onPayWithFonepay,
+  isRedirectingToFonepay,
 }: {
   qrImage: string | null;
   configuration?: Configuration;
@@ -367,6 +389,8 @@ function PaymentCard({
   onRemoveProof: () => void;
   onContinue: () => void;
   isLoading: boolean;
+  onPayWithFonepay: () => void;
+  isRedirectingToFonepay: boolean;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -377,6 +401,35 @@ function PaymentCard({
       <h2 className="text-[24px] font-bold font-sora text-black mb-4">
         Payment
       </h2>
+
+      {/* Fonepay: instant, verified payment. Creates the booking and hands
+          off to its detail page, which owns the pay/retry/history UI. */}
+      <div className="bg-white rounded-xl p-4 border border-gray-200 mb-3">
+        <p className="text-[13px] font-semibold font-poppins text-black mb-3">
+          Pay Instantly with Fonepay
+        </p>
+        <button
+          type="button"
+          disabled={isRedirectingToFonepay}
+          onClick={onPayWithFonepay}
+          className="w-full py-3 rounded-full bg-black text-white font-semibold font-poppins text-[14px] hover:bg-black/80 transition-colors disabled:opacity-50"
+        >
+          {isRedirectingToFonepay ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Preparing payment...
+            </span>
+          ) : (
+            "Pay with Fonepay"
+          )}
+        </button>
+      </div>
+
+      <div className="flex items-center gap-3 my-3">
+        <div className="flex-1 h-px bg-gray-300" />
+        <span className="text-[12px] font-poppins text-black/40">OR</span>
+        <div className="flex-1 h-px bg-gray-300" />
+      </div>
 
       {/* Option 1: Scan QR */}
       <div className="bg-white rounded-xl p-4 border border-gray-200 mb-3">

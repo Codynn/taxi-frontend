@@ -7,7 +7,10 @@ export type BookingStatus =
   | "CONFIRMED"
   | "IN_PROGRESS"
   | "COMPLETED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "AWAITING_ACCEPTANCE";
+
+export type PaymentStatus = "UNPAID" | "PARTIALLY_PAID" | "FULLY_PAID";
 
 export type TripType = "LONG_TRIP" | "SHORT_TRIP" | "CUSTOM_TRIP";
 export type BookingType = "ROUND_TRIP" | "ONE_WAY";
@@ -45,6 +48,7 @@ export interface ApiBooking {
   tripType: TripType;
   driverRequired: boolean;
   status: BookingStatus;
+  paymentStatus: PaymentStatus;
   vechicleId: string;
   paymentProof?: string | null;
   quotedPrice?: number | null;
@@ -106,6 +110,20 @@ export const useCreateBooking = () => {
         error.message || "Failed to create booking. Please try again.",
       );
     },
+  });
+};
+
+// ── Get single booking (customer, owner only) ────────────────────
+export const useBookingDetail = (bookingId: string | undefined) => {
+  return useQuery({
+    queryKey: ["booking-detail", bookingId],
+    queryFn: async () => {
+      const response = await api.get<{ success: boolean; data: ApiBooking }>(
+        `booking/customer/${bookingId}`,
+      );
+      return response.data.data;
+    },
+    enabled: !!bookingId,
   });
 };
 
