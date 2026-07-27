@@ -590,39 +590,42 @@ export default function BookingForm({
         )}
       </div>
 
-      {destOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setDestOpen(false);
-          }}
-        >
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            {isCustom ? (
-              <CustomDestinationPopup
-                open={destOpen}
-                onClose={() => setDestOpen(false)}
-                onSelect={(dest) => {
-                  onChange({ ...state, destination: { ...dest } });
-                  setErrors((e) => ({ ...e, destination: undefined }));
-                }}
-                inline
-              />
-            ) : (
-              <DestinationPopup
-                open={destOpen}
-                onClose={() => setDestOpen(false)}
-                onSelect={(dest) => {
-                  onChange({ ...state, destination: dest });
-                  setErrors((e) => ({ ...e, destination: undefined }));
-                }}
-                tripType={state.tripType}
-                inline
-              />
-            )}
-          </div>
-        </div>
-      )}
+      {destOpen &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setDestOpen(false);
+            }}
+          >
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+              {isCustom ? (
+                <CustomDestinationPopup
+                  open={destOpen}
+                  onClose={() => setDestOpen(false)}
+                  onSelect={(dest) => {
+                    onChange({ ...state, destination: { ...dest } });
+                    setErrors((e) => ({ ...e, destination: undefined }));
+                  }}
+                  inline
+                />
+              ) : (
+                <DestinationPopup
+                  open={destOpen}
+                  onClose={() => setDestOpen(false)}
+                  onSelect={(dest) => {
+                    onChange({ ...state, destination: dest });
+                    setErrors((e) => ({ ...e, destination: undefined }));
+                  }}
+                  tripType={state.tripType}
+                  inline
+                />
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
 
       <PortalDropdown
         anchorRefs={[dateRefMobile, dateRefDesktop]}
