@@ -19,24 +19,13 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
 export default function Footer() {
   return (
     <footer className=" text-white relative overflow-hidden">
-      <div className="w-full">
-        <Image
-          src="/footer/footer.svg"
-          alt="Nepal skyline"
-          width={1440}
-          height={300}
-          className="w-full h-auto object-cover object-bottom"
-          priority
-        />
-      </div>
-
       <div className="max-w-screen bg-[#2A2A2A]">
         <div className="max-w-7xl  mx-auto px-6 lg:px-8 pt-10 pb-6">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
             <div className="flex flex-col gap-4">
               <Link href="/">
                 <Image
-                  src="/footer/footerlogo.svg"
+                  src="/footer/footer-logo.png"
                   alt="Lokpriya Rides Logo"
                   width={80}
                   height={70}
