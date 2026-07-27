@@ -39,8 +39,6 @@ export default function VehicleSelectedCard({
     currency = "Rs",
   } = vehicle;
 
-  console.log(imageUrl);
-
   return (
     <div className="bg-white rounded-2xl border border-[#808080]/50 overflow-hidden font-poppins">
       {/* Section title */}

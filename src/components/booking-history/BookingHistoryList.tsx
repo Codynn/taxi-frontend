@@ -1,11 +1,58 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, CreditCard } from "lucide-react";
 import VehicleFeatureBadge from "@/components/vehicles/VehicleFeatureBadge";
 import BookingIdCopy from "./BookingIdCopy";
 import SupportContactLinks from "@/components/shared/SupportContactLinks";
 import { useConfiguration } from "@/lib/api/configuration.api";
 import { BookingRecord, BookingStatus } from "@/types/booking.types";
+
+function BookingCardActions({
+  booking,
+  fullWidth,
+}: {
+  booking: BookingRecord;
+  fullWidth?: boolean;
+}) {
+  const needsPayment =
+    booking.paymentStatus !== "FULLY_PAID" && booking.status !== "Cancelled";
+
+  return (
+    <div
+      className={`flex flex-col gap-1.5 ${fullWidth ? "w-full" : "items-start"}`}
+    >
+      {needsPayment && (
+        <p className="text-[11px] font-poppins text-black/50">
+          {booking.paymentStatus === "PARTIALLY_PAID"
+            ? "Partial payment received — balance due"
+            : "Payment pending"}
+        </p>
+      )}
+      <Link
+        href={`/my-bookings/${booking.id}`}
+        className={`${fullWidth ? "flex w-full justify-center" : "inline-flex"} items-center gap-1.5 text-[13px] font-semibold font-poppins px-4 py-2 rounded-full transition-colors ${
+          needsPayment
+            ? "bg-[#FEA800] text-black hover:bg-[#e09700]"
+            : "border border-gray-300 text-black hover:bg-gray-50"
+        }`}
+      >
+        {needsPayment ? (
+          <>
+            <CreditCard className="w-3.5 h-3.5" />
+            Continue Payment
+          </>
+        ) : (
+          <>
+            View Details
+            <ArrowRight className="w-3.5 h-3.5" />
+          </>
+        )}
+      </Link>
+    </div>
+  );
+}
 
 function StatusBadge({ status }: { status: BookingStatus }) {
   const styles: Record<BookingStatus, string> = {
@@ -126,6 +173,9 @@ function BookingCardDesktop({
             </p>
           </>
         )}
+        <div className="mt-3">
+          <BookingCardActions booking={booking} />
+        </div>
       </div>
     </div>
   );
@@ -232,6 +282,8 @@ function BookingCardMobile({
           </>
         )}
       </div>
+
+      <BookingCardActions booking={booking} fullWidth />
     </div>
   );
 }

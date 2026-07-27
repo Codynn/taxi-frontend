@@ -55,10 +55,13 @@ export interface BookingVehicle {
   features: BookingVehicleFeature[];
 }
 
+export type BookingPaymentStatus = "UNPAID" | "PARTIALLY_PAID" | "FULLY_PAID";
+
 export interface BookingRecord {
   id: string;
   bookingNumber: string;
   status: BookingStatus;
+  paymentStatus: BookingPaymentStatus;
   from: string;
   to: string;
   pickup: string;

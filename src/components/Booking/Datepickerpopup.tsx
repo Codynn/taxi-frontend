@@ -160,10 +160,11 @@ function DatePickerContent({
 
   function handleSelect(date: string) {
     if (bookedDates.has(date)) return;
-    // Single-date mode: each click just replaces the selected date.
+    // Single-date mode: picking a date confirms and closes immediately —
+    // no separate "Done" step needed.
     if (single) {
-      setPickup(date);
-      setReturnDate("");
+      onConfirm({ pickup: date, return: "" });
+      onClose();
       return;
     }
     if (!pickup || (pickup && returnDate)) {
@@ -295,26 +296,29 @@ function DatePickerContent({
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-3 px-8 py-4 border-t border-gray-100">
-        <button
-          onClick={() => {
-            setPickup("");
-            setReturnDate("");
-          }}
-          className="px-7 py-2.5 text-sm font-semibold font-poppins text-[#FEA800] border border-[#FEA800] rounded-full hover:bg-gray-50 transition-colors"
-        >
-          Reset
-        </button>
-        <button
-          onClick={() => {
-            onConfirm({ pickup, return: returnDate });
-            onClose();
-          }}
-          className="px-10 py-2.5 text-sm font-semibold font-poppins text-black bg-[#FEA800] rounded-full hover:bg-[#FEA800]/90 transition-colors"
-        >
-          Done
-        </button>
-      </div>
+      {/* Single mode confirms and closes as soon as a date is picked. */}
+      {!single && (
+        <div className="flex items-center justify-end gap-3 px-8 py-4 border-t border-gray-100">
+          <button
+            onClick={() => {
+              setPickup("");
+              setReturnDate("");
+            }}
+            className="px-7 py-2.5 text-sm font-semibold font-poppins text-[#FEA800] border border-[#FEA800] rounded-full hover:bg-gray-50 transition-colors"
+          >
+            Reset
+          </button>
+          <button
+            onClick={() => {
+              onConfirm({ pickup, return: returnDate });
+              onClose();
+            }}
+            className="px-10 py-2.5 text-sm font-semibold font-poppins text-black bg-[#FEA800] rounded-full hover:bg-[#FEA800]/90 transition-colors"
+          >
+            Done
+          </button>
+        </div>
+      )}
     </>
   );
 }

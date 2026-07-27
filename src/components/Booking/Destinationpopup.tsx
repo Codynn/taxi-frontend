@@ -1,7 +1,7 @@
 "use client";
 
 import type { Destination } from "@/types/booking.types";
-import { Clock, ArrowDown, Search } from "lucide-react";
+import { Clock, ArrowDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useState } from "react";
@@ -34,22 +34,26 @@ function useLocations() {
 interface DestinationPopupProps {
   open: boolean;
   onClose: () => void;
-  onCustomClick: () => void;
   onSelect: (dest: Destination) => void;
   inline?: boolean;
   tripType?: "one-way" | "round-trip"; // <-- pass in from BookingForm
+  /** Search text typed directly into the From/To trigger fields. */
+  fromQuery: string;
+  toQuery: string;
 }
 
 function DestinationContent({
   onClose,
-  onCustomClick,
   onSelect,
   tripType: externalTripType,
+  fromQuery,
+  toQuery,
 }: {
   onClose: () => void;
-  onCustomClick: () => void;
   onSelect: (dest: Destination) => void;
   tripType?: "one-way" | "round-trip";
+  fromQuery: string;
+  toQuery: string;
 }) {
   const { data: routes, isLoading } = useLocations();
 
@@ -65,11 +69,9 @@ function DestinationContent({
   }
   const activeTripType = localTripType;
 
-  const [fromSearch, setFromSearch] = useState("");
-  const [toSearch, setToSearch] = useState("");
-  const fromQuery = fromSearch.trim().toLowerCase();
-  const toQuery = toSearch.trim().toLowerCase();
-  const hasQuery = fromQuery !== "" || toQuery !== "";
+  const fromQueryNorm = fromQuery.trim().toLowerCase();
+  const toQueryNorm = toQuery.trim().toLowerCase();
+  const hasQuery = fromQueryNorm !== "" || toQueryNorm !== "";
 
   // Only show results once the user starts typing in either field. Each
   // field searches the same route list but against its own column, so a
@@ -78,16 +80,17 @@ function DestinationContent({
     ? []
     : (routes ?? []).filter((route) => {
         const matchesFrom =
-          fromQuery === "" ||
-          route.fromLocation.toLowerCase().includes(fromQuery);
+          fromQueryNorm === "" ||
+          route.fromLocation.toLowerCase().includes(fromQueryNorm);
         const matchesTo =
-          toQuery === "" || route.toLocation.toLowerCase().includes(toQuery);
+          toQueryNorm === "" ||
+          route.toLocation.toLowerCase().includes(toQueryNorm);
         return matchesFrom && matchesTo;
       });
 
   return (
     <>
-      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3 max-h-[98vh] overflow-y-auto">
+      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3">
         <h3 className="text-base font-semibold font-sora text-gray-900">
           All Destinations
         </h3>
@@ -110,36 +113,6 @@ function DestinationContent({
             </button>
           ))}
         </div>
-
-        {/* Search: separate From / To inputs over the same route list */}
-        <div className="flex flex-col sm:flex-row items-stretch gap-2 w-full">
-          <div className="relative flex-1">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              value={fromSearch}
-              onChange={(e) => setFromSearch(e.target.value)}
-              placeholder="From (e.g. Tulsipur)"
-              className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
-            />
-          </div>
-          <div className="relative flex-1">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              value={toSearch}
-              onChange={(e) => setToSearch(e.target.value)}
-              placeholder="To (e.g. Kathmandu)"
-              className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
-            />
-          </div>
-        </div>
       </div>
 
       <div className="flex flex-col max-h-[50vh] overflow-y-auto">
@@ -156,83 +129,43 @@ function DestinationContent({
             No destinations found.
           </div>
         ) : (
-          filteredRoutes.map((route) => {
-            const fare =
-              activeTripType === "round-trip"
-                ? route.roundTripFare
-                : route.oneWayFare;
+          filteredRoutes.map((route) => (
+            <button
+              key={route.id}
+              onClick={() => {
+                onSelect({
+                  from: route.fromLocation,
+                  to: route.toLocation,
+                  locationId: route.id,
+                  oneWayFare: route.oneWayFare,
+                  roundTripFare: route.roundTripFare,
+                  outsideDistrict: route.outsideDistrict,
+                });
+                onClose();
+              }}
+              className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
+            >
+              {/* From → To */}
+              <div className="flex flex-col items-start gap-1">
+                <span className="text-sm font-medium text-gray-800 font-poppins">
+                  {route.fromLocation}
+                </span>
+                <ArrowDown size={14} className="text-gray-400 mx-1" />
+                <span className="text-sm font-medium text-gray-800 font-poppins">
+                  {route.toLocation}
+                </span>
+              </div>
 
-            return (
-              <button
-                key={route.id}
-                onClick={() => {
-                  onSelect({
-                    from: route.fromLocation,
-                    to: route.toLocation,
-                    locationId: route.id,
-                    oneWayFare: route.oneWayFare,
-                    roundTripFare: route.roundTripFare,
-                    outsideDistrict: route.outsideDistrict,
-                  });
-                  onClose();
-                }}
-                className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
-              >
-                {/* From → To */}
-                <div className="flex flex-col items-start gap-1 w-1/3">
-                  <span className="text-sm font-medium text-gray-800 font-poppins">
-                    {route.fromLocation}
-                  </span>
-                  <ArrowDown size={14} className="text-gray-400 mx-1" />
-                  <span className="text-sm font-medium text-gray-800 font-poppins">
-                    {route.toLocation}
-                  </span>
-                </div>
-
-                {/* Total Days */}
-                <div className="flex flex-col items-center gap-1">
-                  <Clock size={16} className="text-gray-400" />
-                  <span className="text-xs text-gray-500 font-poppins">
-                    {route.totalDays} {route.totalDays === 1 ? "Day" : "Days"}
-                  </span>
-                </div>
-
-                {/* Fare */}
-                <div className="flex flex-col items-end gap-0.5 w-1/3">
-                  <span className="text-[11px] text-gray-400 font-poppins">
-                    {activeTripType === "round-trip"
-                      ? "Round trip fare"
-                      : "One way fare"}
-                  </span>
-                  <span className="text-base font-bold text-gray-900 font-poppins">
-                    Rs {fare.toLocaleString()}
-                  </span>
-                </div>
-              </button>
-            );
-          })
+              {/* Total Days */}
+              <div className="flex flex-col items-center gap-1">
+                <Clock size={16} className="text-gray-400" />
+                <span className="text-xs text-gray-500 font-poppins">
+                  {route.totalDays} {route.totalDays === 1 ? "Day" : "Days"}
+                </span>
+              </div>
+            </button>
+          ))
         )}
-      </div>
-
-      <div className="px-8 py-5 border-t border-gray-100 flex items-center justify-between gap-6">
-        <div>
-          <p className="text-sm font-semibold text-gray-900 font-poppins">
-            Can&apos;t find your destination?
-          </p>
-          <p className="text-xs text-gray-500 font-poppins mt-1 leading-relaxed">
-            Click &quot;Custom Trip&quot; and our team will contact you with
-            availability and pricing.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            onClose();
-            onCustomClick();
-          }}
-          className="shrink-0 bg-[#FEA800] text-black text-sm font-semibold font-poppins px-6 py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors"
-        >
-          Custom Trip
-        </button>
       </div>
     </>
   );
@@ -241,10 +174,11 @@ function DestinationContent({
 export default function DestinationPopup({
   open,
   onClose,
-  onCustomClick,
   onSelect,
   inline = false,
   tripType,
+  fromQuery,
+  toQuery,
 }: DestinationPopupProps) {
   if (!open) return null;
 
@@ -252,9 +186,10 @@ export default function DestinationPopup({
     return (
       <DestinationContent
         onClose={onClose}
-        onCustomClick={onCustomClick}
         onSelect={onSelect}
         tripType={tripType}
+        fromQuery={fromQuery}
+        toQuery={toQuery}
       />
     );
   }
@@ -265,9 +200,10 @@ export default function DestinationPopup({
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 z-10 overflow-hidden">
         <DestinationContent
           onClose={onClose}
-          onCustomClick={() => {}}
           onSelect={onSelect}
           tripType={tripType}
+          fromQuery={fromQuery}
+          toQuery={toQuery}
         />
       </div>
     </div>

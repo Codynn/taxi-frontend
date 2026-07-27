@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, Loader2, X } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, X, Download } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import Navbar from "@/components/layout/navbar";
 
-import VehicleSelectedCard from "@/components/vehicles/Vehicleselectedcard";
-import CheckoutBookingSummary from "./CheckoutBookingSummary";
+import TripSummaryCollapsible from "./TripSummaryCollapsible";
 import SupportContactLinks from "@/components/shared/SupportContactLinks";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { useCreateBooking } from "@/lib/api/booking.api";
+import { downloadImageUrl } from "@/lib/downloadImage";
 import {
   useConfiguration,
   uploadFile,
@@ -133,6 +133,9 @@ export default function CheckoutClient() {
   const [paymentProof, setPaymentProof] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [createdBookingId, setCreatedBookingId] = useState<string | null>(
+    null,
+  );
 
   const {
     bookingState,
@@ -214,7 +217,11 @@ export default function CheckoutClient() {
     if (!paymentProof) return;
 
     createBooking(buildBookingPayload(paymentProof), {
-      onSuccess: () => setModalState("success"),
+      onSuccess: (res) => {
+        const bookingId = (res as any)?.data?.id;
+        if (bookingId) setCreatedBookingId(bookingId);
+        setModalState("success");
+      },
       onError: () => setModalState("failure"),
     });
   };
@@ -246,12 +253,15 @@ export default function CheckoutClient() {
           onClose={() => {
             setModalState(null);
             resetBooking();
-            router.push("/choose-ride=");
+            router.push("/choose-ride");
           }}
           onViewDetails={() => {
-            window.location.href = "/my-bookings";
+            const target = createdBookingId
+              ? `/my-bookings/${createdBookingId}`
+              : "/my-bookings";
             setModalState(null);
             resetBooking();
+            window.location.href = target;
           }}
         />
       )}
@@ -277,13 +287,12 @@ export default function CheckoutClient() {
 
         <div className="hidden lg:grid grid-cols-2 gap-6">
           <div className="flex flex-col gap-5">
-            <CheckoutBookingSummary
+            <TripSummaryCollapsible
               bookingState={bookingState}
-              variant="desktop"
-            />
-            <VehicleSelectedCard
               vehicle={selectedVehicle}
               onChangeVehicle={() => router.back()}
+              variant="desktop"
+              total={total}
             />
           </div>
 
@@ -307,13 +316,12 @@ export default function CheckoutClient() {
 
         {/* ── MOBILE ── */}
         <div className="flex lg:hidden flex-col gap-5">
-          <CheckoutBookingSummary
+          <TripSummaryCollapsible
             bookingState={bookingState}
-            variant="mobile"
-          />
-          <VehicleSelectedCard
             vehicle={selectedVehicle}
             onChangeVehicle={() => router.back()}
+            variant="mobile"
+            total={total}
           />
           <FareDetailsCard fareDetails={fareDetails} total={total} />
           <PaymentCard
@@ -405,8 +413,13 @@ function PaymentCard({
       {/* Fonepay: instant, verified payment. Creates the booking and hands
           off to its detail page, which owns the pay/retry/history UI. */}
       <div className="bg-white rounded-xl p-4 border border-gray-200 mb-3">
-        <p className="text-[13px] font-semibold font-poppins text-black mb-3">
-          Pay Instantly with Fonepay
+        <p className="text-[13px] font-semibold font-poppins text-black mb-1">
+          Instant Payment — Fonepay
+        </p>
+        <p className="text-[12px] font-poppins text-black/50 mb-3">
+          Pay now for immediate confirmation — no screenshot needed. Your
+          booking is created right away and you&apos;ll be taken to complete
+          payment.
         </p>
         <button
           type="button"
@@ -430,6 +443,15 @@ function PaymentCard({
         <span className="text-[12px] font-poppins text-black/40">OR</span>
         <div className="flex-1 h-px bg-gray-300" />
       </div>
+
+      <p className="text-[13px] font-semibold font-poppins text-black mb-1">
+        Manual Payment
+      </p>
+      <p className="text-[12px] font-poppins text-black/50 mb-3">
+        Pay via QR or wallet transfer, then upload your payment screenshot
+        below and submit. Our team verifies manual payments by hand, so
+        confirmation may take a little longer than Fonepay.
+      </p>
 
       {/* Option 1: Scan QR */}
       <div className="bg-white rounded-xl p-4 border border-gray-200 mb-3">
@@ -458,6 +480,16 @@ function PaymentCard({
           <p className="text-[13px] font-poppins text-black/70 text-center">
             Scan with any payment app and complete the payment.
           </p>
+          {qrImage && (
+            <button
+              type="button"
+              onClick={() => downloadImageUrl(qrImage, "payment-qr.png")}
+              className="flex items-center gap-1.5 text-[13px] font-poppins font-semibold text-[#FEA800] underline"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download QR
+            </button>
+          )}
         </div>
       </div>
 
@@ -477,9 +509,7 @@ function PaymentCard({
             <p className="text-[14px] font-poppins text-black/80">
               Send to{" "}
               {configuration?.bankName && (
-                <span className="font-semibold">
-                  {configuration.bankName}{" "}
-                </span>
+                <span className="font-semibold">{configuration.bankName} </span>
               )}
               with phone number{" "}
               <span className="font-semibold">

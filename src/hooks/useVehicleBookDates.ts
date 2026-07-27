@@ -7,12 +7,24 @@ interface BookedRange {
   bookingType: "ONE_WAY" | "ROUND_TRIP";
 }
 
+interface BookedDatesResponse {
+  totalCount: number;
+  bookings: BookedRange[];
+}
+
 function toDateStr(date: Date) {
   return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function expandToBookedSet(ranges: BookedRange[]): Set<string> {
-  const set = new Set<string>();
+// A vehicle entry can represent several identical physical units
+// (totalCount), so a date is only "fully booked" (and should disable the
+// picker) once the number of active bookings overlapping that date reaches
+// totalCount — not on the first overlapping booking.
+function computeFullyBookedDates(
+  ranges: BookedRange[],
+  totalCount: number,
+): Set<string> {
+  const counts = new Map<string, number>();
 
   for (const r of ranges) {
     const start = new Date(r.pickUpDate);
@@ -22,12 +34,17 @@ function expandToBookedSet(ranges: BookedRange[]): Set<string> {
 
     const cur = new Date(start);
     while (cur <= end) {
-      set.add(toDateStr(cur));
+      const key = toDateStr(cur);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
       cur.setDate(cur.getDate() + 1);
     }
   }
 
-  return set;
+  const fullyBooked = new Set<string>();
+  for (const [date, count] of counts) {
+    if (count >= totalCount) fullyBooked.add(date);
+  }
+  return fullyBooked;
 }
 
 export function useVehicleBookedDates(vehicleId: string | null) {
@@ -35,10 +52,11 @@ export function useVehicleBookedDates(vehicleId: string | null) {
     queryKey: ["vehicle-booked-dates", vehicleId],
     enabled: !!vehicleId,
     queryFn: async () => {
-      const res = await api.get<{ success: boolean; data: BookedRange[] }>(
+      const res = await api.get<{ success: boolean; data: BookedDatesResponse }>(
         `/booking/vehicle/${vehicleId}/booked-dates`,
       );
-      return expandToBookedSet(res.data.data);
+      const { totalCount, bookings } = res.data.data;
+      return computeFullyBookedDates(bookings, totalCount || 1);
     },
   });
 }

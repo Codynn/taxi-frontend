@@ -105,6 +105,7 @@ function toBookingRecord(b: ApiBookingRaw): BookingRecord {
     pickup: formatDate(b.pickUpDate),
     return: b.returnDate ? formatDate(b.returnDate) : "—",
     status: STATUS_UI_MAP[b.status] ?? "Pending",
+    paymentStatus: b.paymentStatus ?? "UNPAID",
     currency: "Rs",
     paid: b.totalAmount ?? b.quotedPrice ?? b.totalPrice ?? b.fare ?? 0, // ← use actual price from API
     quotedPrice: b?.quotedPrice,
