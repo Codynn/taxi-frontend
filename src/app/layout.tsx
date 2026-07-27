@@ -167,16 +167,6 @@ export default function RootLayout({
         luckiestGuy.variable,
       )}
     >
-      <head>
-        <meta name="application-name" content="Popular Ride" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Popular Ride" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#FEA800" />
-        <meta name="msapplication-TileColor" content="#FEA800" />
-        <meta name="msapplication-tap-highlight" content="no" />
-      </head>
       <body className="min-h-full flex flex-col">
         <Providers>
           <AuthInitProvider>

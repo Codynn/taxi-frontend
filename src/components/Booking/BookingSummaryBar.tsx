@@ -85,7 +85,6 @@ export default function BookingSummaryBar({
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
-  const [destSearch, setDestSearch] = useState({ from: "", to: "" });
 
   const totalPassengers = state.passengers.adults + state.passengers.children;
 
@@ -456,25 +455,6 @@ export default function BookingSummaryBar({
             className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex flex-col sm:flex-row items-stretch gap-2 px-6 pt-5">
-              <input
-                autoFocus
-                value={destSearch.from}
-                onChange={(e) =>
-                  setDestSearch((s) => ({ ...s, from: e.target.value }))
-                }
-                placeholder="From (e.g. Tulsipur)"
-                className="flex-1 rounded-full border border-gray-200 bg-gray-50 py-2 px-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
-              />
-              <input
-                value={destSearch.to}
-                onChange={(e) =>
-                  setDestSearch((s) => ({ ...s, to: e.target.value }))
-                }
-                placeholder="To (e.g. Kathmandu)"
-                className="flex-1 rounded-full border border-gray-200 bg-gray-50 py-2 px-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
-              />
-            </div>
             <DestinationPopup
               open
               onClose={() => setActivePopup(null)}
@@ -482,8 +462,6 @@ export default function BookingSummaryBar({
                 setEditState((s) => ({ ...s, destination: dest }));
                 setActivePopup(null);
               }}
-              fromQuery={destSearch.from}
-              toQuery={destSearch.to}
               inline
             />
           </div>

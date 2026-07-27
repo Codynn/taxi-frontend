@@ -215,22 +215,11 @@ export default function BookingForm({
     passengers?: string;
   }>({});
 
-  // Typed directly into the From/To trigger fields — mirrors the committed
-  // selection until the user starts typing a new search.
-  const [fromQuery, setFromQuery] = useState(state.destination.from);
-  const [toQuery, setToQuery] = useState(state.destination.to);
-  useEffect(() => {
-    setFromQuery(state.destination.from);
-    setToQuery(state.destination.to);
-  }, [state.destination.from, state.destination.to]);
-
   const router = useRouter();
 
   // Mobile and desktop trigger markup are both always mounted (hidden via
   // CSS, not unmounted), so each field needs one ref per breakpoint — see
   // getVisibleAnchor above.
-  const destRefMobile = useRef<HTMLDivElement>(null);
-  const destRefDesktop = useRef<HTMLDivElement>(null);
   const dateRefMobile = useRef<HTMLButtonElement>(null);
   const dateRefDesktop = useRef<HTMLButtonElement>(null);
   const passRefMobile = useRef<HTMLButtonElement>(null);
@@ -345,38 +334,19 @@ export default function BookingForm({
         <div className="flex flex-col gap-3 lg:hidden">
           <div>
             <div
-              ref={destRefMobile}
               className={`border rounded-2xl overflow-hidden bg-white ${errors.destination ? "border-red-400" : "border-gray-200"}`}
             >
-              {isCustom ? (
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                    From
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.destination.from || "Enter pickup location"}
-                  </p>
-                </button>
-              ) : (
-                <div className="w-full px-4 pt-4 pb-3">
-                  <p className="text-xs text-gray-400 font-poppins mb-0.5">
-                    From
-                  </p>
-                  <input
-                    value={fromQuery}
-                    onFocus={() => setDestOpen(true)}
-                    onChange={(e) => {
-                      setFromQuery(e.target.value);
-                      setDestOpen(true);
-                    }}
-                    placeholder="Enter pickup location"
-                    className="w-full text-sm font-medium text-gray-800 font-poppins outline-none bg-transparent"
-                  />
-                </div>
-              )}
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
+              >
+                <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                  From
+                </p>
+                <p className="text-sm font-medium text-gray-800 font-poppins">
+                  {state.destination.from || "Enter pickup location"}
+                </p>
+              </button>
               <div className="relative flex items-center px-4">
                 <div className="flex-1 h-px bg-gray-200" />
                 <div className="mx-3 w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
@@ -384,31 +354,15 @@ export default function BookingForm({
                 </div>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
-              {isCustom ? (
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
-                >
-                  <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins">
-                    {state.destination.to || "Enter drop location"}
-                  </p>
-                </button>
-              ) : (
-                <div className="w-full px-4 pt-3 pb-4">
-                  <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
-                  <input
-                    value={toQuery}
-                    onFocus={() => setDestOpen(true)}
-                    onChange={(e) => {
-                      setToQuery(e.target.value);
-                      setDestOpen(true);
-                    }}
-                    placeholder="Enter drop location"
-                    className="w-full text-sm font-medium text-gray-800 font-poppins outline-none bg-transparent"
-                  />
-                </div>
-              )}
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
+              >
+                <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
+                <p className="text-sm font-medium text-gray-800 font-poppins">
+                  {state.destination.to || "Enter drop location"}
+                </p>
+              </button>
             </div>
             <FieldErrorMsg message={errors.destination} />
           </div>
@@ -517,83 +471,40 @@ export default function BookingForm({
             className={`flex items-stretch border rounded-xl overflow-hidden ${errors.destination || errors.date || errors.returnDate ? "border-red-400" : "border-gray-200"}`}
           >
             <div
-              ref={destRefDesktop}
               className="flex items-stretch"
               style={{ flex: "2 1 0%" }}
             >
-              {isCustom ? (
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
-                >
-                  <p className="text-xs text-gray-400 font-poppins">From</p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                    {state.destination.from || "Enter pickup location"}
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
+              >
+                <p className="text-xs text-gray-400 font-poppins">From</p>
+                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                  {state.destination.from || "Enter pickup location"}
+                </p>
+                {errors.destination && !state.destination.from && (
+                  <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+                    Please select a pickup location
                   </p>
-                  {errors.destination && !state.destination.from && (
-                    <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                      Please select a pickup location
-                    </p>
-                  )}
-                </button>
-              ) : (
-                <div className="flex-1 px-5 py-3 min-w-0">
-                  <p className="text-xs text-gray-400 font-poppins">From</p>
-                  <input
-                    value={fromQuery}
-                    onFocus={() => setDestOpen(true)}
-                    onChange={(e) => {
-                      setFromQuery(e.target.value);
-                      setDestOpen(true);
-                    }}
-                    placeholder="Enter pickup location"
-                    className="w-full text-sm font-medium text-gray-800 font-poppins outline-none bg-transparent truncate"
-                  />
-                  {errors.destination && !state.destination.from && (
-                    <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                      Please select a pickup location
-                    </p>
-                  )}
-                </div>
-              )}
+                )}
+              </button>
               <div className="flex items-center justify-center px-3 bg-white shrink-0">
                 <ArrowRight size={16} className="text-[#FEA800]" />
               </div>
-              {isCustom ? (
-                <button
-                  onClick={() => setDestOpen(!destOpen)}
-                  className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
-                >
-                  <p className="text-xs text-gray-400 font-poppins">To</p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins truncate">
-                    {state.destination.to || "Enter drop location"}
+              <button
+                onClick={() => setDestOpen(!destOpen)}
+                className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
+              >
+                <p className="text-xs text-gray-400 font-poppins">To</p>
+                <p className="text-sm font-medium text-gray-800 font-poppins truncate">
+                  {state.destination.to || "Enter drop location"}
+                </p>
+                {errors.destination && !state.destination.to && (
+                  <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+                    Please select a drop location
                   </p>
-                  {errors.destination && !state.destination.to && (
-                    <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                      Please select a drop location
-                    </p>
-                  )}
-                </button>
-              ) : (
-                <div className="flex-1 px-5 py-3 min-w-0">
-                  <p className="text-xs text-gray-400 font-poppins">To</p>
-                  <input
-                    value={toQuery}
-                    onFocus={() => setDestOpen(true)}
-                    onChange={(e) => {
-                      setToQuery(e.target.value);
-                      setDestOpen(true);
-                    }}
-                    placeholder="Enter drop location"
-                    className="w-full text-sm font-medium text-gray-800 font-poppins outline-none bg-transparent truncate"
-                  />
-                  {errors.destination && !state.destination.to && (
-                    <p className="text-[11px] text-red-500 font-poppins mt-0.5">
-                      Please select a drop location
-                    </p>
-                  )}
-                </div>
-              )}
+                )}
+              </button>
             </div>
 
             <div className="w-px bg-gray-200 shrink-0" />
@@ -679,38 +590,39 @@ export default function BookingForm({
         )}
       </div>
 
-      <PortalDropdown
-        anchorRefs={[destRefMobile, destRefDesktop]}
-        open={destOpen}
-        onClose={() => setDestOpen(false)}
-        align="left"
-        minWidth={460}
-      >
-        {isCustom ? (
-          <CustomDestinationPopup
-            open={destOpen}
-            onClose={() => setDestOpen(false)}
-            onSelect={(dest) => {
-              onChange({ ...state, destination: { ...dest } });
-              setErrors((e) => ({ ...e, destination: undefined }));
-            }}
-            inline
-          />
-        ) : (
-          <DestinationPopup
-            open={destOpen}
-            onClose={() => setDestOpen(false)}
-            onSelect={(dest) => {
-              onChange({ ...state, destination: dest });
-              setErrors((e) => ({ ...e, destination: undefined }));
-            }}
-            tripType={state.tripType}
-            fromQuery={fromQuery}
-            toQuery={toQuery}
-            inline
-          />
-        )}
-      </PortalDropdown>
+      {destOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDestOpen(false);
+          }}
+        >
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            {isCustom ? (
+              <CustomDestinationPopup
+                open={destOpen}
+                onClose={() => setDestOpen(false)}
+                onSelect={(dest) => {
+                  onChange({ ...state, destination: { ...dest } });
+                  setErrors((e) => ({ ...e, destination: undefined }));
+                }}
+                inline
+              />
+            ) : (
+              <DestinationPopup
+                open={destOpen}
+                onClose={() => setDestOpen(false)}
+                onSelect={(dest) => {
+                  onChange({ ...state, destination: dest });
+                  setErrors((e) => ({ ...e, destination: undefined }));
+                }}
+                tripType={state.tripType}
+                inline
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       <PortalDropdown
         anchorRefs={[dateRefMobile, dateRefDesktop]}

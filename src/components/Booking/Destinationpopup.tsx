@@ -1,7 +1,7 @@
 "use client";
 
 import type { Destination } from "@/types/booking.types";
-import { Clock, ArrowDown } from "lucide-react";
+import { Clock, ArrowDown, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useState } from "react";
@@ -37,23 +37,16 @@ interface DestinationPopupProps {
   onSelect: (dest: Destination) => void;
   inline?: boolean;
   tripType?: "one-way" | "round-trip"; // <-- pass in from BookingForm
-  /** Search text typed directly into the From/To trigger fields. */
-  fromQuery: string;
-  toQuery: string;
 }
 
 function DestinationContent({
   onClose,
   onSelect,
   tripType: externalTripType,
-  fromQuery,
-  toQuery,
 }: {
   onClose: () => void;
   onSelect: (dest: Destination) => void;
   tripType?: "one-way" | "round-trip";
-  fromQuery: string;
-  toQuery: string;
 }) {
   const { data: routes, isLoading } = useLocations();
 
@@ -69,9 +62,11 @@ function DestinationContent({
   }
   const activeTripType = localTripType;
 
-  const fromQueryNorm = fromQuery.trim().toLowerCase();
-  const toQueryNorm = toQuery.trim().toLowerCase();
-  const hasQuery = fromQueryNorm !== "" || toQueryNorm !== "";
+  const [fromSearch, setFromSearch] = useState("");
+  const [toSearch, setToSearch] = useState("");
+  const fromQuery = fromSearch.trim().toLowerCase();
+  const toQuery = toSearch.trim().toLowerCase();
+  const hasQuery = fromQuery !== "" || toQuery !== "";
 
   // Only show results once the user starts typing in either field. Each
   // field searches the same route list but against its own column, so a
@@ -80,17 +75,16 @@ function DestinationContent({
     ? []
     : (routes ?? []).filter((route) => {
         const matchesFrom =
-          fromQueryNorm === "" ||
-          route.fromLocation.toLowerCase().includes(fromQueryNorm);
+          fromQuery === "" ||
+          route.fromLocation.toLowerCase().includes(fromQuery);
         const matchesTo =
-          toQueryNorm === "" ||
-          route.toLocation.toLowerCase().includes(toQueryNorm);
+          toQuery === "" || route.toLocation.toLowerCase().includes(toQuery);
         return matchesFrom && matchesTo;
       });
 
   return (
     <>
-      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3">
+      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3 max-h-[98vh] overflow-y-auto">
         <h3 className="text-base font-semibold font-sora text-gray-900">
           All Destinations
         </h3>
@@ -112,6 +106,37 @@ function DestinationContent({
               {type === "one-way" ? "One Way" : "Round Trip"}
             </button>
           ))}
+        </div>
+
+        {/* Search: separate From / To inputs over the same route list */}
+        <div className="flex flex-col sm:flex-row items-stretch gap-2 w-full">
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              autoFocus
+              type="text"
+              value={fromSearch}
+              onChange={(e) => setFromSearch(e.target.value)}
+              placeholder="From (e.g. Tulsipur)"
+              className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
+            />
+          </div>
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={toSearch}
+              onChange={(e) => setToSearch(e.target.value)}
+              placeholder="To (e.g. Kathmandu)"
+              className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
+            />
+          </div>
         </div>
       </div>
 
@@ -177,8 +202,6 @@ export default function DestinationPopup({
   onSelect,
   inline = false,
   tripType,
-  fromQuery,
-  toQuery,
 }: DestinationPopupProps) {
   if (!open) return null;
 
@@ -188,8 +211,6 @@ export default function DestinationPopup({
         onClose={onClose}
         onSelect={onSelect}
         tripType={tripType}
-        fromQuery={fromQuery}
-        toQuery={toQuery}
       />
     );
   }
@@ -202,8 +223,6 @@ export default function DestinationPopup({
           onClose={onClose}
           onSelect={onSelect}
           tripType={tripType}
-          fromQuery={fromQuery}
-          toQuery={toQuery}
         />
       </div>
     </div>
