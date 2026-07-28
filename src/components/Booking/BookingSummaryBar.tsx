@@ -85,6 +85,9 @@ export default function BookingSummaryBar({
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
+  // Collapsed by default — this same trip info was already shown on the
+  // previous (choose-ride) screen, so it doesn't need to take up space here.
+  const [expanded, setExpanded] = useState(false);
 
   const totalPassengers = state.passengers.adults + state.passengers.children;
 
@@ -95,7 +98,39 @@ export default function BookingSummaryBar({
 
   return (
     <>
-      <div className="hidden lg:flex w-full border border-[#808080]/50 rounded-full overflow-hidden bg-white text-sm font-poppins items-center px-2">
+      <div className="border border-[#808080]/50 rounded-2xl bg-white font-poppins overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[14px] font-semibold font-poppins text-black truncate">
+              {state.destination.from || "Pickup"}
+              {" → "}
+              {state.destination.to || "Drop"}
+            </span>
+            <span className="text-[12px] font-poppins text-black/50 truncate hidden sm:inline">
+              · {formatBsDate(state.dateRange.pickup) || "Pickup date"} ·{" "}
+              {totalPassengers > 0
+                ? `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`
+                : "Passengers"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[12px] font-poppins text-black/50 hidden sm:inline">
+              {expanded ? "Hide details" : "View details"}
+            </span>
+            <ChevronDown
+              size={16}
+              className={`text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`}
+            />
+          </div>
+        </button>
+
+        {expanded && (
+          <div className="border-t border-gray-100">
+      <div className="hidden lg:flex w-full border-none rounded-full overflow-hidden bg-white text-sm font-poppins items-center px-2">
         <div className="px-5 py-4 flex items-center">
           <span className="text-black text-[16px]  whitespace-nowrap">
             {state.tripType === "round-trip" ? "Round Trip" : "One Way"}
@@ -311,6 +346,9 @@ export default function BookingSummaryBar({
               : "Enter passengers"}
           </p>
         </div>
+      </div>
+          </div>
+        )}
       </div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>

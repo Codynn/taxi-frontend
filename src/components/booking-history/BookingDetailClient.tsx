@@ -269,7 +269,9 @@ export default function BookingDetailClient({
   const driverCharge = booking.driverRequired ? (booking.driverCharge ?? 0) : 0;
   const total = (booking.quotedPrice ?? 0) + driverCharge;
   const canPay =
-    booking.paymentStatus !== "FULLY_PAID" && booking.quotedPrice != null;
+    booking.paymentStatus !== "FULLY_PAID" &&
+    booking.quotedPrice != null &&
+    booking.status !== "CANCELLED";
 
   // Pending attempts are represented by the active payment section above
   // (and are transparently reused rather than piling up), so the history
@@ -487,9 +489,9 @@ export default function BookingDetailClient({
                     </p>
                     {deepLinkMayHaveFailed && (
                       <p className="text-[12px] font-poppins text-red-600 text-center mt-1.5">
-                        {selectedBank?.bankName || "That app"} doesn&apos;t
-                        seem to be installed. Try a different bank, or scan
-                        the QR code above with any payment app instead.
+                        {selectedBank?.bankName || "That app"} doesn&apos;t seem
+                        to be installed. Try a different bank, or scan the QR
+                        code above with any payment app instead.
                       </p>
                     )}
                     <button

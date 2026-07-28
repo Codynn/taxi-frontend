@@ -48,8 +48,11 @@ export default function VehicleSelectedCard({
         </h3>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 px-4 pb-4">
-        <div className="relative w-full sm:w-[200px] h-[200px] sm:h-auto shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+      {/* Image left, details right at every breakpoint — keeps this card
+          compact on mobile instead of a full-width image pushing the form
+          below the fold. */}
+      <div className="flex flex-row gap-3 sm:gap-4 px-4 pb-4">
+        <div className="relative w-20 h-20 sm:w-[200px] sm:h-auto shrink-0 overflow-hidden rounded-xl sm:rounded-2xl bg-gray-100">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -63,29 +66,22 @@ export default function VehicleSelectedCard({
               No image
             </div>
           )}
-          {/* Rating badge */}
-          {/* <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white text-black text-[10px] font-poppins font-semibold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap">
-            <Image src="/vehicle/star.svg" alt="star" width={11} height={11} />
-            <span>
-              {rating.toFixed(1)} ({totalTrips}+ trips)
-            </span>
-          </div> */}
         </div>
 
         {/* Right: Details */}
-        <div className="flex flex-col flex-1 min-w-0 justify-between gap-3">
+        <div className="flex flex-col flex-1 min-w-0 justify-between gap-2 sm:gap-3">
           {/* Name + plate */}
           <div>
-            <h3 className="text-[16px] sm:text-[18px] font-semibold text-black font-poppins leading-tight">
+            <h3 className="text-[14px] sm:text-[18px] font-semibold text-black font-poppins leading-tight truncate">
               {name}
             </h3>
-            <p className="text-[12px] sm:text-[14px] text-black font-poppins mt-0.5">
+            <p className="text-[11px] sm:text-[14px] text-black font-poppins mt-0.5">
               {plateNumber}
             </p>
           </div>
 
           {/* Features */}
-          <div className="bg-[#F5F5F5] rounded-xl px-3 py-2.5 grid grid-cols-2 gap-x-4 gap-y-2">
+          <div className="bg-[#F5F5F5] rounded-xl px-2.5 py-2 sm:px-3 sm:py-2.5 grid grid-cols-2 gap-x-2 sm:gap-x-4 gap-y-1.5 sm:gap-y-2">
             {features.map((f) => (
               <VehicleFeatureBadge key={f.label} {...f} />
             ))}
@@ -99,10 +95,10 @@ export default function VehicleSelectedCard({
           >
             {!isCustomTrip && (
               <div>
-                <p className="text-[11px] text-black font-poppins leading-none mb-0.5">
+                <p className="text-[10px] sm:text-[11px] text-black font-poppins leading-none mb-0.5">
                   Starting from
                 </p>
-                <p className="text-[20px] sm:text-[22px] text-[#FEA800] font-poppins font-bold leading-tight">
+                <p className="text-[16px] sm:text-[22px] text-[#FEA800] font-poppins font-bold leading-tight">
                   {currency} {startingPrice.toLocaleString()}
                 </p>
               </div>
@@ -110,7 +106,7 @@ export default function VehicleSelectedCard({
             {onChangeVehicle && (
               <button
                 onClick={onChangeVehicle}
-                className="flex items-center gap-1.5 bg-[#FEA800] text-black text-[13px] font-medium font-poppins px-5 py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"
+                className="flex items-center gap-1.5 bg-[#FEA800] text-black text-[12px] sm:text-[13px] font-medium font-poppins px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -127,7 +123,8 @@ export default function VehicleSelectedCard({
                   <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
                   <path d="M8 16H3v5" />
                 </svg>
-                Change Vehicle
+                <span className="hidden sm:inline">Change Vehicle</span>
+                <span className="sm:hidden">Change</span>
               </button>
             )}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { formatBsDate, adStringToUtcIso } from "@/lib/bs-date";
 import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpDown, ChevronDown } from "lucide-react";
@@ -81,111 +81,6 @@ function CustomRadioGroup<T extends string>({
   );
 }
 
-// The mobile and desktop trigger markup both stay mounted at all times
-// (toggled with Tailwind's `hidden` class rather than being conditionally
-// rendered), so each field needs one ref per breakpoint. This picks whichever
-// one is actually laid out — a `display: none` element reports
-// `offsetParent === null` and an all-zero rect, which is what caused the
-// dropdown to previously anchor to the top-left corner.
-function getVisibleAnchor(
-  refs: React.RefObject<HTMLElement | null>[],
-): HTMLElement | null {
-  for (const r of refs) {
-    if (r.current && r.current.offsetParent !== null) return r.current;
-  }
-  return refs.find((r) => r.current)?.current ?? null;
-}
-
-interface PortalDropdownProps {
-  anchorRefs: React.RefObject<HTMLElement | null>[];
-  open: boolean;
-  onClose: () => void;
-  align?: "left" | "right";
-  children: React.ReactNode;
-  minWidth?: number;
-}
-
-function PortalDropdown({
-  anchorRefs,
-  open,
-  onClose,
-  align = "left",
-  children,
-  minWidth,
-}: PortalDropdownProps) {
-  const [pos, setPos] = useState({ top: 0, left: 0, right: 0, width: 0 });
-  const portalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (open) {
-      const anchor = getVisibleAnchor(anchorRefs);
-      if (anchor) {
-        const rect = anchor.getBoundingClientRect();
-        setPos({
-          top: rect.bottom + window.scrollY + 8,
-          left: rect.left + window.scrollX,
-          right: window.innerWidth - rect.right - window.scrollX,
-          width: rect.width,
-        });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      const target = e.target as Node;
-      const anchor = getVisibleAnchor(anchorRefs);
-      const outsideAnchor = anchor && !anchor.contains(target);
-      const outsidePortal =
-        portalRef.current && !portalRef.current.contains(target);
-      if (outsideAnchor && outsidePortal) onClose();
-    }
-    if (open) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, onClose]);
-
-  if (!open || typeof window === "undefined") return null;
-
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
-  const style: React.CSSProperties = isMobile
-    ? {
-        position: "absolute",
-        top: pos.top,
-        left: 12,
-        right: 12,
-        zIndex: 9999,
-      }
-    : align === "right"
-      ? {
-          position: "absolute",
-          top: pos.top,
-          right: pos.right,
-          width: Math.max(pos.width, minWidth ?? 0),
-          zIndex: 9999,
-        }
-      : {
-          position: "absolute",
-          top: pos.top,
-          left: pos.left,
-          minWidth: minWidth ?? 460,
-          zIndex: 9999,
-        };
-
-  return createPortal(
-    <div
-      ref={portalRef}
-      style={style}
-      className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
-    >
-      {children}
-    </div>,
-    document.body,
-  );
-}
-
 function FieldErrorMsg({ message }: { message?: string }) {
   if (!message) return null;
   return (
@@ -216,14 +111,6 @@ export default function BookingForm({
   }>({});
 
   const router = useRouter();
-
-  // Mobile and desktop trigger markup are both always mounted (hidden via
-  // CSS, not unmounted), so each field needs one ref per breakpoint — see
-  // getVisibleAnchor above.
-  const dateRefMobile = useRef<HTMLButtonElement>(null);
-  const dateRefDesktop = useRef<HTMLButtonElement>(null);
-  const passRefMobile = useRef<HTMLButtonElement>(null);
-  const passRefDesktop = useRef<HTMLButtonElement>(null);
 
   const { setModalData, setBookingState } = useBookingStore();
 
@@ -375,7 +262,6 @@ export default function BookingForm({
               >
                 <div className="rounded-l-2xl bg-white overflow-hidden border-r border-gray-200">
                   <button
-                    ref={dateRefMobile}
                     onClick={() => setDateOpen(!dateOpen)}
                     className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
                   >
@@ -413,7 +299,6 @@ export default function BookingForm({
                 className={`border rounded-2xl bg-white overflow-hidden ${errors.date ? "border-red-400" : "border-gray-200"}`}
               >
                 <button
-                  ref={dateRefMobile}
                   onClick={() => setDateOpen(!dateOpen)}
                   className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
                 >
@@ -436,7 +321,6 @@ export default function BookingForm({
               className={`border rounded-2xl bg-white overflow-hidden ${errors.passengers ? "border-red-400" : "border-gray-200"}`}
             >
               <button
-                ref={passRefMobile}
                 onClick={() => setPassOpen(!passOpen)}
                 className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left flex items-center justify-between"
               >
@@ -510,7 +394,6 @@ export default function BookingForm({
             <div className="w-px bg-gray-200 shrink-0" />
 
             <button
-              ref={dateRefDesktop}
               onClick={() => setDateOpen(!dateOpen)}
               className="px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
               style={{ flex: "1 1 0%" }}
@@ -552,7 +435,6 @@ export default function BookingForm({
             <div className="w-px bg-gray-200 shrink-0" />
 
             <button
-              ref={passRefDesktop}
               onClick={() => setPassOpen(!passOpen)}
               className="flex items-center justify-between gap-2 px-5 py-3 hover:bg-gray-50 transition-colors text-left shrink-0"
               style={{ minWidth: "160px" }}
@@ -627,44 +509,58 @@ export default function BookingForm({
           document.body,
         )}
 
-      <PortalDropdown
-        anchorRefs={[dateRefMobile, dateRefDesktop]}
-        open={dateOpen}
-        onClose={() => setDateOpen(false)}
-        align="left"
-        minWidth={600}
-      >
-        <DatePickerPopup
-          open={dateOpen}
-          onClose={() => setDateOpen(false)}
-          dateRange={state.dateRange}
-          single={!isCustom}
-          onConfirm={(range) => {
-            onChange({ ...state, dateRange: range });
-            setErrors((e) => ({ ...e, date: undefined }));
-          }}
-          inline
-        />
-      </PortalDropdown>
+      {dateOpen &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setDateOpen(false);
+            }}
+          >
+            <div
+              className={`relative bg-white rounded-2xl shadow-2xl w-full ${isCustom ? "max-w-3xl" : "max-w-md"} max-h-[90vh] overflow-y-auto`}
+            >
+              <DatePickerPopup
+                open={dateOpen}
+                onClose={() => setDateOpen(false)}
+                dateRange={state.dateRange}
+                single={!isCustom}
+                onConfirm={(range) => {
+                  onChange({ ...state, dateRange: range });
+                  setErrors((e) => ({ ...e, date: undefined }));
+                }}
+                inline
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
 
-      <PortalDropdown
-        anchorRefs={[passRefMobile, passRefDesktop]}
-        open={passOpen}
-        onClose={() => setPassOpen(false)}
-        align="right"
-        minWidth={320}
-      >
-        <PassengersPopup
-          open={passOpen}
-          onClose={() => setPassOpen(false)}
-          passengers={state.passengers}
-          onConfirm={(p) => {
-            onChange({ ...state, passengers: p });
-            setErrors((e) => ({ ...e, passengers: undefined }));
-          }}
-          inline
-        />
-      </PortalDropdown>
+      {passOpen &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setPassOpen(false);
+            }}
+          >
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+              <PassengersPopup
+                open={passOpen}
+                onClose={() => setPassOpen(false)}
+                passengers={state.passengers}
+                onConfirm={(p) => {
+                  onChange({ ...state, passengers: p });
+                  setErrors((e) => ({ ...e, passengers: undefined }));
+                }}
+                inline
+              />
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
