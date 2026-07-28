@@ -24,7 +24,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 
-import VehicleTabs from "../vehicles/VehicleTabs";
 import RideCollectionVehicleCard from "./RideCollectionVehicleCard";
 import RideFilterPanel, { AppliedFilters } from "./RideFilterPanel";
 import BookingModal from "../Booking/Bookingmodal ";
@@ -187,9 +186,6 @@ export default function RideCollectionSection() {
 
   const activeCat = activeCategoryId ?? categories[0]?.id ?? null;
 
-  const activeSortOption =
-    SORT_OPTIONS.find((o) => o.value === sortBy) ?? SORT_OPTIONS[0];
-
   useEffect(() => {
     if (catsLoading || categories.length === 0 || activeCategoryId) return;
 
@@ -219,8 +215,6 @@ export default function RideCollectionSection() {
     isError,
   } = useVehicles({
     categoryId: activeCat ?? undefined,
-    sortBy: activeSortOption.sortBy,
-    sortOrder: activeSortOption.sortOrder,
     ...(appliedFilters.gearTypes.length === 1
       ? { vechileGearType: appliedFilters.gearTypes[0] }
       : {}),
@@ -354,65 +348,6 @@ export default function RideCollectionSection() {
           <h2 className="text-[22px] md:text-[28px] font-semibold font-sora text-black">
             Our Ride Collection
           </h2>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-[13px] text-black font-poppins hidden sm:block">
-                Sort By:
-              </span>
-              <Select
-                value={sortBy}
-                onValueChange={(val) => {
-                  if (val) setSortBy(val);
-                }}
-              >
-                <SelectTrigger className="h-9 text-[13px] font-poppins border-gray-200 rounded-lg min-w-[150px] focus:ring-0 focus:ring-offset-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SORT_OPTIONS.map((opt) => (
-                    <SelectItem
-                      key={opt.value}
-                      value={opt.value}
-                      className="text-[13px] font-poppins cursor-pointer"
-                    >
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Sheet>
-              <SheetTrigger>
-                <button className="lg:hidden flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-poppins hover:bg-gray-50 transition-colors">
-                  <SlidersHorizontal className="w-4 h-4" />
-                  Filter
-                </button>
-              </SheetTrigger>
-              <SheetContent
-                side="bottom"
-                className="h-full w-full rounded-t-3xl p-0 flex flex-col"
-              >
-                <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4 text-black" />
-                    <h3 className="text-[15px] font-semibold font-poppins text-black">
-                      Filters
-                    </h3>
-                  </div>
-                  <SheetClose />
-                </div>
-                <div className="p-5 overflow-y-auto">
-                  <RideFilterPanel
-                    hideHeader
-                    onApply={handleFilterApply}
-                    onReset={handleFilterReset}
-                  />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
         </div>
 
         {/* Tabs — dynamic from API */}
@@ -456,6 +391,37 @@ export default function RideCollectionSection() {
                     </button>
                   );
                 })}
+                <div className="ml-auto lg:hidden">
+                  <Sheet>
+                    <SheetTrigger>
+                      <button className=" flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-[13px] font-poppins hover:bg-gray-50 transition-colors">
+                        <SlidersHorizontal className="w-4 h-4" />
+                        Filter
+                      </button>
+                    </SheetTrigger>
+                    <SheetContent
+                      side="bottom"
+                      className="h-full w-full rounded-t-3xl p-0 flex flex-col"
+                    >
+                      <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <SlidersHorizontal className="w-4 h-4 text-black" />
+                          <h3 className="text-[15px] font-semibold font-poppins text-black">
+                            Filters
+                          </h3>
+                        </div>
+                        <SheetClose />
+                      </div>
+                      <div className="p-5 overflow-y-auto">
+                        <RideFilterPanel
+                          hideHeader
+                          onApply={handleFilterApply}
+                          onReset={handleFilterReset}
+                        />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
               </div>
             </div>
           )}

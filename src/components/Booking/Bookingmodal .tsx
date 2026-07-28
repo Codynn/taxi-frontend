@@ -113,6 +113,7 @@ export default function BookingModal({
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
+  const [destField, setDestField] = useState<"from" | "to">("from");
 
   const [errors, setErrors] = useState<{
     destination?: string;
@@ -240,7 +241,10 @@ export default function BookingModal({
           className={`border rounded-2xl overflow-hidden bg-white ${errors.destination ? "border-red-400" : "border-gray-200"}`}
         >
           <button
-            onClick={() => setActivePopup("dest")}
+            onClick={() => {
+              setDestField("from");
+              setActivePopup("dest");
+            }}
             className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
           >
             <p className="text-xs text-gray-400 font-poppins mb-0.5">From</p>
@@ -261,7 +265,10 @@ export default function BookingModal({
             <div className="flex-1 h-px bg-gray-200" />
           </div>
           <button
-            onClick={() => setActivePopup("dest")}
+            onClick={() => {
+              setDestField("to");
+              setActivePopup("dest");
+            }}
             className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
           >
             <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
@@ -433,12 +440,28 @@ export default function BookingModal({
               <DestinationPopup
                 open
                 onClose={() => setActivePopup(null)}
+                activeField={destField}
+                currentFrom={formState.destination.from}
                 onSelect={(dest) => {
                   setFormState((s) => ({ ...s, destination: dest }));
                   setErrors((e) => ({ ...e, destination: undefined }));
                   setActivePopup(null);
                 }}
-                tripType={formState.tripType}
+                onSelectFrom={(from) => {
+                  setFormState((s) => ({
+                    ...s,
+                    destination: {
+                      from,
+                      to: "",
+                      locationId: undefined,
+                      oneWayFare: undefined,
+                      roundTripFare: undefined,
+                      outsideDistrict: undefined,
+                    },
+                  }));
+                  setErrors((e) => ({ ...e, destination: undefined }));
+                  setActivePopup(null);
+                }}
                 inline
               />
             )}

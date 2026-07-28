@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatBsDate, adStringToUtcIso } from "@/lib/bs-date";
 import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpDown, ChevronDown } from "lucide-react";
@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { BookingType, TripType as ApiTripType } from "@/lib/api/booking.api";
 import CustomDestinationPopup from "./CustomDestinationPopup";
+import { useDefaultPickupLocation } from "@/hooks/useDefaultPickupLocation";
 
 interface BookingFormProps {
   tripTab: TripTab;
@@ -100,6 +101,7 @@ export default function BookingForm({
   onChangeTab,
 }: BookingFormProps) {
   const [destOpen, setDestOpen] = useState(false);
+  const [destField, setDestField] = useState<"from" | "to">("from");
   const [dateOpen, setDateOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
   const [errors, setErrors] = useState<{
@@ -124,6 +126,22 @@ export default function BookingForm({
   // Only Custom Trip uses a return date / date range (two calendars).
   // Within City & City-to-City use a single calendar with one date.
   const showReturnDate = isCustom;
+
+  // Pre-fill From with the pickup location that has the most routes
+  // available (so customers usually only need to fill in where they're
+  // going). Only applies to a still-empty field — never overwrites a value
+  // the user (or a previous selection) already set.
+  const { data: defaultFrom } = useDefaultPickupLocation();
+  useEffect(() => {
+    if (isCustom) return;
+    if (!defaultFrom) return;
+    if (state.destination.from) return;
+    onChange({
+      ...state,
+      destination: { ...state.destination, from: defaultFrom },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultFrom, isCustom, state.destination.from]);
 
   const handleSubmit = () => {
     const newErrors: typeof errors = {};
@@ -224,7 +242,7 @@ export default function BookingForm({
               className={`border rounded-2xl overflow-hidden bg-white ${errors.destination ? "border-red-400" : "border-gray-200"}`}
             >
               <button
-                onClick={() => setDestOpen(!destOpen)}
+                onClick={() => { setDestField("from"); setDestOpen(!destOpen); }}
                 className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">
@@ -242,7 +260,7 @@ export default function BookingForm({
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
               <button
-                onClick={() => setDestOpen(!destOpen)}
+                onClick={() => { setDestField("to"); setDestOpen(!destOpen); }}
                 className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
               >
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
@@ -359,7 +377,7 @@ export default function BookingForm({
               style={{ flex: "2 1 0%" }}
             >
               <button
-                onClick={() => setDestOpen(!destOpen)}
+                onClick={() => { setDestField("from"); setDestOpen(!destOpen); }}
                 className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
               >
                 <p className="text-xs text-gray-400 font-poppins">From</p>
@@ -376,7 +394,7 @@ export default function BookingForm({
                 <ArrowRight size={16} className="text-[#FEA800]" />
               </div>
               <button
-                onClick={() => setDestOpen(!destOpen)}
+                onClick={() => { setDestField("to"); setDestOpen(!destOpen); }}
                 className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
               >
                 <p className="text-xs text-gray-400 font-poppins">To</p>
@@ -475,13 +493,20 @@ export default function BookingForm({
       {destOpen &&
         typeof window !== "undefined" &&
         createPortal(
+          // Bottom sheet on mobile (slides up, full-width, rounded top only)
+          // — a centered dialog was awkward to reach one-handed for a simple
+          // list+search. Desktop keeps the centered dialog.
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 lg:items-center lg:px-4"
             onClick={(e) => {
               if (e.target === e.currentTarget) setDestOpen(false);
             }}
           >
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="relative bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl w-full min-h-[80vh] max-h-[85vh] lg:min-h-0 lg:max-w-lg lg:max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 lg:zoom-in-95 lg:slide-in-from-bottom-0">
+              {/* Drag handle — mobile only */}
+              <div className="flex justify-center pt-3 pb-1 lg:hidden">
+                <div className="w-10 h-1 rounded-full bg-gray-300" />
+              </div>
               {isCustom ? (
                 <CustomDestinationPopup
                   open={destOpen}
@@ -496,11 +521,27 @@ export default function BookingForm({
                 <DestinationPopup
                   open={destOpen}
                   onClose={() => setDestOpen(false)}
+                  activeField={destField}
+                  currentFrom={state.destination.from}
                   onSelect={(dest) => {
                     onChange({ ...state, destination: dest });
                     setErrors((e) => ({ ...e, destination: undefined }));
                   }}
-                  tripType={state.tripType}
+                  onSelectFrom={(from) => {
+                    // Changing From invalidates any previously picked route.
+                    onChange({
+                      ...state,
+                      destination: {
+                        from,
+                        to: "",
+                        locationId: undefined,
+                        oneWayFare: undefined,
+                        roundTripFare: undefined,
+                        outsideDistrict: undefined,
+                      },
+                    });
+                    setErrors((e) => ({ ...e, destination: undefined }));
+                  }}
                   inline
                 />
               )}

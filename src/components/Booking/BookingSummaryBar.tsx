@@ -85,6 +85,7 @@ export default function BookingSummaryBar({
   const [activePopup, setActivePopup] = useState<
     "dest" | "date" | "pass" | null
   >(null);
+  const [destField, setDestField] = useState<"from" | "to">("from");
   // Collapsed by default — this same trip info was already shown on the
   // previous (choose-ride) screen, so it doesn't need to take up space here.
   const [expanded, setExpanded] = useState(false);
@@ -380,7 +381,10 @@ export default function BookingSummaryBar({
             {/* From / To */}
             <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
               <button
-                onClick={() => setActivePopup("dest")}
+                onClick={() => {
+                  setDestField("from");
+                  setActivePopup("dest");
+                }}
                 className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">
@@ -398,7 +402,10 @@ export default function BookingSummaryBar({
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
               <button
-                onClick={() => setActivePopup("dest")}
+                onClick={() => {
+                  setDestField("to");
+                  setActivePopup("dest");
+                }}
                 className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
               >
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
@@ -496,8 +503,24 @@ export default function BookingSummaryBar({
             <DestinationPopup
               open
               onClose={() => setActivePopup(null)}
+              activeField={destField}
+              currentFrom={editState.destination.from}
               onSelect={(dest) => {
                 setEditState((s) => ({ ...s, destination: dest }));
+                setActivePopup(null);
+              }}
+              onSelectFrom={(from) => {
+                setEditState((s) => ({
+                  ...s,
+                  destination: {
+                    from,
+                    to: "",
+                    locationId: undefined,
+                    oneWayFare: undefined,
+                    roundTripFare: undefined,
+                    outsideDistrict: undefined,
+                  },
+                }));
                 setActivePopup(null);
               }}
               inline
