@@ -50,8 +50,10 @@ export default function RideCollectionVehicleCard({
   } = vehicle;
 
   const hasPrice = calculatedPrice !== undefined;
+  const isUnavailable = vehicle.isAvailableForDates === false;
 
   const handleChoose = () => {
+    if (isUnavailable) return;
     if (!user) {
       openModal("login");
       return;
@@ -76,7 +78,13 @@ export default function RideCollectionVehicleCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-[#808080]/50 overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl">
+    <div
+      className={`bg-white rounded-2xl border overflow-hidden transition-all duration-300 ease-out ${
+        isUnavailable
+          ? "border-[#808080]/30 opacity-60"
+          : "border-[#808080]/50 hover:-translate-y-1 hover:shadow-xl"
+      }`}
+    >
       {/* ── MOBILE ── */}
       <div className="flex flex-col lg:hidden">
         <div className="relative w-full h-[200px]">
@@ -87,6 +95,11 @@ export default function RideCollectionVehicleCard({
             className="object-cover rounded-t-2xl"
             unoptimized
           />
+          {isUnavailable && (
+            <div className="absolute top-2 left-2 bg-black/70 text-white text-[11px] font-poppins font-medium px-2.5 py-1 rounded-full">
+              Not available for these dates
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-3 p-4">
           <div>
@@ -135,9 +148,10 @@ export default function RideCollectionVehicleCard({
               ))}
             <button
               onClick={handleChoose}
-              className="bg-[#FEA800] text-black text-[13px] font-medium font-poppins px-5 py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"
+              disabled={isUnavailable}
+              className="bg-[#FEA800] text-black text-[13px] font-medium font-poppins px-5 py-2.5 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#FEA800]"
             >
-              Choose Vehicle
+              {isUnavailable ? "Not Available" : "Choose Vehicle"}
             </button>
           </div>
         </div>
@@ -153,6 +167,11 @@ export default function RideCollectionVehicleCard({
             className="object-cover object-center"
             unoptimized
           />
+          {isUnavailable && (
+            <div className="absolute top-2 left-2 bg-black/70 text-white text-[11px] font-poppins font-medium px-2.5 py-1 rounded-full">
+              Not available for these dates
+            </div>
+          )}
         </div>
         <div className="flex flex-col flex-1 min-w-0 pl-2">
           <div className="flex items-center justify-between px-6 pt-5 pb-4">
@@ -202,9 +221,10 @@ export default function RideCollectionVehicleCard({
               ))}
             <button
               onClick={handleChoose}
-              className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-7 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0"
+              disabled={isUnavailable}
+              className="bg-[#FEA800] text-black text-[14px] font-medium font-poppins px-7 py-3 rounded-full hover:bg-[#FEA800]/90 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#FEA800]"
             >
-              Choose Vehicle
+              {isUnavailable ? "Not Available" : "Choose Vehicle"}
             </button>
           </div>
         </div>

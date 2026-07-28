@@ -205,6 +205,14 @@ export default function ChooseRideClient() {
     ...(appliedFilters.hasAC !== undefined
       ? { hasAC: appliedFilters.hasAC }
       : {}),
+    // Flags fully-booked vehicles as isAvailableForDates: false rather than
+    // hiding them, so the customer can still see the full catalog.
+    ...(modalData?.pickUpDate
+      ? {
+          availableFrom: modalData.pickUpDate,
+          availableTo: modalData.returnDate || modalData.pickUpDate,
+        }
+      : {}),
   });
 
   useEffect(() => {

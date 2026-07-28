@@ -23,6 +23,9 @@ export interface ApiVehicle {
   priceIncreasePercentage: number;
   createdAt: string;
   updatedAt: string;
+  // Present only when the list was queried with a date range + markUnavailable —
+  // false means this vehicle is fully booked for those dates.
+  isAvailableForDates?: boolean;
 }
 
 interface GetAllVehiclesResponse {
