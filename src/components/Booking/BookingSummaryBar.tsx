@@ -10,7 +10,12 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import { Sheet, SheetContent, SheetClose } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetClose,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useState } from "react";
 import {
   TRIP_TYPES,
@@ -489,17 +494,9 @@ export default function BookingSummaryBar({
       </Sheet>
 
       {/* Popups */}
-      {activePopup === "dest" && (
-        <div
-          className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0 bg-black/30"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setActivePopup(null);
-          }}
-        >
-          <div
-            className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+      {activePopup === "dest" &&
+        (() => {
+          const destContent = (
             <DestinationPopup
               open
               onClose={() => setActivePopup(null)}
@@ -525,9 +522,49 @@ export default function BookingSummaryBar({
               }}
               inline
             />
-          </div>
-        </div>
-      )}
+          );
+
+          // Mobile: shadcn/base-ui Sheet as a bottom sheet. Desktop keeps
+          // the centered dialog.
+          if (typeof window !== "undefined" && window.innerWidth < 1024) {
+            return (
+              <Sheet
+                open
+                onOpenChange={(open) => {
+                  if (!open) setActivePopup(null);
+                }}
+              >
+                <SheetContent
+                  side="bottom"
+                  className="min-h-[80vh] max-h-[85vh] rounded-t-2xl p-0"
+                >
+                  <SheetTitle className="sr-only">
+                    {destField === "from"
+                      ? "Select pickup location"
+                      : "Select drop location"}
+                  </SheetTitle>
+                  <div className="overflow-y-auto">{destContent}</div>
+                </SheetContent>
+              </Sheet>
+            );
+          }
+
+          return (
+            <div
+              className="fixed inset-0 z-[200] flex items-center justify-center px-4 bg-black/30"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setActivePopup(null);
+              }}
+            >
+              <div
+                className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {destContent}
+              </div>
+            </div>
+          );
+        })()}
 
       {activePopup === "date" && (
         <div

@@ -79,9 +79,11 @@ function DestinationContent({
 
   return (
     <>
-      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3 max-h-[98vh] overflow-y-auto">
+      <div className="px-8 py-5 border-b border-gray-200 flex flex-col items-center gap-3 max-h-[500px] overflow-y-scroll">
         <h3 className="text-base font-semibold font-sora text-gray-900">
-          {activeField === "from" ? "Select Pickup Location" : "Select Drop Location"}
+          {activeField === "from"
+            ? "Select Pickup Location"
+            : "Select Drop Location"}
         </h3>
 
         <div className="relative w-full">
@@ -93,13 +95,18 @@ function DestinationContent({
             autoFocus
             type="text"
             value={search}
+            onFocus={(e) => {
+              e.preventDefault();
+            }}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={
               activeField === "from"
                 ? "From (e.g. Tulsipur)"
                 : "To (e.g. Kathmandu)"
             }
-            className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
+            // iOS Safari auto-zooms the page when focusing an input whose
+            // font-size is under 16px — text-[16px] avoids that.
+            className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-[16px] font-poppins text-gray-800 outline-none focus:border-[#FEA800]"
           />
         </div>
       </div>

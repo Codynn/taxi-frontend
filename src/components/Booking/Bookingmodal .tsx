@@ -30,6 +30,7 @@ import DestinationPopup from "./Destinationpopup";
 import { useBookingStore } from "@/hooks/useBookingStore";
 import { useVehicleBookedDates } from "@/hooks/useVehicleBookDates";
 import CustomDestinationPopup from "./CustomDestinationPopup";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 interface BookingModalProps {
   open: boolean;
@@ -414,60 +415,92 @@ export default function BookingModal({
       </div>
 
       {/* Sub-popups */}
-      {activePopup === "dest" && (
-        <div
-          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0 bg-black/30"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setActivePopup(null);
-          }}
-        >
-          <div
-            className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {isCustom ? (
-              <CustomDestinationPopup
+      {activePopup === "dest" &&
+        (() => {
+          const destContent = isCustom ? (
+            <CustomDestinationPopup
+              open
+              onClose={() => setActivePopup(null)}
+              onSelect={(dest) => {
+                setFormState((s) => ({ ...s, destination: dest }));
+                setErrors((e) => ({ ...e, destination: undefined }));
+                setActivePopup(null);
+              }}
+              inline
+            />
+          ) : (
+            <DestinationPopup
+              open
+              onClose={() => setActivePopup(null)}
+              activeField={destField}
+              currentFrom={formState.destination.from}
+              onSelect={(dest) => {
+                setFormState((s) => ({ ...s, destination: dest }));
+                setErrors((e) => ({ ...e, destination: undefined }));
+                setActivePopup(null);
+              }}
+              onSelectFrom={(from) => {
+                setFormState((s) => ({
+                  ...s,
+                  destination: {
+                    from,
+                    to: "",
+                    locationId: undefined,
+                    oneWayFare: undefined,
+                    roundTripFare: undefined,
+                    outsideDistrict: undefined,
+                  },
+                }));
+                setErrors((e) => ({ ...e, destination: undefined }));
+                setActivePopup(null);
+              }}
+              inline
+            />
+          );
+
+          // Mobile: shadcn/base-ui Sheet as a bottom sheet. Desktop keeps
+          // the centered dialog.
+          if (typeof window !== "undefined" && window.innerWidth < 1024) {
+            return (
+              <Sheet
                 open
-                onClose={() => setActivePopup(null)}
-                onSelect={(dest) => {
-                  setFormState((s) => ({ ...s, destination: dest }));
-                  setErrors((e) => ({ ...e, destination: undefined }));
-                  setActivePopup(null);
+                onOpenChange={(open) => {
+                  if (!open) setActivePopup(null);
                 }}
-                inline
-              />
-            ) : (
-              <DestinationPopup
-                open
-                onClose={() => setActivePopup(null)}
-                activeField={destField}
-                currentFrom={formState.destination.from}
-                onSelect={(dest) => {
-                  setFormState((s) => ({ ...s, destination: dest }));
-                  setErrors((e) => ({ ...e, destination: undefined }));
-                  setActivePopup(null);
-                }}
-                onSelectFrom={(from) => {
-                  setFormState((s) => ({
-                    ...s,
-                    destination: {
-                      from,
-                      to: "",
-                      locationId: undefined,
-                      oneWayFare: undefined,
-                      roundTripFare: undefined,
-                      outsideDistrict: undefined,
-                    },
-                  }));
-                  setErrors((e) => ({ ...e, destination: undefined }));
-                  setActivePopup(null);
-                }}
-                inline
-              />
-            )}
-          </div>
-        </div>
-      )}
+              >
+                <SheetContent
+                  side="bottom"
+                  className="min-h-[80vh] max-h-[85vh] rounded-t-2xl p-0"
+                >
+                  <SheetTitle className="sr-only">
+                    {isCustom
+                      ? "Select destination"
+                      : destField === "from"
+                        ? "Select pickup location"
+                        : "Select drop location"}
+                  </SheetTitle>
+                  <div className="overflow-y-auto">{destContent}</div>
+                </SheetContent>
+              </Sheet>
+            );
+          }
+
+          return (
+            <div
+              className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/30"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setActivePopup(null);
+              }}
+            >
+              <div
+                className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {destContent}
+              </div>
+            </div>
+          );
+        })()}
 
       {activePopup === "date" && (
         <div

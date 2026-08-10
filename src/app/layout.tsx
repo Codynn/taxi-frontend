@@ -48,6 +48,13 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: "#FEA800",
+  // On iOS Safari, the on-screen keyboard by default just overlays the page
+  // without resizing the viewport, which is why a bottom sheet (position:
+  // fixed against the *layout* viewport) ends up shifted/hidden behind the
+  // keyboard when a field inside it is focused. "resizes-content" makes the
+  // viewport actually shrink like it already does on Android, so fixed
+  // elements stay correctly positioned above the keyboard.
+  interactiveWidget: "resizes-content",
 };
 
 export const metadata: Metadata = {

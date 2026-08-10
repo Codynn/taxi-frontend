@@ -25,6 +25,7 @@ import { useBookingStore } from "@/hooks/useBookingStore";
 import { BookingType, TripType as ApiTripType } from "@/lib/api/booking.api";
 import CustomDestinationPopup from "./CustomDestinationPopup";
 import { useDefaultPickupLocation } from "@/hooks/useDefaultPickupLocation";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 
 interface BookingFormProps {
   tripTab: TripTab;
@@ -242,7 +243,10 @@ export default function BookingForm({
               className={`border rounded-2xl overflow-hidden bg-white ${errors.destination ? "border-red-400" : "border-gray-200"}`}
             >
               <button
-                onClick={() => { setDestField("from"); setDestOpen(!destOpen); }}
+                onClick={() => {
+                  setDestField("from");
+                  setDestOpen(!destOpen);
+                }}
                 className="w-full px-4 pt-4 pb-3 hover:bg-gray-50 transition-colors text-left"
               >
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">
@@ -260,7 +264,10 @@ export default function BookingForm({
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
               <button
-                onClick={() => { setDestField("to"); setDestOpen(!destOpen); }}
+                onClick={() => {
+                  setDestField("to");
+                  setDestOpen(!destOpen);
+                }}
                 className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
               >
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
@@ -278,7 +285,7 @@ export default function BookingForm({
               <div
                 className={`grid border rounded-2xl gap-0 grid-cols-2 ${errors.date || errors.returnDate ? "border-red-400" : "border-gray-200"}`}
               >
-                <div className="rounded-l-2xl bg-white overflow-hidden border-r border-gray-200">
+                <div className="rounded-l-2xl bg-white border-r border-gray-200">
                   <button
                     onClick={() => setDateOpen(!dateOpen)}
                     className="w-full px-4 py-4 hover:bg-gray-50 transition-colors text-left"
@@ -372,12 +379,12 @@ export default function BookingForm({
           <div
             className={`flex items-stretch border rounded-xl overflow-hidden ${errors.destination || errors.date || errors.returnDate ? "border-red-400" : "border-gray-200"}`}
           >
-            <div
-              className="flex items-stretch"
-              style={{ flex: "2 1 0%" }}
-            >
+            <div className="flex items-stretch" style={{ flex: "2 1 0%" }}>
               <button
-                onClick={() => { setDestField("from"); setDestOpen(!destOpen); }}
+                onClick={() => {
+                  setDestField("from");
+                  setDestOpen(!destOpen);
+                }}
                 className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
               >
                 <p className="text-xs text-gray-400 font-poppins">From</p>
@@ -394,7 +401,10 @@ export default function BookingForm({
                 <ArrowRight size={16} className="text-[#FEA800]" />
               </div>
               <button
-                onClick={() => { setDestField("to"); setDestOpen(!destOpen); }}
+                onClick={() => {
+                  setDestField("to");
+                  setDestOpen(!destOpen);
+                }}
                 className="flex-1 px-5 py-3 hover:bg-gray-50 transition-colors text-left min-w-0"
               >
                 <p className="text-xs text-gray-400 font-poppins">To</p>
@@ -491,64 +501,95 @@ export default function BookingForm({
       </div>
 
       {destOpen &&
-        typeof window !== "undefined" &&
-        createPortal(
-          // Bottom sheet on mobile (slides up, full-width, rounded top only)
-          // — a centered dialog was awkward to reach one-handed for a simple
-          // list+search. Desktop keeps the centered dialog.
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 lg:items-center lg:px-4"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setDestOpen(false);
-            }}
-          >
-            <div className="relative bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl w-full min-h-[80vh] max-h-[85vh] lg:min-h-0 lg:max-w-lg lg:max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-200 lg:zoom-in-95 lg:slide-in-from-bottom-0">
-              {/* Drag handle — mobile only */}
-              <div className="flex justify-center pt-3 pb-1 lg:hidden">
-                <div className="w-10 h-1 rounded-full bg-gray-300" />
-              </div>
-              {isCustom ? (
-                <CustomDestinationPopup
-                  open={destOpen}
-                  onClose={() => setDestOpen(false)}
-                  onSelect={(dest) => {
-                    onChange({ ...state, destination: { ...dest } });
-                    setErrors((e) => ({ ...e, destination: undefined }));
-                  }}
-                  inline
-                />
-              ) : (
-                <DestinationPopup
-                  open={destOpen}
-                  onClose={() => setDestOpen(false)}
-                  activeField={destField}
-                  currentFrom={state.destination.from}
-                  onSelect={(dest) => {
-                    onChange({ ...state, destination: dest });
-                    setErrors((e) => ({ ...e, destination: undefined }));
-                  }}
-                  onSelectFrom={(from) => {
-                    // Changing From invalidates any previously picked route.
-                    onChange({
-                      ...state,
-                      destination: {
-                        from,
-                        to: "",
-                        locationId: undefined,
-                        oneWayFare: undefined,
-                        roundTripFare: undefined,
-                        outsideDistrict: undefined,
-                      },
-                    });
-                    setErrors((e) => ({ ...e, destination: undefined }));
-                  }}
-                  inline
-                />
-              )}
-            </div>
-          </div>,
-          document.body,
-        )}
+        (() => {
+          const destContent = isCustom ? (
+            <CustomDestinationPopup
+              open={destOpen}
+              onClose={() => setDestOpen(false)}
+              onSelect={(dest) => {
+                onChange({ ...state, destination: { ...dest } });
+                setErrors((e) => ({ ...e, destination: undefined }));
+              }}
+              inline
+            />
+          ) : (
+            <DestinationPopup
+              open={destOpen}
+              onClose={() => setDestOpen(false)}
+              activeField={destField}
+              currentFrom={state.destination.from}
+              onSelect={(dest) => {
+                onChange({ ...state, destination: dest });
+                setErrors((e) => ({ ...e, destination: undefined }));
+              }}
+              onSelectFrom={(from) => {
+                // Changing From invalidates any previously picked route.
+                onChange({
+                  ...state,
+                  destination: {
+                    from,
+                    to: "",
+                    locationId: undefined,
+                    oneWayFare: undefined,
+                    roundTripFare: undefined,
+                    outsideDistrict: undefined,
+                  },
+                });
+                setErrors((e) => ({ ...e, destination: undefined }));
+              }}
+              inline
+            />
+          );
+
+          // Mobile: shadcn/base-ui Sheet as a bottom sheet — handles iOS
+          // scroll-lock/keyboard quirks correctly out of the box. Desktop is
+          // untouched (same centered dialog as before).
+          if (typeof window !== "undefined" && window.innerWidth < 1024) {
+            // iOS's keyboard pushes the whole page up (rather than resizing
+            // the viewport in place like Android), so a tall sheet ends up
+            // partly hidden above the keyboard — cap it shorter on iOS.
+            // iPadOS masquerades as desktop Safari (no "iPad" in the UA)
+            // unless the user opted into "Request Mobile Website", so a
+            // touch-capable "MacIntel" platform is the reliable way to catch
+            // it alongside the direct iPhone/iPod UA match.
+            const isIOS =
+              /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+              (navigator.platform === "MacIntel" &&
+                navigator.maxTouchPoints > 1);
+            return (
+              <Sheet open={destOpen} onOpenChange={setDestOpen}>
+                <SheetContent
+                  side="bottom"
+                  className={`min-h-[30vh] ${isIOS ? "max-h-[50vh]" : "max-h-[80vh]"} rounded-t-2xl p-0`}
+                >
+                  <SheetTitle className="sr-only">
+                    {destField === "from"
+                      ? "Select pickup location"
+                      : "Select drop location"}
+                  </SheetTitle>
+                  <div className="overflow-y-auto">{destContent}</div>
+                </SheetContent>
+              </Sheet>
+            );
+          }
+
+          return (
+            typeof window !== "undefined" &&
+            createPortal(
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setDestOpen(false);
+                }}
+              >
+                <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                  {destContent}
+                </div>
+              </div>,
+              document.body,
+            )
+          );
+        })()}
 
       {dateOpen &&
         typeof window !== "undefined" &&
