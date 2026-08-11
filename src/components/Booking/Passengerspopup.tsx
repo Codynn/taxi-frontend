@@ -28,7 +28,7 @@ function Counter({
         onClick={() => onChange(Math.max(0, value - 1))}
         className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
       >
-        <Minus size={16} />
+        <Minus size={20} />
       </button>
       <span className="w-5 text-center text-base font-semibold font-poppins text-gray-900">
         {value}
@@ -38,7 +38,7 @@ function Counter({
         disabled={disableInc}
         className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
       >
-        <Plus size={16} />
+        <Plus size={20} />
       </button>
     </div>
   );
@@ -72,10 +72,10 @@ function PassengersContent({
       <div className="px-6 py-6 flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-gray-900 font-poppins">
+            <p className="text-xl md:text-sm text-gray-900 font-poppins">
               Adults
             </p>
-            <p className="text-xs text-gray-400 font-poppins mt-0.5">
+            <p className="text-md text-gray-400 font-poppins mt-0.5">
               10+ years
             </p>
           </div>
@@ -88,10 +88,10 @@ function PassengersContent({
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-gray-900 font-poppins">
+            <p className="text-xl md:text-sm text-gray-900 font-poppins">
               Child
             </p>
-            <p className="text-xs text-gray-400 font-poppins mt-0.5">
+            <p className="text-md text-gray-400 font-poppins mt-0.5">
               Below 10 years
             </p>
           </div>
@@ -112,10 +112,10 @@ function PassengersContent({
         )}
 
         <div className="p-4 bg-gray-50 rounded-xl">
-          <p className="text-xs font-semibold text-gray-700 font-poppins mb-2">
+          <p className="text-sm font-semibold text-gray-700 font-poppins mb-2">
             Note
           </p>
-          <p className="text-xs text-gray-500 font-poppins leading-relaxed">
+          <p className="text-sm text-gray-500 font-poppins leading-relaxed">
             Children below 11 years may not require a separate fare if seated on
             a parent or guardian&apos;s lap. If a separate seat is required,
             they should be counted as an adult passenger.

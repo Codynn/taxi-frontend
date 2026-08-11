@@ -117,7 +117,7 @@ function CalendarGrid({
                   disabled={disabled}
                   onClick={() => onSelect(dateStr)}
                   className={[
-                    "relative z-10 w-9 h-9 rounded-full text-sm font-poppins transition-all flex items-center justify-center",
+                    "relative z-10 w-9 h-9 rounded-full text-md md:text-sm font-bold font-poppins transition-all flex items-center justify-center",
                     disabled
                       ? "text-gray-300 cursor-not-allowed"
                       : isSelected
@@ -211,7 +211,7 @@ function DatePickerContent({
               <select
                 value={leftMonth}
                 onChange={(e) => setLeftMonth(Number(e.target.value))}
-                className="text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none cursor-pointer"
+                className="text-md md:text-sm  font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none cursor-pointer"
               >
                 {BS_MONTHS.map((m, i) => (
                   <option key={m} value={i}>
@@ -222,7 +222,7 @@ function DatePickerContent({
               <select
                 value={leftYear}
                 onChange={(e) => setLeftYear(Number(e.target.value))}
-                className="text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none cursor-pointer"
+                className="text-md md:text-sm font-semibold font-poppins text-gray-900 bg-transparent border border-gray-200 rounded-lg px-3 py-1.5 outline-none cursor-pointer"
               >
                 {YEARS.map((y) => (
                   <option key={y} value={y}>

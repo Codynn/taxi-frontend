@@ -35,7 +35,7 @@ export default function BookingSection() {
                   });
                 }}
                 className={[
-                  "flex-1 py-4 text-sm font-semibold font-poppins transition-all duration-200 relative px-3",
+                  "flex-1 py-4 text-md md:text-sm  font-semibold font-poppins transition-all duration-200 relative px-3",
                   isActive
                     ? "bg-white text-gray-900 z-10"
                     : "bg-[#F5F5F5] text-gray-400 hover:text-gray-600",

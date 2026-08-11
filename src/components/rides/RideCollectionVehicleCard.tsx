@@ -16,7 +16,13 @@ interface RideCollectionVehicleCardProps {
 function FeatureBadge({ label, icon }: { label: string; icon: string }) {
   return (
     <span className="flex items-center gap-1.5 text-[12px] text-gray-600 font-poppins truncate">
-      <Image src={`/${icon}`} alt={label} width={14} height={14} className="shrink-0" />
+      <Image
+        src={`/${icon}`}
+        alt={label}
+        width={14}
+        height={14}
+        className="shrink-0"
+      />
       <span className="truncate">{label}</span>
     </span>
   );
@@ -87,8 +93,8 @@ export default function RideCollectionVehicleCard({
     >
       <div className="flex flex-col gap-3 p-4">
         {/* Image left, details right */}
-        <div className="flex items-start gap-4">
-          <div className="relative w-[110px] sm:w-[140px] aspect-square shrink-0 rounded-xl overflow-hidden">
+        <div className="flex items-center gap-4">
+          <div className="relative w-[110px] sm:w-[140px] aspect-3/2 shrink-0 rounded-xl overflow-hidden">
             <Image
               src={vechileImage}
               alt={vechileName}
@@ -122,7 +128,10 @@ export default function RideCollectionVehicleCard({
                   icon={getGearIcon(vechileGearType)}
                 />
               )}
-              <FeatureBadge label={`${noOfSeats} Seats`} icon="vehicle/seat.svg" />
+              <FeatureBadge
+                label={`${noOfSeats} Seats`}
+                icon="vehicle/seat.svg"
+              />
               {hasAC && <FeatureBadge label="AC" icon="vehicle/wind.svg" />}
             </div>
           </div>

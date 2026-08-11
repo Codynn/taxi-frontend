@@ -1,7 +1,7 @@
 "use client";
 
 import type { Destination } from "@/types/booking.types";
-import { Clock, Search } from "lucide-react";
+import { Clock, Map, MapPin, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useState } from "react";
@@ -131,8 +131,8 @@ function DestinationContent({
                 }}
                 className="flex items-center px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full text-left"
               >
-                <span className="text-sm font-medium text-gray-800 font-poppins">
-                  {from}
+                <span className="text-xl md:text-sm font-medium text-gray-800 font-poppins flex flex-row items-center gap-2">
+                  <MapPin color="orange" /> {from}
                 </span>
               </button>
             ))
@@ -158,8 +158,8 @@ function DestinationContent({
               }}
               className="flex items-center justify-between px-8 py-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 w-full"
             >
-              <span className="text-sm font-medium text-gray-800 font-poppins">
-                {route.toLocation}
+              <span className="text-xl md:text-sm font-medium text-gray-800 font-poppins flex flex-row items-center gap-2">
+                <MapPin color="orange" /> {route.toLocation}
               </span>
 
               <div className="flex flex-col items-center gap-1">

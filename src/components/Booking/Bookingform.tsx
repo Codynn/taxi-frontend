@@ -68,7 +68,7 @@ function CustomRadioGroup<T extends string>({
             </div>
             <span
               className={[
-                "text-sm font-medium font-poppins transition-colors",
+                "text-md md:text-sm  font-medium font-poppins transition-colors",
                 isSelected
                   ? "text-gray-900"
                   : "text-gray-500 group-hover:text-gray-700",
@@ -116,6 +116,49 @@ export default function BookingForm({
   const router = useRouter();
 
   const { setModalData, setBookingState } = useBookingStore();
+
+  // Centralized body scroll-lock for the mobile bottom sheets.
+  //
+  // Each <Sheet> (destination / date / passengers) can independently lock
+  // and unlock the body. With three separate Sheet instances now mounting
+  // in the same form, switching focus/state between them can momentarily
+  // unlock the body between one Sheet's cleanup and the next one's effect
+  // running — and the instant the body is unlocked, iOS Safari falls back
+  // to its default "scroll the whole layout viewport to reveal the
+  // focused input" behavior, which is the bug we're trying to avoid.
+  //
+  // Locking once here, keyed off "is ANY sheet open", removes that gap:
+  // the lock only releases once all three are closed.
+  useEffect(() => {
+    if (typeof window === "undefined" || window.innerWidth >= 1024) return;
+    const anySheetOpen = destOpen || dateOpen || passOpen;
+    if (!anySheetOpen) return;
+
+    const scrollY = window.scrollY;
+    const { style } = document.body;
+    const prev = {
+      position: style.position,
+      top: style.top,
+      left: style.left,
+      right: style.right,
+      width: style.width,
+    };
+
+    style.position = "fixed";
+    style.top = `-${scrollY}px`;
+    style.left = "0";
+    style.right = "0";
+    style.width = "100%";
+
+    return () => {
+      style.position = prev.position;
+      style.top = prev.top;
+      style.left = prev.left;
+      style.right = prev.right;
+      style.width = prev.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, [destOpen, dateOpen, passOpen]);
 
   const totalPassengers = state.passengers.adults + state.passengers.children;
   const passengerLabel = `${totalPassengers} Passenger${totalPassengers !== 1 ? "s" : ""}`;
@@ -205,6 +248,22 @@ export default function BookingForm({
     router.push("/choose-ride");
   };
 
+  const handleRevert = () => {
+    onChange({
+      ...state,
+      destination: {
+        ...state.destination,
+        from: state.destination.to,
+        to: state.destination.from,
+        locationId: undefined,
+        oneWayFare: undefined,
+        roundTripFare: undefined,
+        outsideDistrict: undefined,
+      },
+    });
+    setErrors((e) => ({ ...e, destination: undefined }));
+  };
+
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -212,7 +271,7 @@ export default function BookingForm({
         <div className="flex flex-col gap-1">
           <div className="flex flex-wrap items-center gap-x-0 gap-y-2 sm:gap-y-0">
             {showTripTypeRadio && (
-              <CustomRadioGroup<TripType>
+              <CustomRadioGroup
                 options={TRIP_TYPES}
                 value={state.tripType}
                 onChange={(v) => {
@@ -223,7 +282,7 @@ export default function BookingForm({
             )}
 
             {showDriverRadio && (
-              <CustomRadioGroup<DriverType>
+              <CustomRadioGroup
                 options={DRIVER_TYPES}
                 value={state.driverType}
                 onChange={(v) => {
@@ -252,14 +311,17 @@ export default function BookingForm({
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">
                   From
                 </p>
-                <p className="text-sm font-medium text-gray-800 font-poppins">
+                <p className="text-xl md:text-sm font-medium text-gray-800 font-poppins">
                   {state.destination.from || "Enter pickup location"}
                 </p>
               </button>
               <div className="relative flex items-center px-4">
                 <div className="flex-1 h-px bg-gray-200" />
-                <div className="mx-3 w-7 h-7 rounded-full border border-gray-200 bg-white flex items-center justify-center shadow-sm shrink-0">
-                  <ArrowUpDown size={13} className="text-[#FEA800]" />
+                <div
+                  onClick={handleRevert}
+                  className="mx-1 w-9 h-9 bg-[#FEF1D8] rounded-full border border-gray-200 flex items-center justify-center shadow-sm shrink-0"
+                >
+                  <ArrowUpDown size={18} className="text-[#FEA800]" />
                 </div>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
@@ -271,7 +333,7 @@ export default function BookingForm({
                 className="w-full px-4 pt-3 pb-4 hover:bg-gray-50 transition-colors text-left"
               >
                 <p className="text-xs text-gray-400 font-poppins mb-0.5">To</p>
-                <p className="text-sm font-medium text-gray-800 font-poppins">
+                <p className="text-xl md:text-sm font-medium text-gray-800 font-poppins">
                   {state.destination.to || "Enter drop location"}
                 </p>
               </button>
@@ -293,7 +355,7 @@ export default function BookingForm({
                     <p className="text-xs text-gray-400 font-poppins mb-0.5">
                       Pickup
                     </p>
-                    <p className="text-sm font-medium text-gray-800 font-poppins">
+                    <p className="text-xl md:text-sm font-medium text-gray-800 font-poppins">
                       {formatBsDate(state.dateRange.pickup) ||
                         "Enter a pickup date"}
                     </p>
@@ -310,7 +372,7 @@ export default function BookingForm({
                       Return
                     </p>
                     <p
-                      className={`text-sm font-medium font-poppins ${errors.returnDate && !state.dateRange.return ? "text-red-400" : "text-gray-800"}`}
+                      className={`text-xl md:text-sm  font-medium font-poppins ${errors.returnDate && !state.dateRange.return ? "text-red-400" : "text-gray-800"}`}
                     >
                       {formatBsDate(state.dateRange.return) ||
                         "Enter a return date"}
@@ -330,7 +392,7 @@ export default function BookingForm({
                   <p className="text-xs text-gray-400 font-poppins mb-0.5">
                     Pickup
                   </p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins">
+                  <p className="text-xl md:text-sm font-medium text-gray-800 font-poppins">
                     {formatBsDate(state.dateRange.pickup) ||
                       "Enter a pickup date"}
                   </p>
@@ -353,7 +415,7 @@ export default function BookingForm({
                   <p className="text-xs text-gray-400 font-poppins mb-0.5">
                     Total Passengers
                   </p>
-                  <p className="text-sm font-medium text-gray-800 font-poppins">
+                  <p className="text-xl md:text-sm font-medium text-gray-800 font-poppins">
                     {passengerLabel}
                   </p>
                 </div>
@@ -620,29 +682,52 @@ export default function BookingForm({
         )}
 
       {passOpen &&
-        typeof window !== "undefined" &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setPassOpen(false);
-            }}
-          >
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
-              <PassengersPopup
-                open={passOpen}
-                onClose={() => setPassOpen(false)}
-                passengers={state.passengers}
-                onConfirm={(p) => {
-                  onChange({ ...state, passengers: p });
-                  setErrors((e) => ({ ...e, passengers: undefined }));
+        (() => {
+          const passContent = (
+            <PassengersPopup
+              open={passOpen}
+              onClose={() => setPassOpen(false)}
+              passengers={state.passengers}
+              onConfirm={(p) => {
+                onChange({ ...state, passengers: p });
+                setErrors((e) => ({ ...e, passengers: undefined }));
+              }}
+              inline
+            />
+          );
+
+          // Mobile: bottom Sheet, same pattern as the destination popup.
+          if (typeof window !== "undefined" && window.innerWidth < 1024) {
+            return (
+              <Sheet open={passOpen} onOpenChange={setPassOpen}>
+                <SheetContent
+                  side="bottom"
+                  className="min-h-[30vh] max-h-[80vh] rounded-t-2xl p-0"
+                >
+                  <SheetTitle className="sr-only">Select passengers</SheetTitle>
+                  <div className="overflow-y-auto">{passContent}</div>
+                </SheetContent>
+              </Sheet>
+            );
+          }
+
+          return (
+            typeof window !== "undefined" &&
+            createPortal(
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setPassOpen(false);
                 }}
-                inline
-              />
-            </div>
-          </div>,
-          document.body,
-        )}
+              >
+                <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+                  {passContent}
+                </div>
+              </div>,
+              document.body,
+            )
+          );
+        })()}
     </>
   );
 }
