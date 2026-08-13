@@ -95,9 +95,6 @@ function DestinationContent({
             autoFocus
             type="text"
             value={search}
-            onFocus={(e) => {
-              e.preventDefault();
-            }}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={
               activeField === "from"
