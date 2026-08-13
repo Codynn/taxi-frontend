@@ -572,9 +572,7 @@ export default function BookingForm({
               className="relative px-5 py-3 min-w-0 hover:bg-gray-50 transition-colors focus-within:bg-gray-50"
               style={{ flex: "1 1 0%" }}
             >
-              <p className="text-xs text-gray-400 font-poppins">
-                Pickup Time
-              </p>
+              <p className="text-xs text-gray-400 font-poppins">Pickup Time</p>
               <p
                 className={`text-sm font-medium font-poppins truncate ${state.pickupTime ? "text-gray-800" : "text-gray-400"}`}
               >
@@ -701,14 +699,14 @@ export default function BookingForm({
               <Sheet open={destOpen} onOpenChange={setDestOpen}>
                 <SheetContent
                   side="bottom"
-                  className={`min-h-[30vh] ${isIOS ? "max-h-[50vh]" : "max-h-[80vh]"} rounded-t-2xl p-0`}
+                  className={`min-h-[70vh] ${isIOS ? "max-h-full" : "max-h-[80vh]"} rounded-t-2xl p-0`}
                 >
                   <SheetTitle className="sr-only">
                     {destField === "from"
                       ? "Select pickup location"
                       : "Select drop location"}
                   </SheetTitle>
-                  <div className="overflow-y-auto">{destContent}</div>
+                  <div className="overflow-y-hidden">{destContent}</div>
                 </SheetContent>
               </Sheet>
             );

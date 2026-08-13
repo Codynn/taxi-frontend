@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  allowedDevOrigins: ["192.168.1.67"],
+  allowedDevOrigins: ["192.168.254.15", "192.168.1.67"],
 };
 
 export default withPWA({

@@ -92,7 +92,7 @@ function DestinationContent({
             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
-            autoFocus
+            autoFocus={false}
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
