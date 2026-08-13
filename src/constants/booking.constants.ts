@@ -57,6 +57,7 @@ export const DEFAULT_BOOKING_STATE: BookingFormState = {
   driverType: "with-driver",
   destination: { from: "", to: "" },
   dateRange: { pickup: "", return: "" },
+  pickupTime: "",
   passengers: { adults: 1, children: 0 },
 };
 

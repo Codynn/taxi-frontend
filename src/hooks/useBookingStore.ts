@@ -13,6 +13,7 @@ export interface BookingModalData {
   pickUpLocation: string;
   dropOffLocation: string;
   pickUpDate: string;
+  pickUpTime: string;
   returnDate?: string;
   bookingType: BookingType;
   tripType: ApiTripType;

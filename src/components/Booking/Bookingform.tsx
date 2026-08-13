@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatBsDate, adStringToUtcIso } from "@/lib/bs-date";
+import {
+  formatBsDate,
+  adStringToUtcIso,
+  adStringAndTimeToUtcIso,
+} from "@/lib/bs-date";
+import { formatTimeLabel } from "@/lib/time";
 import { createPortal } from "react-dom";
 import { ArrowRight, ArrowUpDown, ChevronDown } from "lucide-react";
 import {
@@ -109,6 +114,7 @@ export default function BookingForm({
     destination?: string;
     date?: string;
     returnDate?: string;
+    pickupTime?: string;
     driverType?: string;
     passengers?: string;
   }>({});
@@ -198,6 +204,10 @@ export default function BookingForm({
       newErrors.date = "Please select pickup date";
     }
 
+    if (!state.pickupTime) {
+      newErrors.pickupTime = "Please select a pickup time";
+    }
+
     // Return date is only used (and shown) for custom round-trips
     if (showReturnDate && !state.dateRange.return) {
       newErrors.returnDate = "Please select a return date";
@@ -232,6 +242,10 @@ export default function BookingForm({
       pickUpLocation: state.destination.from,
       dropOffLocation: state.destination.to,
       pickUpDate: toISO(state.dateRange.pickup),
+      pickUpTime: adStringAndTimeToUtcIso(
+        state.dateRange.pickup,
+        state.pickupTime,
+      ),
       returnDate:
         showReturnDate && state.dateRange.return
           ? toISO(state.dateRange.return)
@@ -405,6 +419,36 @@ export default function BookingForm({
 
           <div>
             <div
+              className={`relative border rounded-2xl bg-white overflow-hidden px-4 py-4 focus-within:ring-2 focus-within:ring-[#FEA800]/40 ${errors.pickupTime ? "border-red-400" : "border-gray-200"}`}
+            >
+              <p className="text-xs text-gray-400 font-poppins mb-0.5">
+                Pickup Time
+              </p>
+              <p
+                className={`text-xl md:text-sm font-medium font-poppins ${state.pickupTime ? "text-gray-800" : "text-gray-400"}`}
+              >
+                {state.pickupTime
+                  ? formatTimeLabel(state.pickupTime)
+                  : "Select pickup time"}
+              </p>
+              {/* Transparent native input laid over the whole box so the
+                  entire field opens the time picker, not just the browser's
+                  small clock icon. */}
+              <input
+                type="time"
+                value={state.pickupTime}
+                onChange={(e) => {
+                  onChange({ ...state, pickupTime: e.target.value });
+                  setErrors((err) => ({ ...err, pickupTime: undefined }));
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            <FieldErrorMsg message={errors.pickupTime} />
+          </div>
+
+          <div>
+            <div
               className={`border rounded-2xl bg-white overflow-hidden ${errors.passengers ? "border-red-400" : "border-gray-200"}`}
             >
               <button
@@ -521,6 +565,41 @@ export default function BookingForm({
                 </button>
               </>
             )}
+
+            <div className="w-px bg-gray-200 shrink-0" />
+
+            <div
+              className="relative px-5 py-3 min-w-0 hover:bg-gray-50 transition-colors focus-within:bg-gray-50"
+              style={{ flex: "1 1 0%" }}
+            >
+              <p className="text-xs text-gray-400 font-poppins">
+                Pickup Time
+              </p>
+              <p
+                className={`text-sm font-medium font-poppins truncate ${state.pickupTime ? "text-gray-800" : "text-gray-400"}`}
+              >
+                {state.pickupTime
+                  ? formatTimeLabel(state.pickupTime)
+                  : "Select pickup time"}
+              </p>
+              {errors.pickupTime && (
+                <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+                  Please select a pickup time
+                </p>
+              )}
+              {/* Transparent native input laid over the whole box so the
+                  entire field opens the time picker, not just the browser's
+                  small clock icon. */}
+              <input
+                type="time"
+                value={state.pickupTime}
+                onChange={(e) => {
+                  onChange({ ...state, pickupTime: e.target.value });
+                  setErrors((err) => ({ ...err, pickupTime: undefined }));
+                }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
 
             <div className="w-px bg-gray-200 shrink-0" />
 

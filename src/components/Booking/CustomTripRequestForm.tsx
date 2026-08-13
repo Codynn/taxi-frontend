@@ -76,7 +76,7 @@ export default function CustomTripRequestForm({
         pickUpLocation: form.pickupLocation,
         dropOffLocation: modalData.dropOffLocation,
         pickUpDate: modalData.pickUpDate,
-        pickUpTime: modalData.pickUpDate, // fallback
+        pickUpTime: modalData.pickUpTime || modalData.pickUpDate,
         returnDate: modalData.returnDate || undefined,
         bookingType: modalData.bookingType,
         tripType: "CUSTOM_TRIP",

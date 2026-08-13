@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatBsDate, adStringToUtcIso } from "@/lib/bs-date";
+import {
+  formatBsDate,
+  adStringToUtcIso,
+  adStringAndTimeToUtcIso,
+} from "@/lib/bs-date";
+import { formatTimeLabel } from "@/lib/time";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -120,6 +125,7 @@ export default function BookingModal({
     destination?: string;
     date?: string;
     returnDate?: string;
+    pickupTime?: string;
     driverType?: string;
   }>({});
 
@@ -167,6 +173,9 @@ export default function BookingModal({
     if (!formState.dateRange.pickup) {
       newErrors.date = "Please select pickup date";
     }
+    if (!formState.pickupTime) {
+      newErrors.pickupTime = "Please select a pickup time";
+    }
     if (showReturnDate && !formState.dateRange.return) {
       newErrors.returnDate = "Please select a return date";
     }
@@ -190,6 +199,10 @@ export default function BookingModal({
       pickUpLocation: formState.destination.from,
       dropOffLocation: formState.destination.to,
       pickUpDate: toISO(formState.dateRange.pickup),
+      pickUpTime: adStringAndTimeToUtcIso(
+        formState.dateRange.pickup,
+        formState.pickupTime,
+      ),
       returnDate:
         showReturnDate && formState.dateRange.return
           ? toISO(formState.dateRange.return)
@@ -322,6 +335,39 @@ export default function BookingModal({
             )}
           </button>
         )}
+      </div>
+
+      {/* Pickup Time */}
+      <div
+        className={`relative border rounded-2xl bg-white overflow-hidden px-4 py-4 focus-within:ring-2 focus-within:ring-[#FEA800]/40 ${errors.pickupTime ? "border-red-400" : "border-gray-200"}`}
+      >
+        <p className="text-xs text-gray-400 font-poppins mb-0.5">
+          Pickup Time
+        </p>
+        <p
+          className={`text-sm font-medium font-poppins ${formState.pickupTime ? "text-gray-800" : "text-gray-400"}`}
+        >
+          {formState.pickupTime
+            ? formatTimeLabel(formState.pickupTime)
+            : "Select pickup time"}
+        </p>
+        {errors.pickupTime && (
+          <p className="text-[11px] text-red-500 font-poppins mt-0.5">
+            Please select a pickup time
+          </p>
+        )}
+        {/* Transparent native input laid over the whole box so the entire
+            field opens the time picker, not just the browser's small clock
+            icon. */}
+        <input
+          type="time"
+          value={formState.pickupTime}
+          onChange={(e) => {
+            setFormState((s) => ({ ...s, pickupTime: e.target.value }));
+            setErrors((err) => ({ ...err, pickupTime: undefined }));
+          }}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
       </div>
 
       {/* Passengers */}

@@ -80,7 +80,9 @@ export default function CompleteBookingClient() {
       email: values.email,
       pickupLocation: values.pickupLocation,
       dropoffLocation: values.dropoffLocation,
-      pickUpTime: new Date(values.pickupTime).toISOString(),
+      // Already collected up front on the homepage form, alongside the
+      // pickup date — no longer asked again here.
+      pickUpTime: modalData.pickUpTime,
       message: values.message,
     });
     router.push("/checkout");

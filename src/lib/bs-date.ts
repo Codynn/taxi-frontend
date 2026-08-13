@@ -113,6 +113,22 @@ export function adStringToUtcIso(str: string): string {
 }
 
 /**
+ * Same UTC-anchored approach as {@link adStringToUtcIso}, but also folds in
+ * a 24h "HH:mm" time-of-day so the pickup date and pickup time collected
+ * together in the booking form become a single timestamp.
+ */
+export function adStringAndTimeToUtcIso(
+  dateStr: string,
+  timeStr: string,
+): string {
+  const [y, m, d] = dateStr.split("/").map(Number);
+  if (!y || !m || !d) return "";
+  const [hh, mm] = timeStr.split(":").map(Number);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return "";
+  return new Date(Date.UTC(y, m - 1, d, hh, mm)).toISOString();
+}
+
+/**
  * Format any AD input (Date, ISO string, or `YYYY/MM/DD`) as a BS display
  * string, e.g. "15 Asar 2083". Returns "" for empty/invalid input.
  */

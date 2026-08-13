@@ -152,12 +152,19 @@ export default function CheckoutClient() {
   // Guard: must have vehicle, modal data and contact info (wait for persisted store to load)
   useEffect(() => {
     if (!hasHydrated) return;
+    // Skip while we're navigating away ourselves (e.g. after a successful
+    // Fonepay booking, which clears the store via resetBooking() before the
+    // route change to /my-bookings/[id] takes effect) — otherwise this guard
+    // reacts to the now-empty store and redirects to /choose-ride first,
+    // which itself immediately bounces further to "/" since modalData is
+    // gone, hijacking the intended redirect.
+    if (isRedirecting) return;
     if (!selectedVehicle || !modalData) {
       router.replace("/choose-ride");
     } else if (!contactData) {
       router.replace("/complete-booking");
     }
-  }, [hasHydrated, selectedVehicle, modalData, contactData, router]);
+  }, [hasHydrated, selectedVehicle, modalData, contactData, router, isRedirecting]);
 
   if (!hasHydrated) return null;
   if (!selectedVehicle || !modalData || !contactData) return null;

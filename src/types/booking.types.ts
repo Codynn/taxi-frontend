@@ -30,6 +30,9 @@ export interface BookingFormState {
   driverType: DriverType;
   destination: Destination;
   dateRange: DateRange;
+  /** 24h "HH:mm" — collected up front alongside the pickup date instead of
+   * as a disconnected field at the end of the booking flow. */
+  pickupTime: string;
   passengers: Passengers;
 }
 

@@ -3,10 +3,6 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import dayjs from "dayjs";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +27,6 @@ export const completeBookingSchema = z.object({
     ),
   email: z.string().email("Enter a valid email address"),
   pickupLocation: z.string().min(3, "Pickup location is required"),
-  pickupTime: z.string().min(1, "Pickup time is required"),
   dropoffLocation: z.string().min(3, "Dropoff location is required"),
   message: z.string().max(500, "Message is too long").optional(),
 });
@@ -64,7 +59,6 @@ export default function CompleteBookingForm({
       contactNumber: user?.phoneNumber ?? "",
       email: user?.email ?? "",
       pickupLocation: "",
-      pickupTime: "",
       dropoffLocation: "",
       message: "",
       ...defaultValues,
@@ -157,57 +151,28 @@ export default function CompleteBookingForm({
             />
           </div>
 
-          {/* Pickup Location + Pickup Time */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Controller
-              name="pickupLocation"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="pickupLocation">
-                    Pickup Location <span className="text-red-500">*</span>
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="pickupLocation"
-                    placeholder="Enter pickup location"
-                    aria-invalid={fieldState.invalid}
-                    className={inputCls}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            <Controller
-              name="pickupTime"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="pickupTime">Pickup Time</FieldLabel>
-
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <TimePicker
-                      label="Select time"
-                      value={field.value ? dayjs(field.value) : null}
-                      onChange={(value) => {
-                        field.onChange(value ? value.toISOString() : "");
-                      }}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          error: fieldState.invalid,
-                          helperText: fieldState.error?.message,
-                          className: inputCls,
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Field>
-              )}
-            />
-          </div>
+          {/* Pickup Location */}
+          <Controller
+            name="pickupLocation"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="pickupLocation">
+                  Pickup Location <span className="text-red-500">*</span>
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="pickupLocation"
+                  placeholder="Enter pickup location"
+                  aria-invalid={fieldState.invalid}
+                  className={inputCls}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
           {/* Dropoff Location */}
           <Controller

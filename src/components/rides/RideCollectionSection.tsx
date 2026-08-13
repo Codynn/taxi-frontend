@@ -34,7 +34,7 @@ import type { SelectedVehicle } from "../vehicles/Vehicleselectedcard";
 import { BookingModalData, useBookingStore } from "@/hooks/useBookingStore";
 import type { BookingFormState } from "@/types/booking.types";
 import { api } from "@/lib/axios";
-import { adStringToUtcIso } from "@/lib/bs-date";
+import { adStringToUtcIso, adStringAndTimeToUtcIso } from "@/lib/bs-date";
 import { deriveApiTripType } from "@/constants/booking.constants";
 
 function toSelectedVehicle(v: ApiVehicle): SelectedVehicle {
@@ -79,6 +79,10 @@ function toModalData(state: BookingFormState) {
     pickUpDate: state.dateRange.pickup
       ? adStringToUtcIso(state.dateRange.pickup)
       : new Date().toISOString(),
+    pickUpTime:
+      state.dateRange.pickup && state.pickupTime
+        ? adStringAndTimeToUtcIso(state.dateRange.pickup, state.pickupTime)
+        : new Date().toISOString(),
     // Return date only applies to Custom trips (single-date for City rides).
     returnDate:
       state.tripTab === "custom" && state.dateRange.return
