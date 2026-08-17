@@ -57,10 +57,7 @@ export default function BookingDetailClient({
   const { data: transactions, refetch: refetchTransactions } =
     useFonepayTransactions(bookingId);
 
-  const { data: banks, isLoading: loadingBanks } = useFonepayBanks({
-    mobileNo: booking?.contactNumber,
-    paymentMode: "INTENT",
-  });
+  const { data: banks, isLoading: loadingBanks } = useFonepayBanks();
 
   const [fonepayState, setFonepayState] = useState<FonepayState>("idle");
   const [fonepayIntent, setFonepayIntent] =
@@ -68,6 +65,8 @@ export default function BookingDetailClient({
   const [selectedBank, setSelectedBank] = useState<FonepayBank | null>(null);
   const [isOpeningApp, setIsOpeningApp] = useState(false);
   const [deepLinkMayHaveFailed, setDeepLinkMayHaveFailed] = useState(false);
+  const [bankSearch, setBankSearch] = useState("");
+  const [showQr, setShowQr] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [qrExpiresAt, setQrExpiresAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -196,8 +195,9 @@ export default function BookingDetailClient({
     setSelectedBank(bank);
     setDeepLinkMayHaveFailed(false);
 
-    // Construct the deep link URL with the QR payload
-    const deepLinkUrl = `${bank.intentScheme}://payment?qr=${encodeURIComponent(
+    // Per Fonepay's spec, intentScheme is already a full scheme+host
+    // (e.g. "LXBLNPKA://payment") — just append the qrPayload query param.
+    const deepLinkUrl = `${bank.intentScheme}?qrPayload=${encodeURIComponent(
       fonepayIntent.qrMessage,
     )}`;
 
@@ -208,12 +208,10 @@ export default function BookingDetailClient({
 
     if (isAndroid && bank.packageName) {
       try {
-        const intentUrl = `intent://payment?qr=${encodeURIComponent(
+        const [scheme, rest] = bank.intentScheme.split("://");
+        const intentUrl = `intent://${rest}?qrPayload=${encodeURIComponent(
           fonepayIntent.qrMessage,
-        )}#Intent;package=${bank.packageName};scheme=${bank.intentScheme.replace(
-          "://",
-          "",
-        )};end;`;
+        )}#Intent;scheme=${scheme};package=${bank.packageName};end;`;
         window.location.href = intentUrl;
       } catch (error) {
         console.error("Failed to open Android app:", error);
@@ -352,9 +350,9 @@ export default function BookingDetailClient({
                 <button
                   type="button"
                   onClick={handlePay}
-                  className="w-full py-3 rounded-full bg-black text-white font-semibold font-poppins text-[14px] hover:bg-black/80 transition-colors"
+                  className="w-full py-3 rounded-full bg-[#ce2027] text-white font-semibold font-poppins text-[14px] hover:bg-[#b01c22] transition-colors"
                 >
-                  Continue with Fonepay Checkout
+                  Continue with Checkout by Fonepay
                 </button>
               )}
 
@@ -384,97 +382,126 @@ export default function BookingDetailClient({
 
               {fonepayState === "waiting" && fonepayIntent && !qrExpired && (
                 <div className="flex flex-col gap-4">
-                  {/* QR Code Section */}
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="bg-white rounded-xl p-3 border border-gray-200">
-                      <QRCodeCanvas
-                        ref={qrCanvasRef}
-                        value={fonepayIntent.qrMessage}
-                        size={180}
-                      />
-                    </div>
-                    {qrRemainingLabel && (
-                      <p className="text-[11px] font-poppins text-black/40">
-                        Expires in {qrRemainingLabel}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (qrCanvasRef.current) {
-                          downloadCanvas(qrCanvasRef.current, "fonepay-qr.png");
-                        }
-                      }}
-                      className="flex items-center gap-1.5 text-[13px] font-poppins font-semibold text-[#FEA800] underline"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      Download QR
-                    </button>
-                  </div>
-
-                  {/* OR Divider */}
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-[13px] font-poppins text-black/40">
-                      OR
-                    </span>
-                    <div className="flex-1 h-px bg-gray-200" />
-                  </div>
-
-                  {/* Bank List Section */}
+                  {/* Bank List Section — primary payment method */}
                   <div>
-                    <p className="text-[14px] font-poppins text-black/70 mb-3">
-                      Select your bank to pay instantly:
+                    <p className="text-[14px] font-poppins font-semibold text-black mb-3">
+                      Select your bank or wallet to pay instantly:
                     </p>
 
                     {loadingBanks ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="w-5 h-5 text-black animate-spin" />
+                        <Loader2 className="w-5 h-5 text-[#ce2027] animate-spin" />
                         <span className="ml-2 text-[13px] font-poppins text-black/50">
                           Loading banks...
                         </span>
                       </div>
                     ) : banks && banks.length > 0 ? (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {banks.map((bank) => (
-                          <button
-                            key={bank.bankCode}
-                            type="button"
-                            onClick={() => openBankingApp(bank)}
-                            disabled={isOpeningApp}
-                            className={`
-                              flex flex-col items-center gap-2 p-3 rounded-xl border-2
-                              transition-all duration-200 hover:border-[#FEA900]
-                              ${
-                                selectedBank?.bankCode === bank.bankCode
-                                  ? "border-[#FEA900] bg-[#FEF1D8]"
-                                  : "border-gray-200 bg-white hover:shadow-md"
-                              }
-                              ${isOpeningApp ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-                            `}
-                          >
-                            {bank.bankIcon && (
-                              <img
-                                src={bank.bankIcon}
-                                alt={bank.bankName}
-                                className="w-12 h-12 object-contain"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display =
-                                    "none";
-                                }}
-                              />
-                            )}
-                            <span className="text-[12px] font-poppins text-black text-center leading-tight">
-                              {bank.bankName}
-                            </span>
-                            <ExternalLink className="w-3 h-3 text-black/30" />
-                          </button>
-                        ))}
+                      <div className="rounded-xl border border-gray-200 overflow-hidden">
+                        <div className="p-2.5 border-b border-gray-200 bg-white">
+                          <input
+                            type="text"
+                            value={bankSearch}
+                            onChange={(e) => setBankSearch(e.target.value)}
+                            placeholder="Search..."
+                            className="w-full text-[13px] font-poppins text-black placeholder:text-black/40 bg-[#f5f5f5] rounded-full px-4 py-2 outline-none focus:ring-1 focus:ring-[#ce2027]"
+                          />
+                        </div>
+
+                        <div className="max-h-72 overflow-y-auto divide-y divide-gray-100">
+                          {banks
+                            .filter((bank) =>
+                              bank.bankName
+                                .toLowerCase()
+                                .includes(bankSearch.trim().toLowerCase()),
+                            )
+                            .map((bank) => (
+                              <button
+                                key={bank.bankCode}
+                                type="button"
+                                onClick={() => openBankingApp(bank)}
+                                disabled={isOpeningApp}
+                                className={`
+                                  w-full flex items-center gap-3 px-3.5 py-3 text-left
+                                  transition-colors duration-150
+                                  ${
+                                    selectedBank?.bankCode === bank.bankCode
+                                      ? "bg-[#fbe9ea]"
+                                      : "bg-white hover:bg-[#f5f5f5]"
+                                  }
+                                  ${isOpeningApp ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+                                `}
+                              >
+                                {bank.bankIcon ? (
+                                  <img
+                                    src={bank.bankIcon}
+                                    alt={bank.bankName}
+                                    className="w-9 h-9 rounded-md object-contain shrink-0 bg-white border border-gray-100"
+                                    onError={(e) => {
+                                      (
+                                        e.target as HTMLImageElement
+                                      ).style.display = "none";
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-9 h-9 rounded-md shrink-0 bg-[#f5f5f5]" />
+                                )}
+                                <span className="flex-1 text-[13px] font-poppins font-medium text-black">
+                                  {bank.bankName}
+                                </span>
+                                <ExternalLink className="w-3.5 h-3.5 text-black/25 shrink-0" />
+                              </button>
+                            ))}
+                        </div>
                       </div>
                     ) : (
                       <p className="text-[13px] font-poppins text-black/50 text-center py-4">
                         No banks available. Please use the QR code above.
                       </p>
+                    )}
+                  </div>
+
+                  {/* QR Code Section — secondary, collapsed by default */}
+                  <div className="border-t border-gray-200 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowQr((v) => !v)}
+                      className="w-full text-center text-[12.5px] font-poppins text-black/50 hover:text-black/70"
+                    >
+                      {showQr
+                        ? "Hide QR code"
+                        : "Prefer to scan a QR code instead?"}
+                    </button>
+
+                    {showQr && (
+                      <div className="flex flex-col items-center gap-2.5 mt-3">
+                        <div className="bg-white rounded-xl p-2.5 border border-gray-200">
+                          <QRCodeCanvas
+                            ref={qrCanvasRef}
+                            value={fonepayIntent.qrMessage}
+                            size={130}
+                          />
+                        </div>
+                        {qrRemainingLabel && (
+                          <p className="text-[11px] font-poppins text-black/40">
+                            Expires in {qrRemainingLabel}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (qrCanvasRef.current) {
+                              downloadCanvas(
+                                qrCanvasRef.current,
+                                "fonepay-qr.png",
+                              );
+                            }
+                          }}
+                          className="flex items-center gap-1.5 text-[12px] font-poppins font-semibold text-black/50 hover:text-black/70 underline"
+                        >
+                          <Download className="w-3 h-3" />
+                          Download QR
+                        </button>
+                      </div>
                     )}
                   </div>
 
@@ -485,19 +512,43 @@ export default function BookingDetailClient({
                         ? `Opening ${selectedBank?.bankName || "your banking app"}...`
                         : fonepayIntent.isReused
                           ? "Continuing existing payment. Scan the QR or select your bank above."
-                          : "Scan the QR code or select your bank above. This page will update automatically once payment is confirmed."}
+                          : "Select your bank above to pay instantly. This page will update automatically once payment is confirmed."}
                     </p>
                     {deepLinkMayHaveFailed && (
-                      <p className="text-[12px] font-poppins text-red-600 text-center mt-1.5">
-                        {selectedBank?.bankName || "That app"} doesn&apos;t seem
-                        to be installed. Try a different bank, or scan the QR
-                        code above with any payment app instead.
-                      </p>
+                      <div className="flex items-start gap-2.5 mt-2 p-3 rounded-xl bg-[#fbe9ea] border border-[#ce2027]/20">
+                        <div className="flex-1">
+                          <p className="text-[12.5px] font-poppins font-semibold text-black">
+                            Mobile banking app not found
+                          </p>
+                          <p className="text-[12px] font-poppins text-black/60 mt-0.5">
+                            {selectedBank?.bankName || "The selected"} service
+                            or digital wallet is currently unavailable. Try a
+                            different bank, or scan the QR code above.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (selectedBank) openBankingApp(selectedBank);
+                            }}
+                            className="mt-1.5 text-[12px] font-poppins font-semibold text-[#ce2027] underline"
+                          >
+                            Try Again
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setDeepLinkMayHaveFailed(false)}
+                          aria-label="Dismiss"
+                          className="text-black/30 hover:text-black/60 shrink-0"
+                        >
+                          <XCircle className="w-4 h-4" />
+                        </button>
+                      </div>
                     )}
                     <button
                       type="button"
                       onClick={() => runVerification(fonepayIntent.prn)}
-                      className="w-full text-center text-[13px] font-poppins font-semibold text-[#FEA800] underline mt-2"
+                      className="w-full text-center text-[13px] font-poppins font-semibold text-[#ce2027] underline mt-2"
                     >
                       I&apos;ve completed the payment — check status
                     </button>

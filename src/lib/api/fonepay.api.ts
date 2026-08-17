@@ -76,27 +76,17 @@ export interface FonepayBank {
   intentScheme: string;
 }
 
-export async function getFonepayBanks(query: {
-  mobileNo?: string;
-  paymentMode?: string;
-}): Promise<FonepayBank[]> {
+export async function getFonepayBanks(): Promise<FonepayBank[]> {
   const res = await api.get<{ success: boolean; data: FonepayBank[] }>(
     `fonepay/banks`,
-    {
-      params: query || {},
-    },
   );
   return res.data.data;
 }
 
-export function useFonepayBanks(query: {
-  mobileNo?: string;
-  paymentMode?: string;
-}) {
+export function useFonepayBanks() {
   return useQuery({
-    queryKey: ["fonepay-banks", query],
-    queryFn: () => getFonepayBanks(query),
+    queryKey: ["fonepay-banks"],
+    queryFn: () => getFonepayBanks(),
     staleTime: 1000 * 60 * 30,
-    enabled: !!query.mobileNo,
   });
 }
