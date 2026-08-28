@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   formatBsDate,
   adStringToUtcIso,
@@ -110,6 +110,8 @@ export default function BookingForm({
   const [destField, setDestField] = useState<"from" | "to">("from");
   const [dateOpen, setDateOpen] = useState(false);
   const [passOpen, setPassOpen] = useState(false);
+  const mobilePickupTimeRef = useRef<HTMLInputElement>(null);
+  const desktopPickupTimeRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState<{
     destination?: string;
     date?: string;
@@ -419,7 +421,8 @@ export default function BookingForm({
 
           <div>
             <div
-              className={`relative border rounded-2xl bg-white overflow-hidden px-4 py-4 focus-within:ring-2 focus-within:ring-[#FEA800]/40 ${errors.pickupTime ? "border-red-400" : "border-gray-200"}`}
+              onClick={() => mobilePickupTimeRef.current?.showPicker?.()}
+              className={`relative border rounded-2xl bg-white overflow-hidden px-4 py-4 focus-within:ring-2 focus-within:ring-[#FEA800]/40 cursor-pointer ${errors.pickupTime ? "border-red-400" : "border-gray-200"}`}
             >
               <p className="text-xs text-gray-400 font-poppins mb-0.5">
                 Pickup Time
@@ -433,8 +436,12 @@ export default function BookingForm({
               </p>
               {/* Transparent native input laid over the whole box so the
                   entire field opens the time picker, not just the browser's
-                  small clock icon. */}
+                  small clock icon. On desktop browsers, clicking anywhere
+                  other than that tiny icon merely focuses the input without
+                  opening any UI, so the wrapping div's onClick above calls
+                  showPicker() explicitly to make the whole box work. */}
               <input
+                ref={mobilePickupTimeRef}
                 type="time"
                 value={state.pickupTime}
                 onChange={(e) => {
@@ -569,7 +576,8 @@ export default function BookingForm({
             <div className="w-px bg-gray-200 shrink-0" />
 
             <div
-              className="relative px-5 py-3 min-w-0 hover:bg-gray-50 transition-colors focus-within:bg-gray-50"
+              onClick={() => desktopPickupTimeRef.current?.showPicker?.()}
+              className="relative px-5 py-3 min-w-0 hover:bg-gray-50 transition-colors focus-within:bg-gray-50 cursor-pointer"
               style={{ flex: "1 1 0%" }}
             >
               <p className="text-xs text-gray-400 font-poppins">Pickup Time</p>
@@ -587,8 +595,12 @@ export default function BookingForm({
               )}
               {/* Transparent native input laid over the whole box so the
                   entire field opens the time picker, not just the browser's
-                  small clock icon. */}
+                  small clock icon. On desktop, clicking elsewhere in the box
+                  only focuses the input without opening any UI, so the
+                  wrapping div's onClick above calls showPicker() explicitly
+                  so the whole box is actually usable. */}
               <input
+                ref={desktopPickupTimeRef}
                 type="time"
                 value={state.pickupTime}
                 onChange={(e) => {
