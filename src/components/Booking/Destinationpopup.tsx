@@ -14,6 +14,7 @@ interface LocationRoute {
   roundTripFare: number;
   outsideDistrict: boolean;
   totalDays: number;
+  durationLabel?: string | null;
 }
 
 interface LocationResponse {
@@ -162,7 +163,8 @@ function DestinationContent({
               <div className="flex flex-col items-center gap-1">
                 <Clock size={16} className="text-gray-400" />
                 <span className="text-xs text-gray-500 font-poppins">
-                  {route.totalDays} {route.totalDays === 1 ? "Day" : "Days"}
+                  {route.durationLabel ||
+                    `${route.totalDays} ${route.totalDays === 1 ? "Day" : "Days"}`}
                 </span>
               </div>
             </button>
