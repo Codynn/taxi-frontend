@@ -244,7 +244,9 @@ export default function CheckoutClient() {
       onSuccess: (res) => {
         const bookingId = (res as any)?.data?.id;
         resetBooking();
-        router.push(bookingId ? `/my-bookings/${bookingId}` : "/my-bookings");
+        router.push(
+          bookingId ? `/my-bookings/${bookingId}?pay=fonepay` : "/my-bookings",
+        );
       },
       onError: () => setIsRedirecting(false),
     });

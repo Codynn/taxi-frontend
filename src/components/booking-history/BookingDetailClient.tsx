@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -53,6 +54,8 @@ export default function BookingDetailClient({
 }: {
   bookingId: string;
 }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { data: booking, isLoading, refetch } = useBookingDetail(bookingId);
   const { data: transactions, refetch: refetchTransactions } =
     useFonepayTransactions(bookingId);
@@ -167,6 +170,20 @@ export default function BookingDetailClient({
       }
     };
   };
+
+  // Checkout's "Pay with Fonepay" already created this booking and sent the
+  // customer straight here with ?pay=fonepay — start the payment session
+  // immediately instead of making them click "Pay with Fonepay" again.
+  const autoPayRef = useRef(false);
+  useEffect(() => {
+    if (autoPayRef.current) return;
+    if (searchParams.get("pay") !== "fonepay") return;
+    if (fonepayState !== "idle" || transactions === undefined) return;
+    autoPayRef.current = true;
+    router.replace(`/my-bookings/${bookingId}`);
+    handlePay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, fonepayState, transactions]);
 
   const handlePay = async () => {
     setFonepayState("creating");
